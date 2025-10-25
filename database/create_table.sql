@@ -129,10 +129,3 @@ ADD CONSTRAINT chk_review_dates CHECK (
 -- Ensure that the fail/success counts intervals are non-negative
 ALTER TABLE Review
 ADD CONSTRAINT nonnegative_counts CHECK (successful_reps >= 0 AND fail_count >= 0 and interval >= 0);
-
--- Ensure due_date >= last_review when both present
-ALTER TABLE Review
-ADD CONSTRAINT chk_review_dates CHECK (
-    due_date IS NULL OR last_review_date IS NULL OR due_date >= last_review_date
-);
-
