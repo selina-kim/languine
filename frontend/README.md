@@ -6,18 +6,14 @@ frontend/
 │   ├── (tabs)/            # tab-based navigation screens
 │   ├── (auth)/            # authentication screens
 │   └── _layout.tsx        # root layout
+├── assets/             # static assets (images, icons, fonts, etc)
 ├── components/         # reusable UI components
 │   ├── common/            # generic components (button, input, etc)
 │   └── features/          # feature-specific components
-├── services/           # API calls and external services
-│   ├── api/               # backend API integration
-│   └── storage/           # local storage utilities
-├── hooks/              # custom react hooks
-├── types/              # TypeScript type definitions (models, api types, etc)
 ├── constants/          # app-wide constants
+├── hooks/              # custom react hooks
+├── types/              # type definitions (models, api types, etc)
 ├── utils/              # helper functions and utilities
-├── assets/             # static assets (images, icons, fonts, etc)
-├── config/             # configuration files (environment, settings)
 └── __tests__/          # test files (unit, integration testing)
 ```
 
