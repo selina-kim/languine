@@ -20,8 +20,14 @@ services:
     # environment:
     #   - DATABASE_URL=postgresql://postgres:secure_password@db:5432/private_storage
     #   - NODE_ENV=production
-    # volumes:
-    #   - backend-data:/app/data
+    # below 4 configs allows file changes to be applied without rebuilding the image
+    volumes:
+      - ./backend/src:/app/src
+    environment:
+      FLASK_APP: src.main:app
+      FLASK_ENV: development
+    working_dir: /app
+    command: flask run --host=0.0.0.0 --reload
 
   # db:
   #   image: postgres:15
