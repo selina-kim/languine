@@ -1,9 +1,13 @@
-# Project Tree
+# Project Structure
 
 ```
 capstone-project/
-├── meetings          # meeting notes
-├── docs              # all submitted documents & deliverables
+├── backend/           # backend python + docker app
+├── database/          # postgreSQL database
+├── frontend/          # frontend expo + react native app
+├── docs/              # all submitted documents & deliverables
+├── meetings/          # meeting notes
+├── compose.yml        # docker config file (only backend for now)
 └── README.md
 ```
 

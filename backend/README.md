@@ -1,14 +1,17 @@
-## Project Structure
+# Project Structure
 
 ```
 backend/
 ├── src/
-│   ├── __init__.py
-│   └── main.py          # Flask application entry point
-├── pyproject.toml       # Project dependencies and metadata
-├── Dockerfile           # Docker configuration
+│   ...
+│   └── main.py          # flask application entry point
+├── Dockerfile           # docker configuration
+├── poetry.lock          # package manager dependencies
+├── pyproject.toml       # project dependencies and metadata
 └── README.md
 ```
+
+# Development
 
 ## Setup & Installation
 
