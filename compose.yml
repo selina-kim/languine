@@ -26,6 +26,8 @@ services:
     environment:
       FLASK_APP: src.main:app
       FLASK_ENV: development
+      MW_DICT_API_KEY: ${MW_DICT_API_KEY}
+      DEEPL_API_KEY: ${DEEPL_API_KEY}
     working_dir: /app
     command: flask run --host=0.0.0.0 --reload
 
