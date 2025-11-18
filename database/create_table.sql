@@ -19,7 +19,7 @@ create table Users (
 -- Deck
 create table Decks (
     d_id serial primary key,
-    u_id integer references Users(u_id) on delete cascade, 
+    u_id varchar(255) references Users(u_id) on delete cascade, 
     deck_name varchar(100) not null,
     word_lang varchar(50) not null,
     trans_lang varchar(50) not null,
