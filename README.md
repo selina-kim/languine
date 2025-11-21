@@ -57,3 +57,9 @@ As a safeguard, try to add **at least one reviewer** (whoever you think is appro
 - The template in `.github/PULL_REQUEST_TEMPLATE` will automatically show up in the description when you create a PR.
 - Under the **`What did you change?`** section, add the appropriate bullet points (and delete unused ones).
 - Go through the **`To Do Checklist`** section and mark the completed items. Ideally all items are checked when creating a PR.
+
+# Design
+
+## Frontend Design
+
+The figma containing frontend design mock up for each frame and a simple prototype flow can be viewed [here](https://www.figma.com/design/BnNfhmeOhBtzgYaucYX4FY/App-Figma--Revised-?node-id=2119-2805&t=z3D5bA4m46rnNm35-1)
