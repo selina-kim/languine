@@ -13,6 +13,16 @@ capstone-project/
 
 # Development
 
+## Branch Conventions
+
+##### Branch Name Format:
+
+> `<jira ticket>/<short summary>`
+
+- Each new feature or bug assigned by a Jira ticket will have the ticket number followed with a short explanation of the ticket in the branch name
+
+Example: `CP-0/translation-api-integration`
+
 ## Commit Conventions
 
 Will generally follow [Conventional Commit](https://www.conventionalcommits.org/en/v1.0.0/) style. You can read into the actual specifics of it through the link if you want to, but this is what's relevant to our codebase.
