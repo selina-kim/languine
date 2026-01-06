@@ -1,18 +1,18 @@
-# Ignore environment file with secrets
+# Environment
 .env
 
 # Python
 __pycache__/
+*.py[cod]
 
-# Virtual environments
-venv/
+# Virtual environment
+.venv/
 env/
 .venv/
 
-# tests
+# Testing
 .pytest_cache/
 .coverage
 
-# IDEs
+# IDE
 .vscode/
-.idea/

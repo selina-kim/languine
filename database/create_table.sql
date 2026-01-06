@@ -19,7 +19,7 @@ create table Users (
 -- Deck
 create table Decks (
     d_id serial primary key,
-    u_id integer references Users(u_id) on delete cascade, 
+    u_id varchar(255) references Users(u_id) on delete cascade, 
     deck_name varchar(100) not null,
     word_lang varchar(50) not null,
     trans_lang varchar(50) not null,
@@ -27,6 +27,7 @@ create table Decks (
     -- timestamp is stored in UTC. Can be shown in local time based on user's timezone if set. eg. 'Set timezone to "Japan";'
     -- doesn't store timezone info
     last_reviewed timestamp with time zone,
+    description text,
     is_public boolean default false not null,
     link varchar(3000)
 );
@@ -38,6 +39,7 @@ create table Decks (
 -- trans_lang: language the user knows
 -- creation_date: date the deck was created
 -- last_reviewed: date the deck was last reviewed
+-- description: optional description of the deck
 -- is_public: whether the deck is public or private, private by default
 -- link: link to the deck (if applicable)
 
@@ -81,7 +83,7 @@ create table Cards (
 -- idea that we help the user generate cards but allow them to make edits.
 
 
--- Card Review
+-- Card Review based on FSRS
 create table Review (
     r_id serial primary key,
     c_id integer unique references Cards(c_id) on delete cascade,
@@ -91,8 +93,10 @@ create table Review (
     successful_reps integer default 0,
     fail_count integer default 0,
     recall_time integer,
+    difficulty double precision,
+    stability double precision,
+    retrievability double precision,
     is_due boolean default false
-    -- more columns to be added depending on which algo is chosen
 );  
 -- column definitions:
 -- r_id: primary key, storing card review id
@@ -103,11 +107,10 @@ create table Review (
 -- successful_reps: number of times the card has been successfully reviewed in row
 -- fail_count: number of times the user has failed to recall the card
 -- recall_time: how long it took the user to recall the card during last review (in seconds)
+-- difficulty: how difficult the card is for the user 
+-- stability: how well the memory is retained over time
+-- retrievability: how easily the user can retrieve the card from memory
 -- is_due: boolean indicating if the card is due for review today
-
-
--- choices to be made:
--- 1. Which spaced repetition algorithm to use? (Anki's SM-2 or fsrs)
 
 -- additional constraints
 -- Ensure email format (basic check for x@y.z)

@@ -1,16 +1,22 @@
 import os
 from flask import Flask
+from routes.dictionary import *
+from routes.translate import *
+from dotenv import load_dotenv
 from flask_jwt_extended import JWTManager
 from flask_cors import CORS
 
+load_dotenv()
 jwt = JWTManager()
 
-def create_app():
-    app = Flask(__name__)
+def create_app():    
+    app = Flask(__name__) 
+    print("Test")
 
+    app.config['JSON_AS_ASCII'] = False
     app.config['GOOGLE_CLIENT_ID'] = os.getenv('GOOGLE_CLIENT_ID')
     app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY')
-    
+
     jwt.init_app(app)
     CORS(app)
     
@@ -26,11 +32,13 @@ def create_app():
     @jwt.unauthorized_loader
     def missing_token_callback(error):
         return {'error': 'Authorization header missing'}, 401
-    
+
     # Register blueprints
     from src.routes import auth
     app.register_blueprint(auth.auth_bp)
-    
+    app.register_blueprint(define_bp)
+    app.register_blueprint(translate_bp)
+
     return app
 
 app = create_app()

@@ -1,0 +1,25 @@
+# Environment files
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+
+# Virtual environment
+.venv/
+
+# Testing
+.pytest_cache/
+
+# IDE
+.vscode/
+
+# Git
+.git/
+.gitignore
+
+# Docker
+.dockerignore
+
+# Poetry config (local settings)
+poetry.toml
