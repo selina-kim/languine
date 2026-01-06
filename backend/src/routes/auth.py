@@ -30,7 +30,7 @@ def google_oauth():
     """Handle Google OAuth login/signup."""
     try:
         data = request.get_json()
-        token = data.get('token')
+        token = data.get('id_token')
         
         if not token:
             return jsonify({'error': 'Token required'}), 400
@@ -46,11 +46,9 @@ def google_oauth():
             timezone='UTC'
         )
         
-        # ===== TO BE IMPLEMENTED ONCE DATABASE IS READY =====
         # Extract u_id from user object: user_uid = user.u_id
         # For now, extracting from dict:
         user_uid = user.get('u_id') if isinstance(user, dict) else user.u_id
-        # ===== END PLACEHOLDER =====
         
         tokens = AuthService.generate_tokens(user_uid)
         
@@ -82,14 +80,6 @@ def refresh_token():
 def get_current_user():
     """Get current logged-in user."""
     user_uid = get_jwt_identity()
-    
-    # ===== TO BE IMPLEMENTED ONCE DATABASE IS READY =====
-    # Replace with actual database query:
-    # user = User.query.get(user_uid)
-    # if not user:
-    #     return jsonify({'error': 'User not found'}), 404
-    # return jsonify({'user': user.to_dict()}), 200
-    # ===== END PLACEHOLDER =====
     
     return jsonify({
         'user': {'u_id': user_uid, 'message': 'Database not yet implemented'}
