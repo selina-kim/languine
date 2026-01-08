@@ -1,7 +1,7 @@
 import { Stack } from "expo-router";
 import { COLORS } from "@/constants/colors";
 import { AppLogo } from "@/assets/AppLogo";
-import { View } from "react-native";
+import { Pressable, View } from "react-native";
 import { ProfileIcon } from "@/assets/icons/ProfileIcon";
 
 export default function RootLayout() {
@@ -13,11 +13,18 @@ export default function RootLayout() {
         },
         headerTintColor: COLORS.text.primary,
         headerShadowVisible: false,
-        headerTitle: () => <AppLogo width={100} />,
-        headerRight: () => (
-          <View style={{ marginHorizontal: 15 }}>
-            <ProfileIcon />
+        headerTitle: () => (
+          <View style={{ width: 100 }}>
+            <AppLogo />
           </View>
+        ),
+        headerRight: () => (
+          <Pressable
+            onPress={() => console.log("profile clicked")}
+            style={{ marginHorizontal: 15, width: 38 }}
+          >
+            <ProfileIcon />
+          </Pressable>
         ),
       }}
     >

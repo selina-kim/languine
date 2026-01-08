@@ -3,17 +3,13 @@ import React from "react";
 import { Svg, Path, Ellipse } from "react-native-svg";
 
 export const HelpIcon: React.FC<{
-  width?: number;
-  height?: number;
   stroke?: string;
   fill?: string;
 }> = ({
-  width = 23,
-  height = 23,
   stroke = COLORS.icon.outlinePrimary,
   fill = COLORS.icon.fillPrimary,
 }) => (
-  <Svg width={width} height={height} viewBox="0 0 23 23" fill="none">
+  <Svg width="100%" height="100%" viewBox="0 0 23 23" fill="none">
     <Ellipse cx="11.4417" cy="11.5" rx="10.4468" ry="10.5" fill={fill} />
     <Path
       d="M11.4418 21.0832C16.7077 21.0832 20.9766 16.7926 20.9766 11.4998C20.9766 6.20711 16.7077 1.9165 11.4418 1.9165C6.17586 1.9165 1.90698 6.20711 1.90698 11.4998C1.90698 16.7926 6.17586 21.0832 11.4418 21.0832Z"

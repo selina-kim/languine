@@ -3,17 +3,13 @@ import React from "react";
 import { Svg, Path } from "react-native-svg";
 
 export const HomeIcon: React.FC<{
-  width?: number;
-  height?: number;
   stroke?: string;
   fill?: string;
 }> = ({
-  width = 26,
-  height = 26,
   stroke = COLORS.icon.outlinePrimary,
   fill = COLORS.icon.fillPrimary,
 }) => (
-  <Svg width={width} height={height} viewBox="0 0 28 28" fill="none">
+  <Svg width="100%" height="100%" viewBox="0 0 28 28" fill="none">
     <Path
       d="M13.4316 5.5L4.97461 11.5V22.5H11.4417V17H15.9189L16.9138 22.5H22.8835V11.5L13.4316 5.5Z"
       fill={fill}

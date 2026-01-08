@@ -3,17 +3,13 @@ import React from "react";
 import { Svg, Path } from "react-native-svg";
 
 export const DecksIcon: React.FC<{
-  width?: number;
-  height?: number;
   stroke?: string;
   fill?: string;
 }> = ({
-  width = 27,
-  height = 27,
   stroke = COLORS.icon.outlinePrimary,
   fill = COLORS.icon.fillPrimary,
 }) => (
-  <Svg width={width} height={height} viewBox="0 0 27 27" fill="none">
+  <Svg width="100%" height="100%" viewBox="0 0 27 27" fill="none">
     <Path
       d="M12.9341 4.5L2.4873 9L5.96958 11.5L2.4873 13.5L5.96958 16L2.98477 18L13.4316 22.5L23.8784 18L20.3962 16L24.3759 13.5L20.3962 11L23.8784 9L12.9341 4.5Z"
       fill={fill}

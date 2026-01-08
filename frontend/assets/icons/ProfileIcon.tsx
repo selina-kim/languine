@@ -2,11 +2,8 @@ import { COLORS } from "@/constants/colors";
 import React from "react";
 import { Svg, Path, Circle } from "react-native-svg";
 
-export const ProfileIcon: React.FC<{
-  width?: number;
-  height?: number;
-}> = ({ width = 38, height = 38 }) => (
-  <Svg width={width} height={height} viewBox="0 0 38 38" fill="none">
+export const ProfileIcon: React.FC<{}> = () => (
+  <Svg width="100%" height="100%" viewBox="0 0 38 38" fill="none">
     <Circle cx="19" cy="19" r="15" fill={COLORS.icon.fillPrimary} />
     <Path
       fill-rule="evenodd"
