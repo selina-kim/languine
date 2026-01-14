@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify, current_app
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from src.services.auth_service import AuthService
+from services.auth_service import AuthService
 import google.auth.transport.requests
 from google.oauth2 import id_token
 

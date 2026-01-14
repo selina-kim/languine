@@ -2,6 +2,7 @@ import os
 from flask import Flask
 from routes.dictionary import *
 from routes.translate import *
+from routes.auth import auth_bp
 from dotenv import load_dotenv
 from flask_jwt_extended import JWTManager
 from flask_cors import CORS
@@ -34,8 +35,7 @@ def create_app():
         return {'error': 'Authorization header missing'}, 401
 
     # Register blueprints
-    from src.routes import auth
-    app.register_blueprint(auth.auth_bp)
+    app.register_blueprint(auth_bp)
     app.register_blueprint(define_bp)
     app.register_blueprint(translate_bp)
 
