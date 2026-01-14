@@ -13,7 +13,7 @@ class TestGoogleOAuthWithoutDB:
         }
         
         response = client.post('/auth/google', json={
-            'token': 'fake-google-token'
+            'id_token': 'fake-google-token'
         })
 
         print(f"Status: {response.status_code}")
@@ -36,7 +36,7 @@ class TestGoogleOAuthWithoutDB:
         mock_verify.side_effect = ValueError('Invalid token')
         
         response = client.post('/auth/google', json={
-            'token': 'invalid-token'
+            'id_token': 'invalid-token'
         })
         
         assert response.status_code == 401
