@@ -6,21 +6,21 @@ create table Users (
     email varchar(255) unique not null,
     display_name varchar(30) not null,
     timezone varchar(50) not null,
-    new_cards_per_day integer default 20,
-    review_cards_per_day integer default 50
+    new_cards_per_day integer default 10,
+    desired_retention double precision default 0.9    
 );
 -- column definitions:
 -- u_id: primary key, storing user id from 'sub' field in Google ID Token
 -- email: user's email address
 -- display_name: user's chosen name to use in app
--- new_cards_per_day: number of new cards user wants to learn per day, default is 20
--- review_cards_per_day: number of cards user wants to review per day, default is 50
+-- new_cards_per_day: number of new cards user wants to learn per day, default is 10
+-- desired_retention: user's desired card retention rate, default is 0.9 (90%)
 
 -- Deck
 create table Decks (
     d_id serial primary key,
     u_id varchar(255) references Users(u_id) on delete cascade, 
-    deck_name varchar(100) not null,
+    deck_name varchar(100) not null check (deck_name <> ''),
     word_lang varchar(50) not null,
     trans_lang varchar(50) not null,
     creation_date timestamp with time zone default current_timestamp, 
@@ -29,7 +29,8 @@ create table Decks (
     last_reviewed timestamp with time zone,
     description text,
     is_public boolean default false not null,
-    link varchar(3000)
+    link varchar(1024),
+    UNIQUE (u_id, deck_name) -- ensure unique deck names per user
 );
 -- column definitions:
 -- d_id: primary key, storing deck id
@@ -43,6 +44,9 @@ create table Decks (
 -- is_public: whether the deck is public or private, private by default
 -- link: link to the deck (if applicable)
 
+-- index: all decks by user
+create index idx_decks_user on Decks(u_id);
+
 -- design choices:
 -- store timestamp in UTC to have a standard reference point and then convert to local time using user's timezone
 
@@ -52,17 +56,29 @@ create table Cards (
     d_id integer references Decks(d_id) on delete cascade,
     word varchar(100) not null,
     translation varchar(100) not null,
-    definition text not null,
+    definition text,
     image text,
-    word_example text not null,
+    word_example text,
     trans_example text,
-    word_audio varchar(255),
-    trans_audio varchar(255),
+    word_audio varchar(1024),
+    trans_audio varchar(1024),
     word_roman varchar(100) not null,
-    trans_roman varchar(100)
+    trans_roman varchar(100),
+    -- FSRS fields: 
+    state integer, 
+    step integer,
+    difficulty double precision,
+    stability double precision,
+    -- retrievability double precision, --TODO REMOVE
+    successful_reps integer default 0,
+    fail_count integer default 0,
+    due_date timestamp with time zone,
+    interval integer not null,
+    -- ensure fail/success counts intervals are non-negative
+    CHECK (successful_reps >= 0),
+    CHECK (fail_count >= 0),
+    CHECK (interval >= 0)
 );
--- to store audio we need to store the file in our server and store the link here
-
 -- column definitions:
 -- c_id: primary key, storing card id
 -- word: word the user is learning
@@ -76,59 +92,39 @@ create table Cards (
 -- word_roman: pronunciation or romanization of the word
 -- trans_roman: pronunciation or romanization of the translation
 
+-- FSRS column definitions:
+-- state: current learning state of the card
+-- step: current learning or relearning step of the card
+-- difficulty: how difficult the card is for the user 
+-- stability: how well the memory is retained over time
+-- retrievability: how easily the user can retrieve the card from memory --TODO REMOVE
+-- successful_reps: number of times the card has been successfully reviewed in row
+-- fail_count: number of times the user has failed to recall the card
+-- interval: number of days until next review
+-- due_date: date the card is due for review
 
+-- index: all cards in a deck
+create index idx_cards_deck on Cards(d_id);
+
+-- to store audio we need to store the file in our server and store the link here
 -- design choices:
 -- We store results from API calls so that we avoid redundant requests,
 -- and prevent changes in the result returned over time. This supports the 
 -- idea that we help the user generate cards but allow them to make edits.
 
-
--- Card Review based on FSRS
-create table Review (
-    r_id serial primary key,
-    c_id integer unique references Cards(c_id) on delete cascade,
-    last_review_date timestamp with time zone,
-    interval integer not null,
-    due_date timestamp with time zone,
-    successful_reps integer default 0,
-    fail_count integer default 0,
-    recall_time integer,
-    difficulty double precision,
-    stability double precision,
-    retrievability double precision,
-    is_due boolean default false
-);  
--- column definitions:
--- r_id: primary key, storing card review id
--- c_id: foreign key, storing card id?
--- last_review_date: date the card was last reviewed
--- interval: number of days until next review
--- due_date: date the card is due for review
--- successful_reps: number of times the card has been successfully reviewed in row
--- fail_count: number of times the user has failed to recall the card
--- recall_time: how long it took the user to recall the card during last review (in seconds)
--- difficulty: how difficult the card is for the user 
--- stability: how well the memory is retained over time
--- retrievability: how easily the user can retrieve the card from memory
--- is_due: boolean indicating if the card is due for review today
-
--- additional constraints
--- Ensure email format (basic check for x@y.z)
-ALTER TABLE Users
-ADD CONSTRAINT chk_email_format CHECK (email ~* '^[^@]+@[^@]+\\.[^@]+$');
-
-
--- Ensure unique deck names per user
-ALTER TABLE Decks
-ADD CONSTRAINT unique_deck_per_user UNIQUE (u_id, deck_name);
-
-
--- Ensure due_date >= last_review when both present
-ALTER TABLE Review
-ADD CONSTRAINT chk_review_dates CHECK (
-    due_date IS NULL OR last_review_date IS NULL OR due_date >= last_review_date
+create table ReviewHistory (
+    rh_id serial primary key,
+    c_id integer references cards(c_id) on delete cascade,
+    rating integer not null,      
+    review_date timestamp with time zone not null default current_timestamp,
+    review_duration integer      
 );
+-- column definitions:
+-- rh_id: primary key, storing review history id
+-- c_id: foreign key, storing card id
+-- rating: user's self-assessed score of recall quality 
+-- review_date: date and time when the review took place
+-- review_duration: time taken to recall the card (in seconds)
 
--- Ensure that the fail/success counts intervals are non-negative
-ALTER TABLE Review
-ADD CONSTRAINT nonnegative_counts CHECK (successful_reps >= 0 AND fail_count >= 0 and interval >= 0);
+-- index: all review history by card
+CREATE INDEX idx_reviewhistory_card ON ReviewHistory(c_id);
