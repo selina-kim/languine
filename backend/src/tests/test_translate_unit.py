@@ -1,7 +1,9 @@
 """Unit tests for translate API.
 
 These tests mock the DeepL API responses to test the application logic
-without making real API calls. Run with: pytest (excludes integration by default)
+without making real API calls. 
+
+Run with: docker compose exec backend poetry run pytest
 
 Test coverage:
 - Success cases (POST/GET with auto-detected and explicit source language)

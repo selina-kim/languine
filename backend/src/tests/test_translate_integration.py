@@ -1,7 +1,8 @@
 """
 Integration tests for the translate route with real DeepL API calls.
 These tests require a valid DEEPL_API_KEY in the .env file.
-Run with: pytest -v -m integration
+
+Run with: docker compose exec backend poetry run pytest -m integration
 """
 import pytest
 import json

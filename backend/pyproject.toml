@@ -1,18 +1,23 @@
-[tool.poetry]
+[project]
 name = "languine"
 version = "0.1.0"
 description = "Backend for Languine App"
 authors = [
-    "Marwa Khafagy", 
-    "Selina Kim", 
-    "Giovanna Gerada", 
-    "Stella Gu", 
-    "Tinu Joseph"]
+    {name = "Marwa Khafagy"}, 
+    {name = "Selina Kim"}, 
+    {name = "Giovanna Gerada"}, 
+    {name = "Stella Gu"}, 
+    {name = "Tinu Joseph"}
+]
 license = "MIT"
 readme = "README.md"
+requires-python = ">=3.11.0,<3.14"
+dynamic = ["dependencies"]
+
+[tool.poetry]
 
 [tool.poetry.dependencies]
-python = "^3.11.0"
+python = ">=3.11.0,<3.14"
 flask = "^3.1.2"
 pydantic = "^2.12.2"
 flask-jwt-extended = "^4.7.1"
@@ -21,6 +26,9 @@ flask-sqlalchemy = "^3.1.1"
 requests = "^2.32.5"
 deepl = "^1.25.0"
 python-dotenv = "^1.2.1"
+coqui-tts = "^0.27.3"
+scipy = "^1.11.0"
+cutlet = "^0.5.0"
 flask-cors = "^6.0.1"
 google-auth-oauthlib = "^1.2.3"
 google-auth-httplib2 = "^0.2.1"
