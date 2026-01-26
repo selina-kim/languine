@@ -114,14 +114,14 @@ create index idx_cards_deck on Cards(d_id);
 create table Review_Logs (
     rl_id serial primary key,
     c_id integer references cards(c_id) on delete cascade,
-    rating integer not null,      
+    grade integer not null,      
     review_date timestamp with time zone not null default current_timestamp,
     review_duration integer      
 );
 -- column definitions:
 -- rl_id: primary key, storing review log id
 -- c_id: foreign key, storing card id
--- rating: user's self-assessed score of recall quality 
+-- grade: user's self-assessed score of recall quality 
 -- review_date: date and time when the review took place
 -- review_duration: time taken to recall the card (in milliseconds)
 
