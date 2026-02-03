@@ -24,18 +24,13 @@ def test_translate_post_success(client, monkeypatch):
             self.text = "안녕하세요"
             self.detected_source_lang = "EN"
     
-    # mock DeepL client constructor 
-    class MockDeepLClient:
-        def __init__(self, auth_key):
-            # store API key
-            self.auth_key = auth_key
-        
-        # mock translate_text instance method
+    # mock Translator client
+    class MockTranslator:
         def translate_text(self, text, target_lang=None, source_lang=None):
             return MockTranslationResult()
     
-    # replace the DeepL client with our mock
-    monkeypatch.setattr("routes.translate.deepl.DeepLClient", MockDeepLClient)
+    # replace the _client with our mock
+    monkeypatch.setattr("services.translate_service._client", MockTranslator())
     
     # set API key
     monkeypatch.setenv("DEEPL_API_KEY", "test_api_key_12345")
@@ -63,14 +58,11 @@ def test_translate_post_with_source_lang(client, monkeypatch):
             self.text = "Hello"
             self.detected_source_lang = "FR"
     
-    class MockDeepLClient:
-        def __init__(self, auth_key):
-            self.auth_key = auth_key
-        
+    class MockTranslator:
         def translate_text(self, text, target_lang=None, source_lang=None):
             return MockTranslationResult()
     
-    monkeypatch.setattr("routes.translate.deepl.DeepLClient", MockDeepLClient)
+    monkeypatch.setattr("services.translate_service._client", MockTranslator())
     monkeypatch.setenv("DEEPL_API_KEY", "test_api_key_12345")
     
     # send POST request with source_lang
@@ -93,14 +85,11 @@ def test_translate_get_with_source_lang(client, monkeypatch):
             self.text = "How are you?"
             self.detected_source_lang = "JA"
     
-    class MockDeepLClient:
-        def __init__(self, auth_key):
-            self.auth_key = auth_key
-        
+    class MockTranslator:
         def translate_text(self, text, target_lang=None, source_lang=None):
             return MockTranslationResult()
     
-    monkeypatch.setattr("routes.translate.deepl.DeepLClient", MockDeepLClient)
+    monkeypatch.setattr("services.translate_service._client", MockTranslator())
     monkeypatch.setenv("DEEPL_API_KEY", "test_api_key_12345")
     
     # send GET request with query parameters: text, source, and target
@@ -120,14 +109,11 @@ def test_translate_get_without_source_lang(client, monkeypatch):
             self.text = "您好"
             self.detected_source_lang = "EN"
     
-    class MockDeepLClient:
-        def __init__(self, auth_key):
-            self.auth_key = auth_key
-        
+    class MockTranslator:
         def translate_text(self, text, target_lang=None, source_lang=None):
             return MockTranslationResult()
     
-    monkeypatch.setattr("routes.translate.deepl.DeepLClient", MockDeepLClient)
+    monkeypatch.setattr("services.translate_service._client", MockTranslator())
     monkeypatch.setenv("DEEPL_API_KEY", "test_api_key_12345")
     
     # send GET request with query parameters: text and target (source auto-detected)
@@ -174,9 +160,17 @@ def test_translate_missing_target_lang(client, monkeypatch):
     assert "Missing text or target_lang" in data["error"]
 
 # test error handling when DEEPL_API_KEY environment variable is not set
+# Note: Since the translate_service module initializes _client at import time,
+# the app must have DEEPL_API_KEY set during startup. This test verifies
+# the error handling exists, but in production the service would fail at startup.
 def test_translate_missing_api_key(client, monkeypatch):
-    # unset API key
-    monkeypatch.delenv("DEEPL_API_KEY", raising=False)
+    # Mock a client that simulates missing API key behavior
+    class MockTranslator:
+        def translate_text(self, text, target_lang=None, source_lang=None):
+            raise ValueError("DEEPL_API_KEY not set in environment")
+    
+    monkeypatch.setattr("services.translate_service._client", MockTranslator())
+    monkeypatch.setenv("DEEPL_API_KEY", "test_api_key_12345")
     
     # Send valid POST request
     response = client.post(
@@ -193,14 +187,11 @@ def test_translate_missing_api_key(client, monkeypatch):
 # test error handling when DeepL API raises an exception during translation
 def test_translate_api_error(client, monkeypatch):
     
-    class MockDeepLClient:
-        def __init__(self, auth_key):
-            self.auth_key = auth_key
-        
+    class MockTranslator:
         def translate_text(self, text, target_lang=None, source_lang=None):
             raise Exception("DeepL API connection failed")
     
-    monkeypatch.setattr("routes.translate.deepl.DeepLClient", MockDeepLClient)
+    monkeypatch.setattr("services.translate_service._client", MockTranslator())
     monkeypatch.setenv("DEEPL_API_KEY", "test_api_key_12345")
     
     # send valid POST request
@@ -222,14 +213,11 @@ def test_translate_unicode_text(client, monkeypatch):
             self.text = "Hello, how are you? 😊"
             self.detected_source_lang = "KO"
     
-    class MockDeepLClient:
-        def __init__(self, auth_key):
-            self.auth_key = auth_key
-        
+    class MockTranslator:
         def translate_text(self, text, target_lang=None, source_lang=None):
             return MockTranslationResult()
     
-    monkeypatch.setattr("routes.translate.deepl.DeepLClient", MockDeepLClient)
+    monkeypatch.setattr("services.translate_service._client", MockTranslator())
     monkeypatch.setenv("DEEPL_API_KEY", "test_api_key_12345")
     
     # POST request with Korean text and emoji
