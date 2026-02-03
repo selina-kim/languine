@@ -16,11 +16,13 @@ import json
 import numpy as np
 from scipy.io import wavfile
 import io
+import time
 
 
 @pytest.mark.integration
 def test_tts_real_english_generation(client):
     """Test real TTS generation for English text."""
+    start_time = time.time()
     response = client.post(
         "/tts",
         json={
@@ -29,6 +31,9 @@ def test_tts_real_english_generation(client):
             "speaker": "Claribel Dervla"
         }
     )
+    elapsed_time = time.time() - start_time
+    
+    print(f"\n[TIMING] TTS English (54 chars): {elapsed_time:.3f}s")
     
     assert response.status_code == 200
     assert response.mimetype == "audio/wav"
@@ -44,6 +49,7 @@ def test_tts_real_english_generation(client):
 @pytest.mark.integration
 def test_tts_real_korean_generation(client):
     """Test real TTS generation for Korean text."""
+    start_time = time.time()
     response = client.post(
         "/tts",
         json={
@@ -52,6 +58,9 @@ def test_tts_real_korean_generation(client):
             "speaker": "Daisy Studious"
         }
     )
+    elapsed_time = time.time() - start_time
+    
+    print(f"\n[TIMING] TTS Korean (28 chars): {elapsed_time:.3f}s")
     
     assert response.status_code == 200
     assert response.mimetype == "audio/wav"
@@ -85,6 +94,7 @@ def test_tts_real_korean_generation(client):
 @pytest.mark.integration
 def test_tts_real_french_generation(client):
     """Test real TTS generation for French text."""
+    start_time = time.time()
     response = client.post(
         "/tts",
         json={
@@ -93,6 +103,9 @@ def test_tts_real_french_generation(client):
             "speaker": "Abrahan Mack"
         }
     )
+    elapsed_time = time.time() - start_time
+    
+    print(f"\n[TIMING] TTS French (58 chars): {elapsed_time:.3f}s")
     
     assert response.status_code == 200
     assert len(response.data) > 0
