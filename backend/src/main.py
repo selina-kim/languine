@@ -5,6 +5,7 @@ from routes.translate import *
 from routes.tts import *
 from routes.auth import auth_bp
 from routes.images import images_bp
+from routes.decks import decks_bp
 from dotenv import load_dotenv
 from flask_jwt_extended import JWTManager
 from flask_cors import CORS
@@ -42,6 +43,7 @@ def create_app():
     app.register_blueprint(translate_bp)
     app.register_blueprint(tts_bp)
     app.register_blueprint(images_bp)
+    app.register_blueprint(decks_bp)
 
     return app
 

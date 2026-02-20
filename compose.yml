@@ -27,6 +27,7 @@ services:
     volumes:
       - ./backend:/app
       - /app/.venv  # preserve the container's .venv
+      - ./database:/database:ro  # mount database folder for tests (read-only)
     environment:
       FLASK_APP: main:app
       FLASK_ENV: development
