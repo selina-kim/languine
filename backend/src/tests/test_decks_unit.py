@@ -9,10 +9,10 @@ Tests the deck import/export service logic without external dependencies:
 - No database, HTTP, or authentication dependencies
 
 Run this test file:
-    docker compose exec backend pytest src/tests/test_deck_service_unit.py -v
+    docker compose exec backend pytest src/tests/test_decks_unit.py -v
 
 Run with coverage:
-    docker compose exec backend pytest src/tests/test_deck_service_unit.py --cov=services.deck_service
+    docker compose exec backend pytest src/tests/test_decks_unit.py --cov=services.deck_service
 """
 
 import pytest

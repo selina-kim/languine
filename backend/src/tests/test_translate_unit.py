@@ -3,8 +3,6 @@
 These tests mock the DeepL API responses to test the application logic
 without making real API calls. 
 
-Run with: docker compose exec backend poetry run pytest
-
 Test coverage:
 - Success cases (POST/GET with auto-detected and explicit source language)
 - Missing required parameters (text, target_lang)
@@ -12,6 +10,12 @@ Test coverage:
 - API errors and exceptions
 - Unicode text handling (Korean, emoji)
 - Empty string validation
+
+Run this test file:
+    docker compose exec backend pytest src/tests/test_translate_unit.py -v
+
+Run with coverage:
+    docker compose exec backend pytest src/tests/test_translate_unit.py --cov=services.translate_service
 """
 # import pytest
 import json

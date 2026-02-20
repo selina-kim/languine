@@ -1,3 +1,14 @@
+"""Unit tests for image service.
+
+These tests mock the Unsplash API responses to test the application logic
+without making real API calls.
+
+Run this test file:
+    docker compose exec backend pytest src/tests/test_images_unit.py -v
+
+Run with coverage:
+    docker compose exec backend pytest src/tests/test_images_unit.py --cov=services.image_service
+"""
 import pytest
 from unittest.mock import Mock, patch
 from services.image_service import UnsplashService

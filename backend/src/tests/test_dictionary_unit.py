@@ -3,14 +3,18 @@
 These tests mock the Merriam-Webster API responses to test the application logic
 without making real API calls. 
 
-Run with: docker compose exec backend poetry run pytest
-
 Test coverage:
 - Success case with full data (pronunciation, audio, definitions, examples)
 - API errors (500, 429, timeout, connection errors)
 - Missing/partial data handling
 - Multiple definitions
 - Word not found with suggestions
+
+Run this test file:
+    docker compose exec backend pytest src/tests/test_dictionary_unit.py -v
+
+Run with coverage:
+    docker compose exec backend pytest src/tests/test_dictionary_unit.py --cov=services.dictionary_service
 """
 import requests
 

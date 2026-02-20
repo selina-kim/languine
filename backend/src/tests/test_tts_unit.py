@@ -3,8 +3,6 @@
 These tests mock the TTS service responses to test the application logic
 without making real TTS calls. 
 
-Run with: docker compose exec backend poetry run pytest 
-
 Test coverage:
 - Success cases (with and without speaker, default speaker selection)
 - Missing required parameters (text, language)
@@ -13,6 +11,12 @@ Test coverage:
 - Unicode text handling (Korean, Japanese, special characters)
 - Empty audio handling
 - Exception handling
+
+Run this test file:
+    docker compose exec backend pytest src/tests/test_tts_unit.py -v
+
+Run with coverage:
+    docker compose exec backend pytest src/tests/test_tts_unit.py --cov=services.tts_service
 """
 import pytest
 import json

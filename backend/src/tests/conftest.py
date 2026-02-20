@@ -4,6 +4,14 @@ import os
 from flask_jwt_extended import create_access_token
 from db import get_db_cursor
 
+"""
+Run all unit tests with:
+    docker compose exec backend poetry run pytest
+Run all integration tests with:
+    docker compose exec backend poetry run pytest -m integration
+Unless otherwise specified.
+"""
+
 @pytest.fixture(scope="session")
 def db_schema():
     """Set up test database schema from SQL file. Runs once per test session."""

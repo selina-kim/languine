@@ -1,3 +1,13 @@
+"""Integration tests for image routes.
+
+These tests verify the image search endpoints with mocked Unsplash service.
+
+Run this test file:
+    docker compose exec backend pytest src/tests/test_images_integration.py -v
+
+Run with coverage:
+    docker compose exec backend pytest src/tests/test_images_integration.py --cov=routes.images
+"""
 import pytest
 import json
 from unittest.mock import patch, Mock

@@ -12,10 +12,10 @@ These tests verify the complete request/response cycle including:
 Mark with @pytest.mark.integration to run separately from unit tests.
 
 Run this test file:
-    docker compose exec backend pytest src/tests/test_deck_routes_integration.py -v
+    docker compose exec backend pytest src/tests/test_decks_integration.py -v
 
 Run with coverage:
-    docker compose exec backend pytest src/tests/test_deck_routes_integration.py --cov=routes.decks
+    docker compose exec backend pytest src/tests/test_decks_integration.py --cov=routes.decks
 """
 
 import pytest
@@ -23,6 +23,7 @@ import json
 from io import BytesIO
 
 
+@pytest.mark.integration
 def test_export_deck_json_success(client, auth_headers):
     """Test successful deck export in JSON format"""
     response = client.get("/decks/1/export?format=json", headers=auth_headers)
@@ -34,6 +35,7 @@ def test_export_deck_json_success(client, auth_headers):
     assert "attachment" in response.headers.get("Content-Disposition", "")
 
 
+@pytest.mark.integration
 def test_export_deck_csv_success(client, auth_headers):
     """Test successful deck export in CSV format"""
     response = client.get("/decks/1/export?format=csv", headers=auth_headers)
@@ -42,6 +44,7 @@ def test_export_deck_csv_success(client, auth_headers):
     assert response.mimetype == "text/csv"
 
 
+@pytest.mark.integration
 def test_export_deck_anki_success(client, auth_headers):
     """Test successful deck export in Anki format"""
     response = client.get("/decks/1/export?format=anki", headers=auth_headers)
@@ -50,6 +53,7 @@ def test_export_deck_anki_success(client, auth_headers):
     assert response.mimetype == "text/plain"
 
 
+@pytest.mark.integration
 def test_export_deck_invalid_format(client, auth_headers):
     """Test deck export with invalid format"""
     response = client.get("/decks/1/export?format=invalid", headers=auth_headers)
@@ -60,6 +64,7 @@ def test_export_deck_invalid_format(client, auth_headers):
     assert "Unsupported export format" in data["error"]
 
 
+@pytest.mark.integration
 def test_export_deck_default_format(client, auth_headers):
     """Test deck export defaults to JSON when no format specified"""
     response = client.get("/decks/1/export", headers=auth_headers)
@@ -68,6 +73,7 @@ def test_export_deck_default_format(client, auth_headers):
     assert response.mimetype == "application/json"
 
 
+@pytest.mark.integration
 def test_import_deck_json_success(client, auth_headers):
     """Test successful deck import from JSON"""
     deck_data = {
@@ -110,6 +116,7 @@ def test_import_deck_json_success(client, auth_headers):
     assert result["cards_count"] == 1
 
 
+@pytest.mark.integration
 def test_import_deck_csv_success(client, auth_headers):
     """Test successful deck import from CSV"""
     csv_content = """word,translation,definition,word_example,trans_example,word_roman,trans_roman,image
@@ -136,6 +143,7 @@ adiós,goodbye,farewell,Adiós,Goodbye,ah-dee-ohs,,"""
     assert result["cards_count"] == 2
 
 
+@pytest.mark.integration
 def test_import_deck_csv_missing_params(client, auth_headers):
     """Test CSV import with missing required parameters"""
     csv_content = "word,translation\nhola,hello"
@@ -159,6 +167,7 @@ def test_import_deck_csv_missing_params(client, auth_headers):
     assert "requires deck_name, word_lang, and trans_lang" in result["error"]
 
 
+@pytest.mark.integration
 def test_import_deck_anki_success(client, auth_headers):
     """Test successful deck import from Anki format"""
     anki_content = """#deck: Test Deck
@@ -184,6 +193,7 @@ adiós\tgoodbye"""
     assert result["cards_count"] == 2
 
 
+@pytest.mark.integration
 def test_import_deck_no_file(client, auth_headers):
     """Test deck import with no file provided"""
     response = client.post(
@@ -198,6 +208,7 @@ def test_import_deck_no_file(client, auth_headers):
     assert "No file provided" in result["error"]
 
 
+@pytest.mark.integration
 def test_import_deck_invalid_json(client, auth_headers):
     """Test deck import with invalid JSON"""
     data = {
@@ -216,6 +227,7 @@ def test_import_deck_invalid_json(client, auth_headers):
     assert "error" in result
 
 
+@pytest.mark.integration
 def test_import_deck_unknown_format(client, auth_headers):
     """Test deck import with unknown file format"""
     data = {
@@ -234,6 +246,7 @@ def test_import_deck_unknown_format(client, auth_headers):
     assert "Could not determine file format" in result["error"]
 
 
+@pytest.mark.integration
 def test_create_deck_success(client, auth_headers):
     """Test successful deck creation"""
     deck_data = {
@@ -256,6 +269,7 @@ def test_create_deck_success(client, auth_headers):
     assert result["deck"]["deck_name"] == "New Deck"
 
 
+@pytest.mark.integration
 def test_create_deck_missing_fields(client, auth_headers):
     """Test deck creation with missing required fields"""
     deck_data = {
@@ -275,6 +289,7 @@ def test_create_deck_missing_fields(client, auth_headers):
     assert "Missing required field" in result["error"]
 
 
+@pytest.mark.integration
 def test_create_deck_no_data(client, auth_headers):
     """Test deck creation with no data"""
     response = client.post(
@@ -289,6 +304,7 @@ def test_create_deck_no_data(client, auth_headers):
     assert "No data provided" in result["error"]
 
 
+@pytest.mark.integration
 def test_get_deck_success(client, auth_headers):
     """Test successful deck retrieval"""
     response = client.get("/decks/1", headers=auth_headers)
@@ -299,6 +315,7 @@ def test_get_deck_success(client, auth_headers):
     assert "cards" in result
 
 
+@pytest.mark.integration
 def test_list_decks_success(client, auth_headers):
     """Test successful listing of decks"""
     response = client.get("/decks", headers=auth_headers)

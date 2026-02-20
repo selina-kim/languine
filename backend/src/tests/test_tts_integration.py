@@ -10,6 +10,12 @@ Test coverage:
 - Audio quality validation
 - Performance testing
 - End-to-end workflow
+
+Run this test file:
+    docker compose exec backend pytest src/tests/test_tts_integration.py -v -m integration
+
+Run with coverage:
+    docker compose exec backend pytest src/tests/test_tts_integration.py --cov=services.tts_service
 """
 import pytest
 import json
@@ -20,7 +26,7 @@ import time
 
 
 @pytest.mark.integration
-def test_tts_real_english_generation(client):
+def test_tts_english_generation(client):
     """Test real TTS generation for English text."""
     start_time = time.time()
     response = client.post(
@@ -47,7 +53,7 @@ def test_tts_real_english_generation(client):
 
 
 @pytest.mark.integration
-def test_tts_real_korean_generation(client):
+def test_tts_korean_generation(client):
     """Test real TTS generation for Korean text."""
     start_time = time.time()
     response = client.post(
@@ -75,7 +81,7 @@ def test_tts_real_korean_generation(client):
 # TODO in API P1
 # might need unidic-lite = "^1.0.8"
 # @pytest.mark.integration
-# def test_tts_real_japanese_generation(client):
+# def test_tts_japanese_generation(client):
 #     """Test real TTS generation for Japanese text."""
 #     response = client.post(
 #         "/tts",
@@ -92,7 +98,7 @@ def test_tts_real_korean_generation(client):
 
 
 @pytest.mark.integration
-def test_tts_real_french_generation(client):
+def test_tts_french_generation(client):
     """Test real TTS generation for French text."""
     start_time = time.time()
     response = client.post(
@@ -112,7 +118,7 @@ def test_tts_real_french_generation(client):
 
 # TODO in API P1
 # @pytest.mark.integration
-# def test_tts_real_chinese_generation(client):
+# def test_tts_chinese_generation(client):
 #     """Test real TTS generation for Chinese text."""
 #     response = client.post(
 #         "/tts",
@@ -129,7 +135,7 @@ def test_tts_real_french_generation(client):
 
 
 @pytest.mark.integration
-def test_tts_real_default_speaker_selection(client):
+def test_tts_default_speaker_selection(client):
     """Test that default speaker works correctly when not specified."""
     response = client.post(
         "/tts",
@@ -144,7 +150,7 @@ def test_tts_real_default_speaker_selection(client):
 
 
 @pytest.mark.integration
-def test_tts_real_long_text(client):
+def test_tts_long_text(client):
     """Test TTS with longer text input."""
     long_text = (
         "This is a longer text to test the text-to-speech system's ability to handle "
@@ -165,7 +171,7 @@ def test_tts_real_long_text(client):
 
 
 @pytest.mark.integration
-def test_tts_real_special_characters(client):
+def test_tts_special_characters(client):
     """Test TTS with special characters and punctuation."""
     response = client.post(
         "/tts",
@@ -180,7 +186,7 @@ def test_tts_real_special_characters(client):
 
 
 @pytest.mark.integration
-def test_tts_real_numbers_and_symbols(client):
+def test_tts_numbers_and_symbols(client):
     """Test TTS with numbers and symbols."""
     response = client.post(
         "/tts",
@@ -195,7 +201,7 @@ def test_tts_real_numbers_and_symbols(client):
 
 
 @pytest.mark.integration
-def test_tts_get_real_speakers(client):
+def test_tts_get_speakers(client):
     """Test getting real list of available speakers."""
     response = client.get("/tts/speakers")
     
@@ -207,7 +213,7 @@ def test_tts_get_real_speakers(client):
 
 
 @pytest.mark.integration
-def test_tts_get_real_models(client):
+def test_tts_get_models(client):
     """Test getting real list of available models."""
     response = client.get("/tts/models")
     
@@ -219,7 +225,7 @@ def test_tts_get_real_models(client):
 
 
 @pytest.mark.integration
-def test_tts_real_multiple_requests(client):
+def test_tts_multiple_requests(client):
     """Test multiple sequential TTS requests."""
     texts = [
         ("Hello world", "en"),
@@ -241,7 +247,7 @@ def test_tts_real_multiple_requests(client):
 
 
 @pytest.mark.integration
-def test_tts_real_audio_format_validation(client):
+def test_tts_audio_format_validation(client):
     """Test that generated audio has correct WAV format."""
     response = client.post(
         "/tts",
@@ -264,7 +270,7 @@ def test_tts_real_audio_format_validation(client):
 
 
 @pytest.mark.integration
-def test_tts_real_different_speakers(client):
+def test_tts_different_speakers(client):
     """Test TTS with different speaker selections."""
     # First get available speakers
     speakers_response = client.get("/tts/speakers")
@@ -287,7 +293,7 @@ def test_tts_real_different_speakers(client):
 
 
 @pytest.mark.integration
-def test_tts_real_performance_benchmark(client):
+def test_tts_performance_benchmark(client):
     """Test TTS performance with short text."""
     import time
     
@@ -311,7 +317,7 @@ def test_tts_real_performance_benchmark(client):
 
 
 @pytest.mark.integration 
-def test_tts_real_unicode_emoji(client):
+def test_tts_unicode_emoji(client):
     """Test TTS with emoji and special Unicode characters."""
     response = client.post(
         "/tts",
@@ -326,7 +332,7 @@ def test_tts_real_unicode_emoji(client):
 
 
 @pytest.mark.integration
-def test_tts_real_mixed_language_text(client):
+def test_tts_mixed_language_text(client):
     """Test TTS with mixed language content"""
     response = client.post(
         "/tts",
