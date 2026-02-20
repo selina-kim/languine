@@ -92,6 +92,7 @@ services:
 
 # --- Cloudflared Tunnel Service ---
   cloudflared:
+    profiles: ["production"]  # Only runs when profile is specified: "docker compose --profile production up"
     image: cloudflare/cloudflared:latest
     container_name: cloudflared
     # This uses a named tunnel with a token created in the Cloudflare dashboard

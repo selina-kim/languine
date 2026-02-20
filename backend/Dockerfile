@@ -15,22 +15,30 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 # Install Poetry for dependency management
-RUN pip install poetry
+RUN pip install --no-cache-dir poetry
 
 # Copy dependency files
 COPY pyproject.toml poetry.lock* ./
-# Install Python dependencies in virtual environment
+
+# Configure poetry and install dependencies (including dev for testing)
 RUN poetry config virtualenvs.in-project true && \
-    poetry install --no-root && \
-    # Install Japanese dictionary for MeCab (used by TTS Japanese phonemizer)
-    /app/.venv/bin/pip install unidic-lite && \
-    # Create MeCab config directory
-    mkdir -p /usr/local/etc && \
-    # Write MeCab config file pointing to unidic-lite dictionary location
+    poetry install --no-root --no-interaction --no-ansi && \
+    # Install Japanese dictionary for MeCab
+    /app/.venv/bin/pip install --no-cache-dir unidic-lite && \
+    # Pre-download the XTTS v2 multilingual model (supports 17 languages)
+    # Set COQUI_TOS_AGREED to accept terms non-interactively
+    COQUI_TOS_AGREED=1 /app/.venv/bin/python -c "from TTS.api import TTS; TTS('tts_models/multilingual/multi-dataset/xtts_v2')" && \
+    # Clean up Poetry cache and pip cache
+    poetry cache clear pypi --all -n && \
+    rm -rf /root/.cache
+
+# Create MeCab config directory and write config file
+RUN mkdir -p /usr/local/etc && \
+    # Point to the unidic-lite dictionary
     echo "dicdir = $(/app/.venv/bin/python -c 'import unidic_lite; print(unidic_lite.DICDIR)')" > /usr/local/etc/mecabrc
 
-# Copy application source code
-COPY . .
+# Copy application source code including tests
+COPY src/ ./src/
 
 # Set environment variables
 # PATH: Add virtual environment to PATH
