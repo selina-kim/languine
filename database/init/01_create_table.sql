@@ -74,10 +74,9 @@ create table Cards (
     last_review timestamp with time zone,
     successful_reps integer default 0,
     fail_count integer default 0,
-    -- ensure fail/success counts intervals are non-negative
+    -- ensure fail/success counts are non-negative
     CHECK (successful_reps >= 0),
-    CHECK (fail_count >= 0),
-    CHECK (interval >= 0)
+    CHECK (fail_count >= 0)
 );
 -- column definitions:
 -- c_id: primary key, storing card id
