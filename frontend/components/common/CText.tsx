@@ -4,7 +4,7 @@ import { StyleSheet, Text, TextProps } from "react-native";
 
 type VariantType = keyof typeof variants;
 
-interface CTextProps extends TextProps {
+export interface CTextProps extends TextProps {
   variant?: VariantType;
   bold?: boolean;
 }
