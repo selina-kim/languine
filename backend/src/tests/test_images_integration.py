@@ -3,15 +3,17 @@
 These tests verify the image search endpoints with mocked Unsplash service.
 
 Run this test file:
-    docker compose exec backend pytest src/tests/test_images_integration.py -v
+    docker compose exec backend pytest src/tests/test_images_integration.py -v -m integration
 
 Run with coverage:
-    docker compose exec backend pytest src/tests/test_images_integration.py --cov=routes.images
+    docker compose exec backend pytest src/tests/test_images_integration.py --cov=routes.images -m integration
 """
 import pytest
 import json
 from unittest.mock import patch, Mock
 
+
+pytestmark = pytest.mark.integration
 
 @pytest.fixture
 def mock_unsplash_service():

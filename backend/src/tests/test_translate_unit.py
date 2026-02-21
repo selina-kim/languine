@@ -17,7 +17,6 @@ Run this test file:
 Run with coverage:
     docker compose exec backend pytest src/tests/test_translate_unit.py --cov=services.translate_service
 """
-# import pytest
 import json
 
 # test successful translation via POST request with auto-detected source language

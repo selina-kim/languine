@@ -15,7 +15,7 @@ Run this test file:
     docker compose exec backend pytest src/tests/test_tts_integration.py -v -m integration
 
 Run with coverage:
-    docker compose exec backend pytest src/tests/test_tts_integration.py --cov=services.tts_service
+    docker compose exec backend pytest src/tests/test_tts_integration.py --cov=services.tts_service -m integration
 """
 import pytest
 import json
@@ -25,7 +25,8 @@ import io
 import time
 
 
-@pytest.mark.integration
+pytestmark = pytest.mark.integration
+
 def test_tts_english_generation(client):
     """Test real TTS generation for English text."""
     start_time = time.time()
@@ -52,7 +53,6 @@ def test_tts_english_generation(client):
     assert len(audio_data) > 0
 
 
-@pytest.mark.integration
 def test_tts_korean_generation(client):
     """Test real TTS generation for Korean text."""
     start_time = time.time()
@@ -97,7 +97,6 @@ def test_tts_korean_generation(client):
 #     #     assert len(response.data) > 0
 
 
-@pytest.mark.integration
 def test_tts_french_generation(client):
     """Test real TTS generation for French text."""
     start_time = time.time()
@@ -134,7 +133,6 @@ def test_tts_french_generation(client):
 #     #     assert len(response.data) > 0
 
 
-@pytest.mark.integration
 def test_tts_default_speaker_selection(client):
     """Test that default speaker works correctly when not specified."""
     response = client.post(
@@ -149,7 +147,6 @@ def test_tts_default_speaker_selection(client):
     assert len(response.data) > 0
 
 
-@pytest.mark.integration
 def test_tts_long_text(client):
     """Test TTS with longer text input."""
     long_text = (
@@ -170,7 +167,6 @@ def test_tts_long_text(client):
     assert len(response.data) > 10000  # Should be longer audio
 
 
-@pytest.mark.integration
 def test_tts_special_characters(client):
     """Test TTS with special characters and punctuation."""
     response = client.post(
@@ -185,7 +181,6 @@ def test_tts_special_characters(client):
     assert len(response.data) > 0
 
 
-@pytest.mark.integration
 def test_tts_numbers_and_symbols(client):
     """Test TTS with numbers and symbols."""
     response = client.post(
@@ -200,7 +195,6 @@ def test_tts_numbers_and_symbols(client):
     assert len(response.data) > 0
 
 
-@pytest.mark.integration
 def test_tts_get_speakers(client):
     """Test getting real list of available speakers."""
     response = client.get("/tts/speakers")
@@ -212,7 +206,6 @@ def test_tts_get_speakers(client):
     assert isinstance(data["speakers"], list)
 
 
-@pytest.mark.integration
 def test_tts_get_models(client):
     """Test getting real list of available models."""
     response = client.get("/tts/models")
@@ -224,7 +217,6 @@ def test_tts_get_models(client):
     assert isinstance(data["models"], list)
 
 
-@pytest.mark.integration
 def test_tts_multiple_requests(client):
     """Test multiple sequential TTS requests."""
     texts = [
@@ -246,7 +238,6 @@ def test_tts_multiple_requests(client):
         assert len(response.data) > 0
 
 
-@pytest.mark.integration
 def test_tts_audio_format_validation(client):
     """Test that generated audio has correct WAV format."""
     response = client.post(
@@ -269,7 +260,6 @@ def test_tts_audio_format_validation(client):
     assert len(audio_data.shape) <= 2  # Mono or stereo
 
 
-@pytest.mark.integration
 def test_tts_different_speakers(client):
     """Test TTS with different speaker selections."""
     # First get available speakers
@@ -292,7 +282,6 @@ def test_tts_different_speakers(client):
         assert len(response.data) > 0
 
 
-@pytest.mark.integration
 def test_tts_performance_benchmark(client):
     """Test TTS performance with short text."""
     import time
@@ -316,7 +305,6 @@ def test_tts_performance_benchmark(client):
     assert duration < 30  # 30 seconds max
 
 
-@pytest.mark.integration 
 def test_tts_unicode_emoji(client):
     """Test TTS with emoji and special Unicode characters."""
     response = client.post(
@@ -331,7 +319,6 @@ def test_tts_unicode_emoji(client):
     assert response.status_code in [200]
 
 
-@pytest.mark.integration
 def test_tts_mixed_language_text(client):
     """Test TTS with mixed language content"""
     response = client.post(
