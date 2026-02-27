@@ -27,3 +27,10 @@ Start the backend service:
 cd backend
 docker compose up
 ```
+
+### Run Tests
+
+```bash
+cd backend
+py -3.12 -m pytest
+```

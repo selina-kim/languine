@@ -13,7 +13,6 @@ from copy import deepcopy
 from services.fsrs.card import Card
 from services.fsrs.grade import Grade
 from services.fsrs.review_log import ReviewLog
-from services.fsrs.learning_state import LearningState
 from services.fsrs.scheduler import Scheduler, DEFAULT_PARAMETERS, LOWER_BOUNDS_PARAMETERS, UPPER_BOUNDS_PARAMETERS
 from datetime import datetime, timezone
 from pydantic import BaseModel, PrivateAttr, ConfigDict
@@ -21,7 +20,6 @@ from torch.nn import BCELoss
 from torch import optim
 import pandas as pd
 from tqdm import tqdm
-from typing import Optional
 
 # weight clipping
 LOWER_BOUNDS_PARAMETERS_TENSORS = torch.tensor(LOWER_BOUNDS_PARAMETERS, dtype=torch.float64)
@@ -174,10 +172,10 @@ class Optimizer(BaseModel):
         A helper function for compute_optimal_parameters() that computes and updates the current FSRS parameters based on the step losses. Also updates the learning rate scheduler.
 
         Args:
-            step_losses: TODO
-            adam_optimizer: TODO
-            params: TODO
-            lr_scheduler: TODO
+            step_losses: List of loss values for the current mini-batch of reviews.
+            adam_optimizer: The Adam optimizer used to update the parameters.
+            params: The FSRS scheduler parameters as a PyTorch tensor with gradients enabled.
+            lr_scheduler: The cosine annealing learning rate scheduler.
         """
 
         # Backpropagate through the loss
@@ -213,10 +211,10 @@ class Optimizer(BaseModel):
             as well as the grade given to that card by the user. The parameters of the Scheduler is what is being optimized.
 
             Args:
-                verbose: TODO
+                verbose: If True, displays a progress bar during optimization. Default is False.
 
             Returns:
-                list[float]: TODO
+                list[float]: The optimized FSRS scheduler parameters.
             """
 
             # set local random seed for reproducibility
@@ -315,13 +313,13 @@ class Optimizer(BaseModel):
 
     def _probs_and_means(self, probs_and_costs_dict: dict, sub_df, prefix, normalize_on=None) -> None:
         """
-        TODO
+        Computes probability distributions and average review durations for different grades and adds them to probs_and_costs_dict.
 
         Args:
-            probs_and_costs_dict: TODO
-            sub_df: TODO
-            prefix: TODO
-            normalize_on: TODO
+            probs_and_costs_dict: Dictionary to populate with probability and average duration values.
+            sub_df: DataFrame subset containing review logs to analyze.
+            prefix: String prefix to add to dictionary keys (e.g., "first" for first reviews).
+            normalize_on: Optional list of grade values to normalize probabilities over (e.g., only successful recalls).
         """
         counts = sub_df["grade"].value_counts()
         
@@ -354,10 +352,10 @@ class Optimizer(BaseModel):
 
     def _compute_probs_and_costs(self) -> dict[str, float]:
         """
-        TODO
+        Computes probability distributions and average review durations from review logs for use in retention optimization.
 
         Returns:
-            dict[str, float]: TODO
+            dict[str, float]: Dictionary containing probabilities (prob_*) and average durations (avg_*) for each grade.
         """
         # Convert review logs to dict format, converting Grade enum to int for pandas
         review_log_dicts = []
@@ -392,7 +390,17 @@ class Optimizer(BaseModel):
 
 
     def _simulate_cost(self, desired_retention: float, parameters: tuple[float, ...] | list[float], num_cards_simulate: int, probs_and_costs_dict: dict[str, float]) -> float:
-        """ TODO
+        """
+        Simulates the cost (total review time) of studying a set of cards over one year with a given retention rate.
+
+        Args:
+            desired_retention: Target retention rate (0.0 to 1.0) to simulate.
+            parameters: FSRS scheduler parameters to use for scheduling.
+            num_cards_simulate: Number of cards to simulate.
+            probs_and_costs_dict: Dictionary containing grade probabilities and average review durations.
+
+        Returns:
+            float: The simulated cost (total review time divided by total knowledge retained).
         """
         rng = Random(42)
 
@@ -469,7 +477,12 @@ class Optimizer(BaseModel):
     def compute_optimal_retention(self, parameters: tuple[float, ...] | list[float]) -> list[float]:
         """ 
         Simulates different retention targets and selects the target that minimizes the review cost.
-        TODO
+
+        Args:
+            parameters: FSRS scheduler parameters to use for simulation.
+
+        Returns:
+            float: The optimal retention rate (0.7, 0.75, 0.8, 0.85, 0.9, or 0.95) that minimizes review cost.
         """
 
         self._validate_review_logs()
