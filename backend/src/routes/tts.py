@@ -36,8 +36,12 @@ SUPPORTED_LANGUAGES = {
 # These speakers are selected for natural pronunciation in each language
 DEFAULT_SPEAKERS = {
     "en": "Claribel Dervla",
+    "ko": "Daisy Studious",
+    "fr": "Abrahan Mack", 
+    "zh-cn": "Abrahan Mack", 
+    "ja": "Daisy Studious",
+    # other speakers are out of scope
     "es": "Abrahan Mack",
-    "fr": "Abrahan Mack", # works well
     "de": "Abrahan Mack",
     "it": "Abrahan Mack",
     "pt": "Abrahan Mack",
@@ -47,10 +51,7 @@ DEFAULT_SPEAKERS = {
     "nl": "Abrahan Mack",
     "cs": "Abrahan Mack",
     "ar": "Abrahan Mack",
-    "zh-cn": "Abrahan Mack", # TODO find in api p1
-    "ja": "Abrahan Mack", # TODO find in api p1
     "hu": "Abrahan Mack",
-    "ko": "Daisy Studious",
     "hi": "Abrahan Mack"
 }
 
@@ -58,14 +59,13 @@ DEFAULT_SPEAKERS = {
 @tts_bp.route("/tts", methods=["POST"])
 def text_to_speech():
     """
-    Convert text to speech using Coqui TTS.
+    Convert text to speech using Coqui TTS xtts_v2 model.
     
     POST body:
     {
         "text": "Text to convert to speech" (required),
-        "language": "en" (required, optional from original API standpoint),
+        "language": "en" (required),
         "speaker": "Craig Gutsy" (optional - if not provided, uses language-specific default),
-        "model": "tts_models/multilingual/multi-dataset/xtts_v2" (optional),
         "speaker_wav": "path/to/voice.wav" (optional, for voice cloning)
     }
     
@@ -83,7 +83,6 @@ def text_to_speech():
         
         text = data.get("text")
         language = data.get("language")
-        model_name = data.get("model")
         speaker = data.get("speaker")
         speaker_wav = data.get("speaker_wav")
         
@@ -119,11 +118,10 @@ def text_to_speech():
                 mimetype="application/json; charset=utf-8"
             )
         
-        # Generate speech
+        # Generate speech using xtts_v2
         audio_data = tts_service.generate_speech(
             text=text,
             language=language,
-            model_name=model_name,
             speaker=speaker,
             speaker_wav=speaker_wav
         )
@@ -160,16 +158,15 @@ def text_to_speech():
 @tts_bp.route("/tts/speakers", methods=["GET"])
 def get_speakers():
     """
-    Get list of available speakers for a model.
+    Get list of available speakers for xtts_v2 model.
     
     Query params:
-    - model: Model name (optional, default: xtts_v2)
+    - model: always uses xtts_v2
     
     Returns: JSON array of available speakers
     """
     try:
-        model_name = request.args.get("model")
-        speakers = tts_service.get_speakers(model_name)
+        speakers = tts_service.get_speakers()
         
         return Response(
             json.dumps({"speakers": speakers}, ensure_ascii=False),

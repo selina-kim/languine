@@ -1,6 +1,6 @@
 from flask import Blueprint, Response
 import json
-from services.dictionary_api import *
+from services.dictionary_service import *
 
 define_bp = Blueprint("define", __name__)
 

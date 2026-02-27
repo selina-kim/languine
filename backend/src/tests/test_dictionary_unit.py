@@ -3,14 +3,18 @@
 These tests mock the Merriam-Webster API responses to test the application logic
 without making real API calls. 
 
-Run with: docker compose exec backend poetry run pytest
-
 Test coverage:
 - Success case with full data (pronunciation, audio, definitions, examples)
 - API errors (500, 429, timeout, connection errors)
 - Missing/partial data handling
 - Multiple definitions
 - Word not found with suggestions
+
+Run this test file:
+    docker compose exec backend pytest src/tests/test_dictionary_unit.py -v
+
+Run with coverage:
+    docker compose exec backend pytest src/tests/test_dictionary_unit.py --cov=services.dictionary_service
 """
 import requests
 
@@ -222,7 +226,7 @@ def test_define_success(client, monkeypatch):
     # add fake API key to environment
     monkeypatch.setenv("MW_DICT_API_KEY", "fake-key")  
     # replace requests.get with our fake response
-    monkeypatch.setattr("src.services.dictionary_api.requests.get", fake_response_success)  
+    monkeypatch.setattr("services.dictionary_service.requests.get", fake_response_success)  
 
     response = client.get("/define/soup")
     
@@ -248,7 +252,7 @@ def test_define_api_error(client, monkeypatch):
     """MW API returns error (non-200)."""
     # mock API to return 500 error
     monkeypatch.setenv("MW_DICT_API_KEY", "fake-key")
-    monkeypatch.setattr("src.services.dictionary_api.requests.get", fake_response_error)
+    monkeypatch.setattr("services.dictionary_service.requests.get", fake_response_error)
 
     response = client.get("/define/soup")
     
@@ -261,7 +265,7 @@ def test_define_missing_data(client, monkeypatch):
     """MW API returns empty/malformed data."""
     # mock API to return empty array
     monkeypatch.setenv("MW_DICT_API_KEY", "fake-key")
-    monkeypatch.setattr("src.services.dictionary_api.requests.get", fake_response_missing_data)
+    monkeypatch.setattr("services.dictionary_service.requests.get", fake_response_missing_data)
 
     response = client.get("/define/soup")
     
@@ -275,7 +279,7 @@ def test_define_partial_data(client, monkeypatch):
     """MW API returns missing pronunciation/audio."""
     # mock API to return incomplete data
     monkeypatch.setenv("MW_DICT_API_KEY", "fake-key")
-    monkeypatch.setattr("src.services.dictionary_api.requests.get", fake_response_partial)
+    monkeypatch.setattr("services.dictionary_service.requests.get", fake_response_partial)
 
     response = client.get("/define/soup")
     data = response.get_json()
@@ -288,7 +292,7 @@ def test_define_multiple_definitions(client, monkeypatch):
     """Test word with multiple definitions and example sentences."""
     # mock API to return word with 2 definitions
     monkeypatch.setenv("MW_DICT_API_KEY", "fake-key")
-    monkeypatch.setattr("src.services.dictionary_api.requests.get", fake_response_multiple_defs)
+    monkeypatch.setattr("services.dictionary_service.requests.get", fake_response_multiple_defs)
 
     response = client.get("/define/run")
     assert response.status_code == 200
@@ -318,7 +322,7 @@ def test_define_word_not_found(client, monkeypatch):
     """Test when word is not found - API returns suggestions."""
     # mock API to return suggestions when word is misspelled (array)
     monkeypatch.setenv("MW_DICT_API_KEY", "fake-key")
-    monkeypatch.setattr("src.services.dictionary_api.requests.get", fake_response_word_not_found)
+    monkeypatch.setattr("services.dictionary_service.requests.get", fake_response_word_not_found)
 
     response = client.get("/define/soupppp")
     assert response.status_code == 200
@@ -340,7 +344,7 @@ def test_define_rate_limit(client, monkeypatch):
     """Test when API rate limit is exceeded."""
     # mock API to return 429 rate limit error
     monkeypatch.setenv("MW_DICT_API_KEY", "fake-key")
-    monkeypatch.setattr("src.services.dictionary_api.requests.get", fake_response_rate_limit)
+    monkeypatch.setattr("services.dictionary_service.requests.get", fake_response_rate_limit)
 
     response = client.get("/define/soup")
     
@@ -352,7 +356,7 @@ def test_define_timeout(client, monkeypatch):
     """Test when API request times out."""
     # mock API to raise timeout exception
     monkeypatch.setenv("MW_DICT_API_KEY", "fake-key")
-    monkeypatch.setattr("src.services.dictionary_api.requests.get", fake_response_timeout)
+    monkeypatch.setattr("services.dictionary_service.requests.get", fake_response_timeout)
 
     response = client.get("/define/soup")
     
@@ -364,7 +368,7 @@ def test_define_connection_error(client, monkeypatch):
     """Test when network connection fails."""
     # mock API to raise connection error exception
     monkeypatch.setenv("MW_DICT_API_KEY", "fake-key")
-    monkeypatch.setattr("src.services.dictionary_api.requests.get", fake_response_connection_error)
+    monkeypatch.setattr("services.dictionary_service.requests.get", fake_response_connection_error)
 
     response = client.get("/define/soup")
     

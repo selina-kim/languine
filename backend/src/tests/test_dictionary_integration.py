@@ -1,20 +1,22 @@
 """Integration tests for dictionary API.
 
-These tests make real api calls to Merriam-Webster Dictionary API.
-
-Run with: run: docker compose exec backend poetry run pytest -m integration
-
-Important:
-- Requires valid MW_DICT_API_KEY in .env file
-- Skip by default (pytest runs only unit tests)
+These tests make real API calls to Merriam-Webster Dictionary API.
+Requires valid MW_DICT_API_KEY in .env file.
 
 Test coverage:
 - Real API call with common word
 - Invalid word handling (spelling suggestions)
 - Complex word with multiple definitions
+
+Run this test file:
+    docker compose exec backend pytest src/tests/test_dictionary_integration.py -v -m integration
+
+Run with coverage:
+    docker compose exec backend pytest src/tests/test_dictionary_integration.py --cov=services.dictionary_service -m integration
 """
 import pytest
 import os
+import time
 
 # mark all tests in this file as integration tests
 pytestmark = pytest.mark.integration
@@ -29,7 +31,11 @@ def skip_if_no_api_key():
 def test_define_real_api_call(client, skip_if_no_api_key):
     
     # make real api call
+    start_time = time.time()
     response = client.get("/define/hello")
+    elapsed_time = time.time() - start_time
+    
+    print(f"\n[TIMING] Dictionary /define/hello: {elapsed_time:.3f}s")
 
     # verify successful response
     assert response.status_code == 200
@@ -50,6 +56,7 @@ def test_define_real_api_call(client, skip_if_no_api_key):
 
 def test_define_real_api_invalid_word(client, skip_if_no_api_key):
     # test with misspelled word
+    start_time = time.time()
     response = client.get("/define/hellooooo")
     
     assert response.status_code == 200
@@ -65,7 +72,11 @@ def test_define_real_api_invalid_word(client, skip_if_no_api_key):
 
 def test_define_real_api_complex_word(client, skip_if_no_api_key):
     # test word with multiple definitions."""
+    start_time = time.time()
     response = client.get("/define/run")
+    elapsed_time = time.time() - start_time
+    
+    print(f"\n[TIMING] Dictionary /define/run (complex): {elapsed_time:.3f}s")
     
     assert response.status_code == 200
     data = response.get_json()

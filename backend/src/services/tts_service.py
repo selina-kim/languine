@@ -46,25 +46,22 @@ class TTSService:
         self,
         text: str,
         language: str = "en",
-        model_name: Optional[str] = None,
         speaker: Optional[str] = None,
         speaker_wav: Optional[str] = None
     ) -> np.ndarray:
         """
-        Generate speech audio from text.
+        Generate speech audio from text using xtts_v2 model.
         
         Args:
             text: Text to convert to speech
             language: Language code (e.g., 'en', 'ko', 'es', 'ja')
-            model_name: TTS model to use (default: xtts_v2)
             speaker: Speaker name (for multi-speaker models)
             speaker_wav: Path to audio file for voice cloning
         
         Returns:
             Audio array as numpy array
         """
-        if model_name is None:
-            model_name = self.default_model
+        model_name = self.default_model
         
         tts = self._get_model(model_name)
         
@@ -95,23 +92,20 @@ class TTSService:
         text: str,
         file_path: str,
         language: str = "en",
-        model_name: Optional[str] = None,
         speaker: Optional[str] = None,
         speaker_wav: Optional[str] = None
     ):
         """
-        Generate speech audio from text and save to file.
+        Generate speech audio from text and save to file using xtts_v2 model.
         
         Args:
             text: Text to convert to speech
             file_path: Path to save the audio file
             language: Language code (e.g., 'en', 'ko', 'es', 'ja')
-            model_name: TTS model to use (default: xtts_v2)
             speaker: Speaker name (for multi-speaker models)
             speaker_wav: Path to audio file for voice cloning
         """
-        if model_name is None:
-            model_name = self.default_model
+        model_name = self.default_model
         
         tts = self._get_model(model_name)
         
@@ -146,18 +140,15 @@ class TTSService:
                 file_path=file_path
             )
     
-    def get_speakers(self, model_name: Optional[str] = None) -> List[str]:
+    def get_speakers(self) -> List[str]:
         """
-        Get list of available speakers for a model.
-        
-        Args:
-            model_name: TTS model name
+        Get list of available speakers for xtts_v2 model.
         
         Returns:
             List of speaker names
         """
-        if model_name is None:
-            model_name = self.default_model
+        # Always use xtts_v2
+        model_name = self.default_model
         
         tts = self._get_model(model_name)
         

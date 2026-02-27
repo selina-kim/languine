@@ -10,6 +10,8 @@ __pycache__/
 
 # Testing
 .pytest_cache/
+.coverage
+htmlcov/
 
 # IDE
 .vscode/
@@ -20,6 +22,15 @@ __pycache__/
 
 # Docker
 .dockerignore
+Dockerfile
 
 # Poetry config (local settings)
 poetry.toml
+
+# Documentation
+README.md
+*.md
+docs/
+
+# Other
+important
