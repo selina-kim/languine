@@ -2,6 +2,7 @@ import os
 from flask import Flask
 from routes.dictionary import *
 from routes.translate import *
+# from routes.fsrs import *                 # TODO uncomment
 from routes.tts import *
 from routes.auth import auth_bp
 from dotenv import load_dotenv
@@ -39,6 +40,7 @@ def create_app():
     app.register_blueprint(auth_bp)
     app.register_blueprint(define_bp)
     app.register_blueprint(translate_bp)
+    # app.register_blueprint(fsrs_bp)       # TODO uncomment
     app.register_blueprint(tts_bp)
 
     return app

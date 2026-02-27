@@ -50,3 +50,10 @@ Should get this output:
 ```
 {"detectedSourceLang": "EN", "translatedText": "안녕하세요"}
 ```
+
+### Run Tests
+
+```bash
+cd backend
+py -3.12 -m pytest
+```
