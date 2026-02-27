@@ -7,9 +7,11 @@ __pycache__/
 
 # Virtual environment
 .venv/
+env/
 
 # Testing
 .pytest_cache/
+.coverage
 
 # IDE
 .vscode/

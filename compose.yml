@@ -12,6 +12,7 @@ services:
 # --- Backend Service ---
   backend:
     build: ./backend
+    env_file: .env
     networks:
       - back-tier
     restart: unless-stopped
@@ -32,6 +33,7 @@ services:
       MW_DICT_API_KEY: ${MW_DICT_API_KEY}
       DEEPL_API_KEY: ${DEEPL_API_KEY}
       PYTHONPATH: /app/src
+      COQUI_TOS_AGREED: "1"
 
       # --- DB connection (SQLAlchemy style; adjust in code if needed) ---
       DATABASE_URL: "postgresql://postgres:${POSTGRES_PASSWORD}@db:5432/languine"

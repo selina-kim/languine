@@ -1,7 +1,9 @@
 """Unit tests for dictionary API.
 
 These tests mock the Merriam-Webster API responses to test the application logic
-without making real API calls. Run with: pytest (excludes integration by default)
+without making real API calls. 
+
+Run with: docker compose exec backend poetry run pytest
 
 Test coverage:
 - Success case with full data (pronunciation, audio, definitions, examples)

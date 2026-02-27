@@ -2,10 +2,11 @@
 
 These tests make real api calls to Merriam-Webster Dictionary API.
 
+Run with: run: docker compose exec backend poetry run pytest -m integration
+
 Important:
 - Requires valid MW_DICT_API_KEY in .env file
 - Skip by default (pytest runs only unit tests)
-- Run explicitly with: pytest -m integration
 
 Test coverage:
 - Real API call with common word
