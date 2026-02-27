@@ -1,7 +1,7 @@
 import json
 from flask import Blueprint, request, Response, send_file
 from io import BytesIO
-from services.deck_service import DeckService
+from services.deck_service import DeckService, DuplicateDeckNameError, UserNotFoundError, DatabaseError
 from flask_jwt_extended import jwt_required, get_jwt_identity
 
 decks_bp = Blueprint("decks", __name__)
@@ -212,38 +212,60 @@ def list_decks():
 def create_deck():
     """
     Create a new deck
-    
+
     Body:
-    - deck_name: Name of the deck
-    - word_lang: Language of words
-    - trans_lang: Translation language
+    - deck_name: Name of the deck (required, non-empty)
+    - word_lang: Language of words (required)
+    - trans_lang: Translation language (required)
     - description: Optional description
-    
+    - is_public: Optional boolean (default False)
+    - link: Optional string
+
     Returns: JSON with created deck info
     """
-    try:
-        data = request.get_json()
-    except Exception:
-        return error_response("No data provided", status=400)
-    
+    # Parse JSON safely (no exception on malformed JSON)
+    data = request.get_json(silent=True)
     if not data:
         return error_response("No data provided", status=400)
-    
+
+    # Validate required fields exist
     required_fields = ["deck_name", "word_lang", "trans_lang"]
     for field in required_fields:
         if field not in data:
             return error_response(f"Missing required field: {field}", status=400)
-    
+
+    # Validate deck_name is not blank
+    if not str(data.get("deck_name", "")).strip():
+        return error_response("deck_name is required and cannot be empty", status=400)
+
+    # (Optional) Normalize some inputs
+    data["deck_name"] = str(data["deck_name"]).strip()
+    data["word_lang"] = str(data["word_lang"]).strip()
+    data["trans_lang"] = str(data["trans_lang"]).strip()
+
     # Save deck to database
     user_id = get_jwt_identity()
-    
+
     try:
         deck = deck_service.create_deck(user_id, data)
-        
-        return json_response({
-            "message": "Deck created successfully",
-            "deck": deck
-        }, status=201)
-    
+
+        return json_response(
+            {
+                "message": "Deck created successfully",
+                "deck": deck,
+            },
+            status=201,
+        )
+
+    except DuplicateDeckNameError as e:
+        return error_response(str(e) or "A deck with this name already exists for you", status=409)
+
+    except UserNotFoundError as e:
+        return error_response(str(e) or "User not registered", status=401)
+
+    except DatabaseError:
+        return error_response("Database error", status=500)
+
     except Exception as e:
-        return error_response(f"Database error: {str(e)}")
+        # Fallback: don't leak full DB details in production, but keep some info for debugging
+        return error_response(f"Database error: {str(e)}", status=500)

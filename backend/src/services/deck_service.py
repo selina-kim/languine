@@ -4,6 +4,19 @@ import io
 from typing import Dict, Any, List, Optional
 from datetime import datetime
 from db import get_db_cursor
+import psycopg2
+
+class DuplicateDeckNameError(Exception):
+    """Deck name already exists for this user (UNIQUE(u_id, deck_name))."""
+    pass
+
+class UserNotFoundError(Exception):
+    """User id does not exist in Users table (FK violation)."""
+    pass
+
+class DatabaseError(Exception):
+    """Any other database error."""
+    pass
 
 
 class DeckService:
@@ -455,33 +468,44 @@ class DeckService:
     @staticmethod
     def create_deck(user_id: str, deck_data: Dict[str, Any]) -> Dict[str, Any]:
         """
-        Create a new deck in the database
-        
-        Args:
-            user_id: User ID
-            deck_data: Dictionary with deck_name, word_lang, trans_lang, description (optional)
-        
-        Returns:
-            Dictionary with created deck info
+        Create a new deck in the database.
+
+        Raises:
+            DuplicateDeckNameError: UNIQUE(u_id, deck_name) violation (23505)
+            UserNotFoundError: FK violation on u_id (23503)
+            DatabaseError: other DB errors
         """
-        with get_db_cursor(commit=True) as cursor:
-            cursor.execute(
-                """
-                INSERT INTO Decks (u_id, deck_name, word_lang, trans_lang, description)
-                VALUES (%s, %s, %s, %s, %s)
-                RETURNING d_id, deck_name, word_lang, trans_lang, description, creation_date
-                """,
-                (
-                    user_id,
-                    deck_data['deck_name'],
-                    deck_data['word_lang'],
-                    deck_data['trans_lang'],
-                    deck_data.get('description', '')
+        try:
+            with get_db_cursor(commit=True) as cursor:
+                cursor.execute(
+                    """
+                    INSERT INTO Decks (u_id, deck_name, word_lang, trans_lang, description, is_public, link)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s)
+                    RETURNING d_id, deck_name, word_lang, trans_lang, description, is_public, link, creation_date
+                    """,
+                    (
+                        user_id,
+                        deck_data["deck_name"],
+                        deck_data["word_lang"],
+                        deck_data["trans_lang"],
+                        deck_data.get("description", ""),
+                        bool(deck_data.get("is_public", False)),
+                        deck_data.get("link"),
+                    ),
                 )
-            )
-            deck = cursor.fetchone()
-            
-            return dict(deck)
+                deck = cursor.fetchone()
+                return dict(deck)
+
+        except psycopg2.IntegrityError as e:
+            code = getattr(e, "pgcode", None)
+            if code == "23505":
+                raise DuplicateDeckNameError("A deck with this name already exists for you") from e
+            if code == "23503":
+                raise UserNotFoundError("User not registered") from e
+            raise DatabaseError(f"Database integrity error: {str(e)}") from e
+
+        except psycopg2.Error as e:
+            raise DatabaseError(f"Database error: {str(e)}") from e
 
     @staticmethod
     def save_imported_deck(user_id: str, imported_data: Dict[str, Any]) -> Dict[str, Any]:
