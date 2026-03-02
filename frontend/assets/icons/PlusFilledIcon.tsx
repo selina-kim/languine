@@ -13,30 +13,30 @@ export const PlusFilledIcon: React.FC<{
     <Path 
       d="M3.75006 9H14.2501" 
       stroke={stroke}
-      stroke-width="7.2" 
-      stroke-linecap="round" 
-      stroke-linejoin="round"
+      strokeWidth="7.2" 
+      strokeLinecap="round" 
+      strokeLinejoin="round"
     />
     <Path 
       d="M9.00003 3.75V14.25" 
       stroke={stroke} 
-      stroke-width="7.2" 
-      stroke-linecap="round" 
-      stroke-linejoin="round"
+      strokeWidth="7.2" 
+      strokeLinecap="round" 
+      strokeLinejoin="round"
     />
     <Path
       d="M3.75008 9H14.2501" 
       stroke={fill} 
-      stroke-width="2.89969" 
-      stroke-linecap="round" 
-      stroke-linejoin="round"  
-    />
+      strokeWidth="2.89969" 
+      strokeLinecap="round" 
+      strokeLinejoin="round"  
+    />s
     <Path
       d="M9 3.75V14.25" 
       stroke={fill} 
-      stroke-width="2.89969" 
-      stroke-linecap="round" 
-      stroke-linejoin="round"
+      strokeWidth="2.89969" 
+      strokeLinecap="round" 
+      strokeLinejoin="round"
     />
   </Svg>
 );
