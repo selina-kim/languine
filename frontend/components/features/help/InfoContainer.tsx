@@ -1,10 +1,6 @@
-import { DecksIcon } from "@/assets/icons/DecksIcon";
-import { PlusIcon } from "@/assets/icons/PlusIcon";
 import { CText } from "@/components/common/CText";
 import { COLORS } from "@/constants/colors";
-import { useState } from "react";
-import { Pressable, View } from "react-native";
-
+import { View } from "react-native";
 
 export const InfoContainer = () => {
   return (
