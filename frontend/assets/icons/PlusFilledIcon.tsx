@@ -9,7 +9,7 @@ export const PlusFilledIcon: React.FC<{
   stroke = COLORS.icon.outlinePrimary,
   fill = COLORS.icon.fillPrimary,
 }) => (
-  <Svg width="100%" height="100%" viewBox="0 0 28 28" fill="none">
+  <Svg width="100%" height="100%" viewBox="0 0 18 18" fill="none">
     <Path
       d="M3.75006 9H14.2501"
       stroke={stroke}
@@ -25,13 +25,12 @@ export const PlusFilledIcon: React.FC<{
       strokeLinejoin="round"
     />
     <Path
-      d="M3.75008 9H14.2501"
+      d="M3.75009 9H14.2501"
       stroke={fill}
       strokeWidth="2.89969"
       strokeLinecap="round"
       strokeLinejoin="round"
     />
-    s
     <Path
       d="M9 3.75V14.25"
       stroke={fill}

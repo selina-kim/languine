@@ -1,7 +1,7 @@
 import { DecksIcon } from "@/assets/icons/DecksIcon";
-import { PlusFilledIcon } from "@/assets/icons/PlusFilledIcon";
-import { PlayIcon } from "@/assets/icons/PlayIcon";
 import { OpenBookIcon } from "@/assets/icons/OpenBookIcon";
+import { PlayIcon } from "@/assets/icons/PlayIcon";
+import { PlusFilledIcon } from "@/assets/icons/PlusFilledIcon";
 import { CText } from "@/components/common/CText";
 import { FAQ } from "@/components/features/help/FAQ";
 import { InfoContainer } from "@/components/features/help/InfoContainer";
@@ -42,40 +42,26 @@ export default function Help() {
         title="Create a Deck"
         step="Step 1"
         description="Start by creating a new deck for the language you want to learn. Choose a name, select your target language, and add a description."
-        Icon={DecksIcon}
-        iconStyle={{
-          transform: [{ scale: 0.8 }],
-        }}
+        Icon={<DecksIcon />}
       />
       <StepContainer
         title="Add Cards"
         step="Step 2"
         description="Add flashcards to your deck. The front will hold the word in your target language, and the back will hold the translation."
-        Icon={PlusFilledIcon}
-        iconStyle={{
-          marginTop: 12,
-          marginLeft: 12,
-          transform: [{ scale: 1.3 }],
-        }}
+        Icon={<PlusFilledIcon />}
+        iconStyle={{ padding: 2 }}
       />
       <StepContainer
         title="Start Reviewing"
         step="Step 3"
         description="Begin your review session. Look at each card's content, try to remember the translation, then flip the card to check."
-        Icon={PlayIcon}
-        iconStyle={{
-          transform: [{ scale: 1.6 }],
-        }}
+        Icon={<PlayIcon />}
       />
       <StepContainer
         title="Rate Your Memory"
         step="Step 4"
         description="After checking the translation, rate how easily you remembered it. This helps the algorithm schedule the card's next appearance."
-        Icon={OpenBookIcon}
-        iconStyle={{
-          marginTop: 4,
-          transform: [{ scale: 0.7 }],
-        }}
+        Icon={<OpenBookIcon />}
       />
       <Label text="Frequently Asked Questions" />
       <FAQ faqs={DATA_FAQ} />

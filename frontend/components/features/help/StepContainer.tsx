@@ -1,13 +1,13 @@
-import { View, StyleProp, ViewStyle } from "react-native";
 import { CText } from "@/components/common/CText";
 import { COLORS } from "@/constants/colors";
-import React from "react";
+import React, { ReactNode } from "react";
+import { StyleProp, View, ViewStyle } from "react-native";
 
 type StepContainerProps = {
   title: string;
   step: string;
   description: string;
-  Icon: React.ComponentType<any>;
+  Icon: ReactNode;
   iconStyle?: StyleProp<ViewStyle>;
 };
 
@@ -50,8 +50,15 @@ export const StepContainer = ({
                 },
               ]}
             >
-              <View style={iconStyle}>
-                <Icon />
+              <View
+                style={[
+                  {
+                    width: 24,
+                  },
+                  iconStyle,
+                ]}
+              >
+                {Icon}
               </View>
             </View>
             <View style={{ marginLeft: 10 }}>

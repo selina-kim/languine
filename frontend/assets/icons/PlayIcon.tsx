@@ -9,7 +9,7 @@ export const PlayIcon: React.FC<{
   stroke = COLORS.icon.outlinePrimary,
   fill = COLORS.icon.fillPrimary,
 }) => (
-  <Svg width="16" height="16" viewBox="0 0 20 20" fill="none">
+  <Svg width="100%" height="100%" viewBox="0 0 20 20" fill="none">
     <Path
       d="M5 3V17L17 10L7 3H5Z"
       fill={fill}
