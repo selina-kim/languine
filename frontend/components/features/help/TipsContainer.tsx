@@ -28,8 +28,7 @@ export const TipsContainer = ({
       >
         <View
           style={{
-            paddingVertical: 30,
-            paddingHorizontal: 30,
+            padding: 25,
             borderWidth: 2,
             borderColor: COLORS.icon.outlinePrimary,
             borderRadius: 16,
@@ -59,15 +58,14 @@ export const TipsContainer = ({
                     marginRight: 10,
                   }}
                 />
-
                 {/* Text */}
                 <View style={{ flex: 1 }}>
                   <CText style={{ color: COLORS.text.secondary }}>
                     <CText
                       style={{
-                        fontWeight: "bold",
                         color: COLORS.text.secondary,
                       }}
+                      bold
                     >
                       {tip.title}
                     </CText>{" "}

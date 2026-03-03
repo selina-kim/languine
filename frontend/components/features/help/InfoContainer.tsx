@@ -15,8 +15,7 @@ export const InfoContainer = () => {
       >
         <View
           style={{
-            paddingVertical: 30,
-            paddingHorizontal: 30,
+            padding: 25,
             borderWidth: 2,
             borderColor: COLORS.icon.outlinePrimary,
             borderRadius: 16,

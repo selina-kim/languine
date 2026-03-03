@@ -1,3 +1,4 @@
+import { ChevronDownIcon } from "@/assets/icons/ChevronDownIcon";
 import { CText } from "@/components/common/CText";
 import { COLORS } from "@/constants/colors";
 import { useState } from "react";
@@ -46,19 +47,18 @@ export const FAQ = ({ faqs }: FAQProps) => {
                 style={{
                   flexDirection: "row",
                   justifyContent: "space-between",
+                  columnGap: 2,
                   alignItems: "center",
                 }}
               >
                 <CText>{item.question}</CText>
-
-                <CText
+                <View
                   style={{
-                    color: COLORS.text.secondary,
-                    fontSize: 18,
+                    transform: [{ rotate: isOpen ? "180deg" : "0deg" }],
                   }}
                 >
-                  {isOpen ? "−" : "+"}
-                </CText>
+                  <ChevronDownIcon stroke={COLORS.text.primary} />
+                </View>
               </Pressable>
 
               {isOpen && (
