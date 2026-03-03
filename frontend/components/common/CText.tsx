@@ -29,21 +29,19 @@ export const CText: React.FC<CTextProps> = ({
 const fonts = StyleSheet.create({
   base: {
     fontFamily: "Arimo_400Regular",
-    fontSize: 16,
-    lineHeight: 24,
   },
   bold: {
     fontFamily: "Arimo_700Bold",
-    fontSize: 16,
-    lineHeight: 24,
   },
 });
 
 const variants = StyleSheet.create({
-  base: { color: COLORS.text.primary },
+  base: { color: COLORS.text.primary, fontSize: 16, lineHeight: 24 },
   inputLabel: {
     color: COLORS.text.primary,
     marginBottom: 8,
+    fontSize: 16,
+    lineHeight: 24,
     ...fonts.bold,
   },
 });
