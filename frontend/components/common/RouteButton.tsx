@@ -1,7 +1,5 @@
-import { CText } from "@/components/common/CText";
-import { COLORS } from "@/constants/colors";
 import { RelativePathString, useRouter } from "expo-router";
-import { Pressable, View } from "react-native";
+import { CButton } from "./CButton";
 
 type RouteButtonProps = {
   text: string;
@@ -16,37 +14,10 @@ export const RouteButton = ({ text, route }: RouteButtonProps) => {
   };
 
   return (
-    <View style={{ width: "100%", height: "100%" }}>
-      <View
-        style={{
-          display: "flex",
-          rowGap: "10px",
-        }}
-      >
-        <Pressable
-          onPress={() => router.push(buildRoute(route))}
-          style={{
-            backgroundColor: COLORS.accent.primary,
-            padding: 10,
-            borderRadius: 8,
-            display: "flex",
-            flexDirection: "row",
-            marginTop: 20,
-            columnGap: 5,
-            alignItems: "center",
-          }}
-        >
-          <CText
-            style={{
-              textAlign: "center",
-              width: "100%",
-            }}
-            bold
-          >
-            {text}
-          </CText>
-        </Pressable>
-      </View>
-    </View>
+    <CButton
+      variant="primary"
+      label={text}
+      onPress={() => router.push(buildRoute(route))}
+    />
   );
 };

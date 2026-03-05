@@ -38,7 +38,7 @@ export default function Index() {
       <View
         style={{
           marginHorizontal: 50,
-          marginBottom: 30,
+          marginVertical: 30,
         }}
       >
         <RouteButton text="View Decks" route="decks" />

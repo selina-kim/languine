@@ -5,8 +5,8 @@ import { CText } from "./CText";
 
 const buttonBaseStyle = StyleSheet.create({
   base: {
-    paddingHorizontal: 10,
-    height: 36,
+    paddingHorizontal: 12,
+    height: 40,
     borderRadius: 8,
     display: "flex",
     flexDirection: "row",
