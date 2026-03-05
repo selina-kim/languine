@@ -2,7 +2,7 @@ import { CText } from "@/components/common/CText";
 import { Dropdown } from "@/components/common/Dropdown";
 import { Modal } from "@/components/common/Modal";
 import { TextInput } from "@/components/common/TextInput";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { View } from "react-native";
 
 // temporary TODO
@@ -10,22 +10,19 @@ const LANGUAGES = [
   "Korean",
   "Japanese",
   "Mandarin",
-  "text",
-  "text",
-  "text",
-  "text",
-  "text",
-  "text",
-  "text",
+  "French",
+  "lang1",
+  "lang2",
+  "lang3",
 ];
 
 interface CreateNewDeckModalProps {
-  visible: boolean;
+  isOpen: boolean;
   onClose: () => void;
 }
 
 export const CreateNewDeckModal = ({
-  visible,
+  isOpen,
   onClose,
 }: CreateNewDeckModalProps) => {
   const [deckName, setDeckName] = useState("");
@@ -38,9 +35,17 @@ export const CreateNewDeckModal = ({
     onClose();
   };
 
+  useEffect(() => {
+    if (!isOpen) {
+      setDeckName("");
+      setLanguage("");
+      setDescription("");
+    }
+  }, [isOpen]);
+
   return (
     <Modal
-      visible={visible}
+      visible={isOpen}
       header="Create New Deck"
       subheader="Add a new flashcard deck for language learning"
       onSubmit={onCreateDeck}
@@ -55,7 +60,7 @@ export const CreateNewDeckModal = ({
           onChangeText={setDeckName}
           placeholder="e.g., Spanish Basics"
         />
-        <View style={{ zIndex: 10 }}>
+        <View>
           <CText variant="inputLabel">Language *</CText>
           <Dropdown
             value={language}
@@ -64,14 +69,16 @@ export const CreateNewDeckModal = ({
             placeholder="Select a language"
           />
         </View>
-        <TextInput
-          label="Description"
-          value={description}
-          onChangeText={setDescription}
-          placeholder="What will you learn in this deck?"
-          multiline
-          numberOfLines={3}
-        />
+        <View style={{ zIndex: -1 }}>
+          <TextInput
+            label="Description"
+            value={description}
+            onChangeText={setDescription}
+            placeholder="What will you learn in this deck?"
+            multiline
+            numberOfLines={3}
+          />
+        </View>
       </View>
     </Modal>
   );
