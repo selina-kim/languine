@@ -34,7 +34,22 @@ sudo service docker start
 
 ```bash
 cd backend
-docker compose up --build db minio backend
+
+docker compose down -v            # removes all volumes
+docker compose build --no-cache   # rebuild images (takes long time, can be skipped depending on circumstance)
+docker compose up                 # start docker containers (terminal stays open after executing command, can see logs in real time)
+# or, alternatively
+docker compose up -d              # start docker containers in background (can close terminal)
+```
+
+Check if tables exist:
+```bash
+docker compose exec db psql -U postgres -d languine -c "\dt"
+```
+
+Check if test user exists:
+```bash
+docker compose exec db psql -U postgres -d languine -c "SELECT * FROM Users WHERE u_id = 'test-user-id';"
 ```
 
 #### 3. Interact with APIs
