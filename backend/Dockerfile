@@ -4,15 +4,20 @@ FROM python:3.11-slim
 # Set working directory for the application
 WORKDIR /app
 
-# Install system dependencies
+# Install system dependencies + Rust (required by sudachipy)
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     libsndfile1 \
     espeak-ng \
     mecab \
     libmecab-dev \
+    curl \
+    && curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y \
     && apt-get clean && \
     rm -rf /var/lib/apt/lists/*
+
+# Add Rust to PATH
+ENV PATH="/root/.cargo/bin:$PATH"
 
 # Install Poetry for dependency management
 RUN pip install --no-cache-dir poetry
@@ -26,6 +31,8 @@ COPY pyproject.toml poetry.lock* ./
 # Configure poetry and install dependencies (including dev for testing)
 RUN poetry config virtualenvs.in-project true && \
     poetry install --no-root --no-interaction --no-ansi && \
+    # Install PyTorch (CPU) explicitly as TTS requires it
+    /app/.venv/bin/pip install --no-cache-dir torch torchaudio --index-url https://download.pytorch.org/whl/cpu && \
     # Install Japanese dictionary for MeCab
     /app/.venv/bin/pip install --no-cache-dir unidic-lite && \
     # Pre-download the XTTS v2 multilingual model (supports 17 languages)

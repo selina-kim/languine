@@ -17,7 +17,7 @@ dynamic = ["dependencies"]
 [tool.poetry]
 
 [tool.poetry.dependencies]
-python = ">=3.11.0,<3.14"
+python = ">=3.11.0,<3.13"
 flask = "^3.1.2"
 pydantic = "^2.12.2"
 flask-jwt-extended = "^4.7.1"
@@ -28,7 +28,7 @@ deepl = "^1.25.0"
 python-dotenv = "^1.2.1"
 pandas = "^3.0.1"
 tqdm = "^4.67.3"
-coqui-tts = "^0.27.3"
+coqui-tts = "0.25.3"
 scipy = "^1.11.0"
 cutlet = "^0.5.0"
 flask-cors = "^6.0.1"
