@@ -21,7 +21,7 @@ export const InfoContainer = () => {
             borderRadius: 16,
           }}
         >
-          <CText style={{ paddingBottom: 10 }} bold>
+          <CText variant="containerLabel" style={{ paddingBottom: 10 }} bold>
             Welcome to Languine
           </CText>
           <CText

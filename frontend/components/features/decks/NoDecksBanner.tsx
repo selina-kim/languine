@@ -8,7 +8,7 @@ import { View } from "react-native";
 import { CreateNewDeckModal } from "./CreateNewDeckModal";
 
 export const NoDecksBanner = () => {
-  const [modalVisible, setModalVisible] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   return (
     <View style={{ width: "100%", height: "100%" }}>
@@ -23,6 +23,7 @@ export const NoDecksBanner = () => {
           <DecksIcon />
         </View>
         <CText
+          variant="containerLabel"
           style={{
             textAlign: "center",
           }}
@@ -41,13 +42,13 @@ export const NoDecksBanner = () => {
         <CButton
           variant="primary"
           label="Create Your First Deck"
-          onPress={() => setModalVisible(true)}
+          onPress={() => setIsModalOpen(true)}
           Icon={<PlusIcon />}
           style={{ marginHorizontal: "auto", marginTop: 20 }}
         />
         <CreateNewDeckModal
-          visible={modalVisible}
-          onClose={() => setModalVisible(false)}
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
         />
       </View>
     </View>

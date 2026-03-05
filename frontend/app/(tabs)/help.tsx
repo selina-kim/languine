@@ -16,6 +16,7 @@ type LabelProps = {
 
 const Label = ({ text }: LabelProps) => (
   <CText
+    variant="containerLabel"
     style={{
       textAlign: "left",
       paddingHorizontal: 25,

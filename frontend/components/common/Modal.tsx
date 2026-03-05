@@ -1,6 +1,6 @@
 import { COLORS } from "@/constants/colors";
 import { ReactNode } from "react";
-import { Modal as RNModal, StyleSheet, View } from "react-native";
+import { Modal as RNModal, View } from "react-native";
 import { CButton } from "./CButton";
 import { CText } from "./CText";
 
@@ -93,13 +93,3 @@ export const Modal = ({
     </RNModal>
   );
 };
-
-const buttonStyles = StyleSheet.create({
-  base: {
-    height: 32,
-    display: "flex",
-    justifyContent: "center",
-    borderRadius: 8,
-    alignItems: "center",
-  },
-});

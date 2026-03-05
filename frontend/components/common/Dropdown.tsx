@@ -1,11 +1,12 @@
 import { ChevronDownIcon } from "@/assets/icons/ChevronDownIcon";
 import { COLORS } from "@/constants/colors";
+import { SHADOWS } from "@/constants/shadows";
 import { useState } from "react";
 import { Pressable, ScrollView, View } from "react-native";
 import { CText } from "./CText";
 
 interface DropdownProps {
-  value: string;
+  value: string | null;
   options: string[];
   onSelect: (value: string) => void;
   placeholder?: string;
@@ -25,7 +26,7 @@ export const Dropdown = ({
   };
 
   return (
-    <View style={{ zIndex: isOpen ? 2000 : 1 }}>
+    <View>
       <Pressable
         onPress={() => setIsOpen(!isOpen)}
         style={{
@@ -38,11 +39,7 @@ export const Dropdown = ({
           alignItems: "center",
         }}
       >
-        <CText
-          style={{
-            color: value ? COLORS.text.secondary : COLORS.text.secondary,
-          }}
-        >
+        <CText style={!value && { color: COLORS.text.tertiary }}>
           {value || placeholder}
         </CText>
         <View
@@ -54,51 +51,46 @@ export const Dropdown = ({
           <ChevronDownIcon stroke={COLORS.text.primary} />
         </View>
       </Pressable>
-
       {isOpen && (
-        <View
+        <ScrollView
           style={{
             position: "absolute",
+            flex: 1,
             top: "100%",
             left: 0,
             right: 0,
+            marginTop: 4,
             backgroundColor: COLORS.backgroundSecondary,
             borderRadius: 8,
-            marginTop: 4,
-            maxHeight: 150,
-            shadowOffset: { width: 0, height: 4 },
-            shadowOpacity: 0.25,
-            shadowRadius: 10,
-            overflow: "hidden",
+            maxHeight: 140,
+            ...SHADOWS.default,
           }}
         >
-          <ScrollView>
-            {options.map((option) => (
-              <Pressable
-                key={option}
-                onPress={() => handleSelect(option)}
+          {options.map((option) => (
+            <Pressable
+              key={option}
+              onPress={() => handleSelect(option)}
+              style={{
+                borderRadius: 8,
+                paddingVertical: 8,
+                paddingHorizontal: 12,
+                backgroundColor:
+                  value === option
+                    ? COLORS.backgroundTertiary
+                    : COLORS.backgroundSecondary,
+              }}
+            >
+              <CText
                 style={{
-                  borderRadius: 8,
-                  paddingVertical: 8,
-                  paddingHorizontal: 12,
-                  backgroundColor:
-                    value === option
-                      ? COLORS.backgroundTertiary
-                      : COLORS.backgroundSecondary,
+                  color: COLORS.text.secondary,
+                  fontWeight: "normal",
                 }}
               >
-                <CText
-                  style={{
-                    color: COLORS.text.secondary,
-                    fontWeight: "normal",
-                  }}
-                >
-                  {option}
-                </CText>
-              </Pressable>
-            ))}
-          </ScrollView>
-        </View>
+                {option}
+              </CText>
+            </Pressable>
+          ))}
+        </ScrollView>
       )}
     </View>
   );
