@@ -1,7 +1,7 @@
 import { CText } from "@/components/common/CText";
 import { RouteButton } from "@/components/common/RouteButton";
 import { CardsDueBanner } from "@/components/features/index/CardsDueBanner";
-import { LastReviewedDecks } from "@/components/features/index/LastReviewedDecks";
+import { LastReviewedDeckItem } from "@/components/features/index/LastReviewedDeckItem";
 import { ScrollView, View } from "react-native";
 
 // TODO: placeholder until we have real data
@@ -35,7 +35,7 @@ export default function Index() {
       <CardsDueBanner countDueCards={5} />
       {label}
       {sampleDecksList.map((deck) => (
-        <LastReviewedDecks
+        <LastReviewedDeckItem
           key={`last_reviewed_deck_card_${deck.name}`}
           deckName={deck.name}
           lastReviewed={deck.lastReviewed.toLocaleDateString()}

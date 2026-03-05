@@ -3,15 +3,15 @@ import { COLORS } from "@/constants/colors";
 import { SHADOWS } from "@/constants/shadows";
 import { View } from "react-native";
 
-type StepContainerProps = {
+type LastReviewedDeckItemProps = {
   deckName: string;
   lastReviewed: string;
 };
 
-export const LastReviewedDecks = ({
+export const LastReviewedDeckItem = ({
   deckName,
   lastReviewed,
-}: StepContainerProps) => {
+}: LastReviewedDeckItemProps) => {
   return (
     <View style={{ width: "100%" }}>
       <View
