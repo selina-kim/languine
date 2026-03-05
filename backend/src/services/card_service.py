@@ -27,50 +27,71 @@ class DatabaseError(Exception):
     pass
 
 
-class MinIOError(Exception):
-    pass
-
-
 class CardService:
     
     def __init__(self):
         self.minio_client = None
-        self.bucket_name = os.getenv("MINIO_BUCKET", "flashcards")
+        self.bucket_name = os.getenv("MINIO_BUCKET_NAME", "languine-media")
         self._init_minio()
     
     def _init_minio(self):
         """
-        TODO: Set up MinIO client
-        Env vars: MINIO_ENDPOINT, MINIO_ACCESS_KEY, MINIO_SECRET_KEY, MINIO_BUCKET
+        Set up MinIO client for object storage.
+        Env vars: MINIO_ENDPOINT, MINIO_ACCESS_KEY, MINIO_SECRET_KEY, MINIO_BUCKET_NAME
         """
-        # Skeleton: MinIO initialization
-        # from minio import Minio
-        # 
-        # try:
-        #     self.minio_client = Minio(
-        #         os.getenv("MINIO_ENDPOINT", "localhost:9000"),
-        #         access_key=os.getenv("MINIO_ACCESS_KEY"),
-        #         secret_key=os.getenv("MINIO_SECRET_KEY"),
-        #         secure=os.getenv("MINIO_SECURE", "false").lower() == "true"
-        #     )
-        #     
-        #     # Ensure bucket exists
-        #     if not self.minio_client.bucket_exists(self.bucket_name):
-        #         self.minio_client.make_bucket(self.bucket_name)
-        # except Exception as e:
-        #     print(f"Warning: MinIO initialization failed: {e}")
-        #     self.minio_client = None
-        pass
+        try:
+            from minio import Minio
+            
+            # Get MinIO configuration from environment
+            endpoint = os.getenv("MINIO_ENDPOINT", "localhost:9000")
+            access_key = os.getenv("MINIO_ACCESS_KEY")
+            secret_key = os.getenv("MINIO_SECRET_KEY")
+            
+            # Parse endpoint (remove protocol if present)
+            secure = False
+            if endpoint.startswith("https://"):
+                secure = True
+                endpoint = endpoint.replace("https://", "")
+            elif endpoint.startswith("http://"):
+                endpoint = endpoint.replace("http://", "")
+            
+            # Initialize MinIO client
+            self.minio_client = Minio(
+                endpoint,
+                access_key=access_key,
+                secret_key=secret_key,
+                secure=secure
+            )
+            
+            # Use bucket name from env or default
+            self.bucket_name = os.getenv("MINIO_BUCKET_NAME", "languine-media")
+            
+            # Ensure bucket exists
+            if not self.minio_client.bucket_exists(self.bucket_name):
+                self.minio_client.make_bucket(self.bucket_name)
+                print(f"Created MinIO bucket: {self.bucket_name}")
+            else:
+                print(f"MinIO initialized: bucket '{self.bucket_name}' ready")
+                
+        except ImportError:
+            print("Warning: minio library not installed. Media storage disabled.")
+            self.minio_client = None
+        except Exception as e:
+            print(f"Warning: MinIO initialization failed: {e}")
+            self.minio_client = None
     
     # ==================== MinIO Storage ====================
     
     def _download_and_store_image(self, image_url: str, card_id: int) -> Optional[str]:
         """
         Download image from URL, store in MinIO, return object ID.
-        TODO: Implement actual MinIO upload
+        Returns None if download/upload fails or MinIO is unavailable.
         """
-        # Skeleton implementation
         if not image_url or not self._is_url(image_url):
+            return None
+        
+        if not self.minio_client:
+            print("Warning: MinIO client not available, skipping image storage")
             return None
         
         try:
@@ -85,45 +106,50 @@ class CardService:
                 'image/jpeg': 'jpg',
                 'image/png': 'png',
                 'image/gif': 'gif',
-                'image/webp': 'webp'
+                'image/webp': 'webp',
+                'image/svg+xml': 'svg'
             }
             extension = ext_map.get(content_type, 'jpg')
             
-            # Step 2: Generate unique object ID
-            object_id = f"images/{card_id}/{uuid.uuid4()}.{extension}"
+            # Step 2: Generate object ID (one image per card)
+            object_id = f"images/card_{card_id}.{extension}"
             
             # Step 3: Upload to MinIO
-            # TODO: Implement actual MinIO upload
-            # from io import BytesIO
-            # self.minio_client.put_object(
-            #     self.bucket_name,
-            #     object_id,
-            #     BytesIO(image_data),
-            #     length=len(image_data),
-            #     content_type=content_type
-            # )
+            from io import BytesIO
             
-            # For now, return the object_id as placeholder
-            # In production, this would only return after successful MinIO upload
-            print(f"[Skeleton] Would store image at: {object_id}")
+            self.minio_client.put_object(
+                self.bucket_name,
+                object_id,
+                BytesIO(image_data),
+                length=len(image_data),
+                content_type=content_type
+            )
+            
+            print(f"Image stored successfully: {object_id}")
             return object_id
             
+        except requests.RequestException as e:
+            print(f"Failed to download image from {image_url}: {e}")
+            return None
         except Exception as e:
-            print(f"Failed to download/store image: {e}")
+            print(f"Failed to store image in MinIO: {e}")
             return None
     
     def _delete_from_minio(self, object_id: str) -> bool:
-        """Delete object from MinIO. TODO: Implement actual deletion."""
+        """Delete object from MinIO. Returns True on success or if object doesn't exist."""
         if not object_id:
             return True
         
+        if not self.minio_client:
+            print("Warning: MinIO client not available, skipping deletion")
+            return True
+        
         try:
-            # TODO: Implement actual MinIO deletion
-            # self.minio_client.remove_object(self.bucket_name, object_id)
-            print(f"[Skeleton] Would delete from MinIO: {object_id}")
+            self.minio_client.remove_object(self.bucket_name, object_id)
+            print(f"Deleted from MinIO: {object_id}")
             return True
         except Exception as e:
-            print(f"Failed to delete from MinIO: {e}")
+            print(f"Failed to delete from MinIO ({object_id}): {e}")
             return False
     
     def _generate_and_store_tts(
@@ -135,41 +161,64 @@ class CardService:
     ) -> Optional[str]:
         """
         Generate TTS audio, store in MinIO, return object ID.
-        TODO: Implement TTS generation and MinIO upload
+        Returns None if generation/upload fails or MinIO is unavailable.
         """
         if not text:
             return None
         
+        if not self.minio_client:
+            print("Warning: MinIO client not available, skipping TTS storage")
+            return None
+        
         try:
             # Step 1: Generate TTS audio
-            # TODO: Import and use TTSService
-            # from services.tts_service import TTSService
-            # tts_service = TTSService()
-            # audio_data = tts_service.generate_speech(text, language)
+            from services.tts_service import TTSService
+            from routes.tts import DEFAULT_SPEAKERS
+            from io import BytesIO
+            import wave
             
-            # Step 2: Generate unique object ID
-            object_id = f"audio/{card_id}/{field_type}_{uuid.uuid4()}.wav"
+            tts_service = TTSService()
             
-            # Step 3: Upload to MinIO
-            # TODO: Implement actual MinIO upload
-            # from io import BytesIO
-            # from scipy.io import wavfile
-            # 
-            # buffer = BytesIO()
-            # wavfile.write(buffer, 22050, audio_data)
-            # buffer.seek(0)
-            # 
-            # self.minio_client.put_object(
-            #     self.bucket_name,
-            #     object_id,
-            #     buffer,
-            #     length=buffer.getbuffer().nbytes,
-            #     content_type='audio/wav'
-            # )
+            # Get default speaker for language
+            speaker = DEFAULT_SPEAKERS.get(language, "Claribel Dervla")
             
-            print(f"[Skeleton] Would generate TTS and store at: {object_id}")
+            audio_array = tts_service.generate_speech(text, language, speaker=speaker)
+            
+            # Step 2: Generate object ID
+            object_id = f"audio/card_{card_id}_{field_type}.wav"
+            
+            # Step 3: Convert numpy array to WAV format in memory
+            buffer = BytesIO()
+            
+            # Write WAV file to buffer
+            with wave.open(buffer, 'wb') as wav_file:
+                wav_file.setnchannels(1)  # Mono
+                wav_file.setsampwidth(2)  # 16-bit
+                wav_file.setframerate(22050)  # Sample rate
+                
+                # Convert float32 array to int16
+                audio_int16 = (audio_array * 32767).astype('int16')
+                wav_file.writeframes(audio_int16.tobytes())
+            
+            # Reset buffer position to beginning
+            buffer.seek(0)
+            audio_data = buffer.getvalue()
+            
+            # Step 4: Upload to MinIO
+            self.minio_client.put_object(
+                self.bucket_name,
+                object_id,
+                BytesIO(audio_data),
+                length=len(audio_data),
+                content_type='audio/wav'
+            )
+            
+            print(f"TTS audio stored successfully: {object_id}")
             return object_id
             
+        except ImportError:
+            print("Warning: TTSService not available, skipping TTS generation")
+            return None
         except Exception as e:
             print(f"Failed to generate/store TTS: {e}")
             return None
@@ -205,22 +254,22 @@ class CardService:
                     """
                     INSERT INTO Cards (
                         d_id, word, translation, definition, word_example,
-                        trans_example, word_roman, trans_roman
+                        trans_example, word_roman, trans_roman, due_date
                     )
-                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, CURRENT_TIMESTAMP)
                     RETURNING c_id, d_id, word, translation, definition,
                               word_example, trans_example, word_roman, trans_roman,
                               image, word_audio, trans_audio
                     """,
                     (
                         deck_id,
-                        card_data.get("word", "").strip(),
-                        card_data.get("translation", "").strip(),
-                        card_data.get("definition", "").strip() or None,
-                        card_data.get("word_example", "").strip() or None,
-                        card_data.get("trans_example", "").strip() or None,
-                        card_data.get("word_roman", "").strip(),
-                        card_data.get("trans_roman", "").strip() or None
+                        (card_data.get("word") or "").strip(),
+                        (card_data.get("translation") or "").strip(),
+                        (card_data.get("definition") or "").strip() or None,
+                        (card_data.get("word_example") or "").strip() or None,
+                        (card_data.get("trans_example") or "").strip() or None,
+                        (card_data.get("word_roman") or "").strip() or None,
+                        (card_data.get("trans_roman") or "").strip() or None
                     )
                 )
                 card = dict(cursor.fetchone())
@@ -317,45 +366,65 @@ class CardService:
         Update card fields. Re-downloads image if URL changes.
         Regenerates TTS if word/translation changes.
         """
+        # Verify card exists and user has access
         current_card = self.get_card(user_id, card_id, deck_id)
         if not current_card:
             raise CardNotFoundError("Card not found or access denied")
         
+        # Get deck language settings for TTS generation
         deck_id = current_card["d_id"]
         deck_info = self._get_deck_info(deck_id)
         word_lang = deck_info.get("word_lang", "en") if deck_info else "en"
         trans_lang = deck_info.get("trans_lang", "en") if deck_info else "en"
         
-        # Handle image - delete old, download new if URL
+        # --- Handle image updates ---
+        # If new image URL provided, delete old and download new
+        # If image set to None, delete old image and clear field
         new_image_id = None
-        image_value = update_data.get("image")
-        if image_value and self._is_url(image_value):
+        image_changed = False
+        if "image" in update_data:
+            image_value = update_data["image"]
             old_image_id = current_card.get("image")
-            if old_image_id:
-                self._delete_from_minio(old_image_id)
-            new_image_id = self._download_and_store_image(image_value, card_id)
+            
+            if image_value and self._is_url(image_value):
+                # New image URL provided - delete old and download new
+                if old_image_id:
+                    self._delete_from_minio(old_image_id)
+                new_image_id = self._download_and_store_image(image_value, card_id)
+                image_changed = True
+            elif image_value is None or image_value == "":
+                # Image removal requested - delete old and set to NULL
+                if old_image_id:
+                    self._delete_from_minio(old_image_id)
+                new_image_id = None
+                image_changed = True
         
+        # --- Handle TTS audio updates ---
+        # Regenerate audio if word or translation text changes
         new_word_audio = None
         new_trans_audio = None
-        new_word = update_data.get("word", "").strip()
-        new_translation = update_data.get("translation", "").strip()
+        new_word = (update_data.get("word") or "").strip()
+        new_translation = (update_data.get("translation") or "").strip()
         
-        # Regenerate TTS if text changed
+        # If word changed, regenerate word audio
         if new_word and new_word != current_card.get("word"):
             old_audio_id = current_card.get("word_audio")
             if old_audio_id:
                 self._delete_from_minio(old_audio_id)
             new_word_audio = self._generate_and_store_tts(new_word, word_lang, card_id, "word")
         
+        # If translation changed, regenerate translation audio
         if new_translation and new_translation != current_card.get("translation"):
             old_audio_id = current_card.get("trans_audio")
             if old_audio_id:
                 self._delete_from_minio(old_audio_id)
             new_trans_audio = self._generate_and_store_tts(new_translation, trans_lang, card_id, "translation")
         
-        updates = []
-        params = []
+        # --- Build dynamic UPDATE query ---
+        updates = []  # List of "column = %s" strings
+        params = []   # List of values to substitute
         
+        # Map of request keys to database columns for text fields
         field_mapping = {
             "word": "word",
             "translation": "translation",
@@ -366,12 +435,14 @@ class CardService:
             "trans_roman": "trans_roman"
         }
         
+        # Add text field updates if provided in update_data
         for data_key, db_col in field_mapping.items():
             if data_key in update_data:
                 updates.append(f"{db_col} = %s")
                 params.append(update_data[data_key].strip() if update_data[data_key] else None)
         
-        if new_image_id:
+        # Add media field updates if new media was generated
+        if image_changed:
             updates.append("image = %s")
             params.append(new_image_id)
         
@@ -383,11 +454,14 @@ class CardService:
             updates.append("trans_audio = %s")
             params.append(new_trans_audio)
         
+        # If nothing to update, return current card as-is
         if not updates:
-            return current_card  # Nothing to update
+            return current_card
         
+        # Add card_id as final parameter for WHERE clause
         params.append(card_id)
         
+        # --- Execute UPDATE query ---
         try:
             with get_db_cursor(commit=True) as cursor:
                 cursor.execute(
@@ -489,98 +563,33 @@ class CardService:
         self, 
         user_id: str, 
         deck_id: int, 
-        limit: int = 20,
-        include_new: bool = True
+        limit: int = 20
     ) -> Optional[List[Dict[str, Any]]]:
-        """Get cards due for review (due_date <= now or new cards)."""
+        """Get cards due for review (due_date <= now)."""
         if not self._verify_deck_ownership(user_id, deck_id):
             return None
         
         now = datetime.now(timezone.utc)
         
         with get_db_cursor() as cursor:
-            if include_new:
-                cursor.execute(
-                    """
-                    SELECT c_id, d_id, word, translation, definition,
-                           image, word_example, trans_example,
-                           word_audio, trans_audio, word_roman, trans_roman,
-                           learning_state, step, difficulty, stability,
-                           due_date, last_review, successful_reps, fail_count
-                    FROM Cards
-                    WHERE d_id = %s
-                      AND (due_date IS NULL OR due_date <= %s)
-                    ORDER BY 
-                        CASE WHEN due_date IS NULL THEN 1 ELSE 0 END,
-                        due_date ASC
-                    LIMIT %s
-                    """,
-                    (deck_id, now, limit)
-                )
-            else:
-                cursor.execute(
-                    """
-                    SELECT c_id, d_id, word, translation, definition,
-                           image, word_example, trans_example,
-                           word_audio, trans_audio, word_roman, trans_roman,
-                           learning_state, step, difficulty, stability,
-                           due_date, last_review, successful_reps, fail_count
-                    FROM Cards
-                    WHERE d_id = %s
-                      AND due_date IS NOT NULL
-                      AND due_date <= %s
-                    ORDER BY due_date ASC
-                    LIMIT %s
-                    """,
-                    (deck_id, now, limit)
-                )
+            cursor.execute(
+                """
+                SELECT c_id, d_id, word, translation, definition,
+                       image, word_example, trans_example,
+                       word_audio, trans_audio, word_roman, trans_roman,
+                       learning_state, step, difficulty, stability,
+                       due_date, last_review, successful_reps, fail_count
+                FROM Cards
+                WHERE d_id = %s
+                  AND due_date <= %s
+                ORDER BY due_date ASC
+                LIMIT %s
+                """,
+                (deck_id, now, limit)
+            )
             
             cards = cursor.fetchall()
             return [dict(card) for card in cards]
-    
-    def get_decks_with_due_cards(self, user_id: str) -> List[Dict[str, Any]]:
-        """Get decks that have cards needing review."""
-        now = datetime.now(timezone.utc)
-        
-        with get_db_cursor() as cursor:
-            cursor.execute(
-                """
-                SELECT d.d_id, d.deck_name, d.word_lang, d.trans_lang,
-                       d.last_reviewed,
-                       COUNT(CASE WHEN c.due_date IS NULL OR c.due_date <= %s THEN 1 END) as due_count,
-                       COUNT(c.c_id) as total_cards
-                FROM Decks d
-                LEFT JOIN Cards c ON d.d_id = c.d_id
-                WHERE d.u_id = %s
-                GROUP BY d.d_id, d.deck_name, d.word_lang, d.trans_lang, d.last_reviewed
-                HAVING COUNT(CASE WHEN c.due_date IS NULL OR c.due_date <= %s THEN 1 END) > 0
-                ORDER BY due_count DESC
-                """,
-                (now, user_id, now)
-            )
-            decks = cursor.fetchall()
-            return [dict(deck) for deck in decks]
-    
-    def get_recent_decks(self, user_id: str, limit: int = 3) -> List[Dict[str, Any]]:
-        """Get most recently reviewed decks."""
-        with get_db_cursor() as cursor:
-            cursor.execute(
-                """
-                SELECT d.d_id, d.deck_name, d.word_lang, d.trans_lang,
-                       d.description, d.last_reviewed,
-                       COUNT(c.c_id) as card_count
-                FROM Decks d
-                LEFT JOIN Cards c ON d.d_id = c.d_id
-                WHERE d.u_id = %s AND d.last_reviewed IS NOT NULL
-                GROUP BY d.d_id, d.deck_name, d.word_lang, d.trans_lang,
-                         d.description, d.last_reviewed
-                ORDER BY d.last_reviewed DESC
-                LIMIT %s
-                """,
-                (user_id, limit)
-            )
-            decks = cursor.fetchall()
-            return [dict(deck) for deck in decks]
     
     # ==================== Helpers ====================
     

@@ -33,9 +33,11 @@ def error_response(message, status=500):
 @jwt_required()
 def create_card(deck_id: int):
     """
+    Create a new flashcard in the specified deck.
+
     POST /decks/:d_id/card
-    Body: word, translation, word_roman (required); definition, word_example, 
-          trans_example, image, word_audio, trans_audio, trans_roman (optional)
+    Body: word, translation (required); definition, word_example, 
+          trans_example, image, word_audio, trans_audio, word_roman, trans_roman (optional)
     """
     data = request.get_json(silent=True)
     if not data:
@@ -43,7 +45,7 @@ def create_card(deck_id: int):
     
     data["d_id"] = deck_id
     
-    required_fields = ["word", "translation", "word_roman"]
+    required_fields = ["word", "translation"]
     for field in required_fields:
         if field not in data or not str(data.get(field, "")).strip():
             return error_response(f"Missing required field: {field}", status=400)
@@ -74,7 +76,11 @@ def create_card(deck_id: int):
 @cards_bp.route("/decks/<int:deck_id>/cards/<int:card_id>", methods=["GET"])
 @jwt_required()
 def get_card(deck_id: int, card_id: int):
-    """GET /decks/:d_id/cards/:c_id - returns card data"""
+    """
+    Retrieve a specific flashcard by ID.
+    
+    GET /decks/:d_id/cards/:c_id
+    """
     user_id = get_jwt_identity()
     
     try:
@@ -93,9 +99,12 @@ def get_card(deck_id: int, card_id: int):
 @jwt_required()
 def update_card(deck_id: int, card_id: int):
     """
-    POST /decks/:d_id/cards/:c_id - edit card
-    Any field can be updated. TTS regenerated if word/translation changes.
-    Image re-downloaded if URL provided.
+    Update an existing flashcard.
+
+    POST /decks/:d_id/cards/:c_id
+    Any field can be updated. 
+    - TTS regenerated if word/translation changes.
+    - Image re-downloaded if URL provided.
     """
     data = request.get_json(silent=True)
     if not data:
@@ -127,7 +136,12 @@ def update_card(deck_id: int, card_id: int):
 @cards_bp.route("/decks/<int:deck_id>/cards/<int:card_id>", methods=["DELETE"])
 @jwt_required()
 def delete_card(deck_id: int, card_id: int):
-    """DELETE /decks/:d_id/cards/:c_id - also removes MinIO objects"""
+    """
+    Delete a flashcard from a deck.
+    - Also deletes associated MinIO objects if they exist.
+
+    DELETE /decks/:d_id/cards/:c_id
+    """
     user_id = get_jwt_identity()
     
     try:
@@ -148,10 +162,18 @@ def delete_card(deck_id: int, card_id: int):
 @cards_bp.route("/decks/<int:deck_id>/cards", methods=["GET"])
 @jwt_required()
 def get_deck_cards(deck_id: int):
-    """GET /decks/:d_id/cards?page=1&per_page=50"""
+    """
+    Retrieve all flashcards in a deck with pagination.
+
+    GET /decks/:d_id/cards?page=1&per_page=50
+    """
     user_id = get_jwt_identity()
     page = request.args.get("page", 1, type=int)
     per_page = request.args.get("per_page", 50, type=int)
+    
+    # Clamp pagination parameters to safe ranges
+    page = max(page, 1)  # Minimum page is 1
+    per_page = min(max(per_page, 1), 200)  # Between 1 and 200
     
     try:
         result = card_service.get_cards_for_deck(user_id, deck_id, page, per_page)
@@ -160,6 +182,32 @@ def get_deck_cards(deck_id: int):
             return error_response("Deck not found or access denied", status=404)
         
         return json_response(result)
+    
+    except Exception as e:
+        return error_response(f"Database error: {str(e)}")
+
+
+@cards_bp.route("/decks/<int:deck_id>/review", methods=["GET"])
+@jwt_required()
+def get_review_cards(deck_id: int):
+    """
+    Get cards due for review in a deck.
+    
+    GET /decks/:d_id/review?limit=20
+    Query params:
+    - limit: Number of cards to return (default: 20, max: 100)
+    """
+    user_id = get_jwt_identity()
+    limit = request.args.get("limit", 20, type=int)
+    limit = min(max(limit, 1), 100)  # Clamp between 1 and 100
+    
+    try:
+        cards = card_service.get_cards_for_review(user_id, deck_id, limit)
+        
+        if cards is None:
+            return error_response("Deck not found or access denied", status=404)
+        
+        return json_response({"cards": cards})
     
     except Exception as e:
         return error_response(f"Database error: {str(e)}")

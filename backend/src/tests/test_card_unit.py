@@ -20,9 +20,7 @@ from unittest.mock import patch, MagicMock
 from services.card_service import (
     CardService,
     CardNotFoundError,
-    DeckNotFoundError,
-    UnauthorizedError,
-    DatabaseError
+    DeckNotFoundError
 )
 
 
@@ -92,15 +90,8 @@ class TestIsUrl:
         assert CardService._is_url("images/photo.jpg") is False
 
 
-class TestMinIOSkeletons:
-    """Skeleton tests for MinIO-dependent methods."""
-    # TODO: Implement when MinIO is integrated
-    
-    def test_download_and_store_image_placeholder(self, card_service):
-        """Test image download and storage."""
-        # TODO: Implement when MinIO is configured
-        # Should download image from URL, upload to MinIO, return object ID
-        pass
+class TestMinIOUnit:
+    """Tests for MinIO-dependent methods."""
     
     def test_download_and_store_image_invalid_url(self, card_service):
         """Test with invalid URL returns None."""
@@ -117,6 +108,67 @@ class TestMinIOSkeletons:
         result = card_service._download_and_store_image(None, 1)
         assert result is None
     
+    def test_download_and_store_image_no_minio_client(self, card_service):
+        """Test returns None when MinIO client is unavailable."""
+        card_service.minio_client = None
+        result = card_service._download_and_store_image("http://example.com/image.jpg", 1)
+        assert result is None
+    
+    def test_download_and_store_image_success(self, card_service):
+        """Test successful image download and storage."""
+        mock_minio = MagicMock()
+        card_service.minio_client = mock_minio
+        
+        mock_response = MagicMock()
+        mock_response.content = b"fake_image_data"
+        mock_response.headers = {"Content-Type": "image/jpeg"}
+        
+        with patch('requests.get', return_value=mock_response):
+            result = card_service._download_and_store_image("http://example.com/image.jpg", 123)
+        
+        assert result == "images/card_123.jpg"
+        mock_minio.put_object.assert_called_once()
+        
+        # Verify MinIO put_object called with correct parameters
+        call_args = mock_minio.put_object.call_args[0]
+        call_kwargs = mock_minio.put_object.call_args[1]
+        assert call_args[0] == "languine-media", "Bucket name incorrect"
+        assert call_args[1] == "images/card_123.jpg", "Object ID incorrect"
+        assert call_kwargs["content_type"] == "image/jpeg", "Content type incorrect"
+        assert call_kwargs["length"] == len(b"fake_image_data"), "Length incorrect"
+    
+    def test_download_and_store_image_download_failure(self, card_service):
+        """Test handles download failure gracefully."""
+        mock_minio = MagicMock()
+        card_service.minio_client = mock_minio
+        
+        with patch('requests.get', side_effect=Exception("Network error")):
+            result = card_service._download_and_store_image("http://example.com/image.jpg", 1)
+        
+        assert result is None
+    
+    def test_download_and_store_image_handles_different_formats(self, card_service):
+        """Test handles different image formats correctly."""
+        mock_minio = MagicMock()
+        card_service.minio_client = mock_minio
+        
+        test_cases = [
+            ("image/png", "images/card_1.png"),
+            ("image/gif", "images/card_1.gif"),
+            ("image/webp", "images/card_1.webp"),
+            ("image/svg+xml", "images/card_1.svg"),
+        ]
+        
+        for content_type, expected_path in test_cases:
+            mock_response = MagicMock()
+            mock_response.content = b"fake_image_data"
+            mock_response.headers = {"Content-Type": content_type}
+            
+            with patch('requests.get', return_value=mock_response):
+                result = card_service._download_and_store_image("http://example.com/image", 1)
+            
+            assert result == expected_path
+    
     def test_delete_from_minio_empty(self, card_service):
         """Test delete with empty object_id."""
         result = card_service._delete_from_minio("")
@@ -127,22 +179,35 @@ class TestMinIOSkeletons:
         result = card_service._delete_from_minio(None)
         assert result is True
     
-    def test_delete_from_minio_placeholder(self, card_service):
-        """Test actual MinIO deletion."""
-        # TODO: Implement when MinIO is configured
-        # Should remove object from MinIO bucket
-        pass
-
-
-class TestTTSSkeletons:
-    """Skeleton tests for TTS-dependent methods."""
-    # TODO: Implement when TTS is integrated
+    def test_delete_from_minio_no_client(self, card_service):
+        """Test delete when MinIO client is unavailable."""
+        card_service.minio_client = None
+        result = card_service._delete_from_minio("some/object/path")
+        assert result is True  # Returns True to not block other operations
     
-    def test_generate_and_store_tts_placeholder(self, card_service):
-        """Test TTS generation and storage."""
-        # TODO: Implement when TTS service is configured
-        # Should generate audio, upload to MinIO, return object ID
-        pass
+    def test_delete_from_minio_success(self, card_service):
+        """Test successful MinIO object deletion."""
+        mock_minio = MagicMock()
+        card_service.minio_client = mock_minio
+        
+        result = card_service._delete_from_minio("images/card_123.jpg")
+        
+        assert result is True
+        mock_minio.remove_object.assert_called_once_with("languine-media", "images/card_123.jpg")
+    
+    def test_delete_from_minio_handles_errors(self, card_service):
+        """Test delete handles MinIO errors gracefully."""
+        mock_minio = MagicMock()
+        mock_minio.remove_object.side_effect = Exception("MinIO error")
+        card_service.minio_client = mock_minio
+        
+        result = card_service._delete_from_minio("images/card_123.jpg")
+        
+        assert result is False
+
+
+class TestTTSUnit:
+    """Tests for TTS-dependent methods."""
     
     def test_generate_and_store_tts_empty_text(self, card_service):
         """Test TTS with empty text returns None."""
@@ -152,6 +217,81 @@ class TestTTSSkeletons:
     def test_generate_and_store_tts_none_text(self, card_service):
         """Test TTS with None text returns None."""
         result = card_service._generate_and_store_tts(None, "en", 1, "word")
+        assert result is None
+    
+    def test_generate_and_store_tts_no_minio_client(self, card_service):
+        """Test returns None when MinIO client is unavailable."""
+        card_service.minio_client = None
+        result = card_service._generate_and_store_tts("hello", "en", 1, "word")
+        assert result is None
+    
+    def test_generate_and_store_tts_success(self, card_service):
+        """Test successful TTS generation and storage."""
+        import numpy as np
+        
+        mock_minio = MagicMock()
+        card_service.minio_client = mock_minio
+        
+        mock_tts = MagicMock()
+        mock_audio = np.array([0.1, 0.2, 0.3], dtype=np.float32)
+        mock_tts.generate_speech.return_value = mock_audio
+        
+        with patch('services.tts_service.TTSService', return_value=mock_tts):
+            result = card_service._generate_and_store_tts("hello", "en", 123, "word")
+        
+        assert result == "audio/card_123_word.wav"
+        mock_minio.put_object.assert_called_once()
+        
+        # Verify MinIO put_object called with correct parameters
+        call_args = mock_minio.put_object.call_args[0]
+        call_kwargs = mock_minio.put_object.call_args[1]
+        assert call_args[0] == "languine-media", "Bucket name incorrect"
+        assert call_args[1] == "audio/card_123_word.wav", "Object ID incorrect"
+        assert call_kwargs["content_type"] == "audio/wav", "Content type incorrect"
+    
+    def test_generate_and_store_tts_different_field_types(self, card_service):
+        """Test TTS generates correct paths for different field types."""
+        import numpy as np
+        
+        mock_minio = MagicMock()
+        card_service.minio_client = mock_minio
+        
+        mock_tts = MagicMock()
+        mock_audio = np.array([0.1], dtype=np.float32)
+        mock_tts.generate_speech.return_value = mock_audio
+        
+        with patch('services.tts_service.TTSService', return_value=mock_tts):
+            result_word = card_service._generate_and_store_tts("hello", "en", 1, "word")
+            result_trans = card_service._generate_and_store_tts("hola", "es", 1, "translation")
+        
+        assert result_word == "audio/card_1_word.wav"
+        assert result_trans == "audio/card_1_translation.wav"
+    
+    def test_generate_and_store_tts_handles_tts_failure(self, card_service):
+        """Test handles TTS service failure gracefully."""
+        mock_minio = MagicMock()
+        card_service.minio_client = mock_minio
+        
+        with patch('services.tts_service.TTSService', side_effect=Exception("TTS error")):
+            result = card_service._generate_and_store_tts("hello", "en", 1, "word")
+        
+        assert result is None
+    
+    def test_generate_and_store_tts_handles_upload_failure(self, card_service):
+        """Test handles MinIO upload failure gracefully."""
+        import numpy as np
+        
+        mock_minio = MagicMock()
+        mock_minio.put_object.side_effect = Exception("Upload failed")
+        card_service.minio_client = mock_minio
+        
+        mock_tts = MagicMock()
+        mock_audio = np.array([0.1], dtype=np.float32)
+        mock_tts.generate_speech.return_value = mock_audio
+        
+        with patch('services.tts_service.TTSService', return_value=mock_tts):
+            result = card_service._generate_and_store_tts("hello", "en", 1, "word")
+        
         assert result is None
 
 
@@ -235,6 +375,119 @@ class TestCreateCard:
         
         assert result["word"] == "hola"
         assert result["translation"] == "hello"
+    
+    def test_create_card_strips_whitespace(self, card_service, sample_card_response):
+        """Test that card creation strips whitespace from fields."""
+        card_data = {
+            "d_id": 1,
+            "word": "  hola  ",
+            "translation": "  hello  ",
+            "word_roman": "  oh-lah  "
+        }
+        
+        mock_cursor = MagicMock()
+        mock_cursor.fetchone.return_value = sample_card_response
+        
+        with patch.object(card_service, '_verify_deck_ownership', return_value=True):
+            with patch.object(card_service, '_get_deck_info', return_value={"word_lang": "es", "trans_lang": "en"}):
+                with patch('services.card_service.get_db_cursor') as mock_db:
+                    mock_db.return_value.__enter__.return_value = mock_cursor
+                    result = card_service.create_card("user-123", card_data)
+        
+        # Verify database was called with stripped values
+        assert mock_cursor.execute.called
+        query, params = mock_cursor.execute.call_args[0]
+        
+        # Check that parameters don't contain leading/trailing whitespace
+        # The exact order depends on implementation, but all string params should be stripped
+        string_params = [p for p in params if isinstance(p, str)]
+        for param in string_params:
+            assert param == param.strip(), f"Parameter '{param}' still has whitespace"
+    
+    def test_create_card_handles_none_optional_fields(self, card_service, sample_card_response):
+        """Test card creation with None values in optional fields."""
+        card_data = {
+            "d_id": 1,
+            "word": "hola",
+            "translation": "hello",
+            "word_roman": "oh-lah",
+            "definition": None,
+            "word_example": None,
+            "trans_example": None
+        }
+        
+        mock_cursor = MagicMock()
+        mock_cursor.fetchone.return_value = sample_card_response
+        
+        with patch.object(card_service, '_verify_deck_ownership', return_value=True):
+            with patch.object(card_service, '_get_deck_info', return_value={"word_lang": "es", "trans_lang": "en"}):
+                with patch('services.card_service.get_db_cursor') as mock_db:
+                    mock_db.return_value.__enter__.return_value = mock_cursor
+                    result = card_service.create_card("user-123", card_data)
+        
+        assert result is not None
+    
+    def test_create_card_with_image_url(self, card_service, sample_card_response):
+        """Test card creation with image URL downloads and stores image."""
+        card_data = {
+            "d_id": 1,
+            "word": "hola",
+            "translation": "hello",
+            "word_roman": "oh-lah",
+            "image": "http://example.com/image.jpg"
+        }
+        
+        mock_cursor = MagicMock()
+        mock_cursor.fetchone.return_value = sample_card_response
+        
+        mock_download = MagicMock(return_value="images/card_1.jpg")
+        
+        with patch.object(card_service, '_verify_deck_ownership', return_value=True):
+            with patch.object(card_service, '_get_deck_info', return_value={"word_lang": "es", "trans_lang": "en"}):
+                with patch.object(card_service, '_download_and_store_image', mock_download):
+                    with patch('services.card_service.get_db_cursor') as mock_db:
+                        mock_db.return_value.__enter__.return_value = mock_cursor
+                        result = card_service.create_card("user-123", card_data)
+        
+        # Verify download was called with correct image URL and card_id
+        # Note: card_id is returned from database, not input data
+        mock_download.assert_called_once()
+        call_args = mock_download.call_args[0]
+        assert call_args[0] == "http://example.com/image.jpg", "Image URL not passed correctly"
+        assert result is not None
+    
+    def test_create_card_generates_tts(self, card_service, sample_card_response):
+        """Test card creation generates TTS for word and translation."""
+        card_data = {
+            "d_id": 1,
+            "word": "hola",
+            "translation": "hello",
+            "word_roman": "oh-lah"
+        }
+        
+        mock_cursor = MagicMock()
+        mock_cursor.fetchone.return_value = sample_card_response
+        
+        mock_tts = MagicMock(return_value="audio/card_1_word.wav")
+        
+        with patch.object(card_service, '_verify_deck_ownership', return_value=True):
+            with patch.object(card_service, '_get_deck_info', return_value={"word_lang": "es", "trans_lang": "en"}):
+                with patch.object(card_service, '_generate_and_store_tts', mock_tts):
+                    with patch('services.card_service.get_db_cursor') as mock_db:
+                        mock_db.return_value.__enter__.return_value = mock_cursor
+                        result = card_service.create_card("user-123", card_data)
+        
+        # Should be called twice: once for word, once for translation
+        assert mock_tts.call_count == 2
+        
+        # Verify correct parameters were passed
+        calls = mock_tts.call_args_list
+        # First call should be for word
+        assert calls[0][0][0] == "hola", "Word text not passed to TTS"
+        assert calls[0][0][1] == "es", "Word language incorrect"
+        # Second call should be for translation
+        assert calls[1][0][0] == "hello", "Translation text not passed to TTS"
+        assert calls[1][0][1] == "en", "Translation language incorrect"
 
 
 class TestGetCard:
@@ -305,6 +558,91 @@ class TestUpdateCard:
                     result = card_service.update_card("user-123", 1, {"word": "nuevo"})
         
         assert result["word"] == "nuevo"
+    
+    def test_update_card_strips_whitespace(self, card_service, sample_card_response):
+        """Test that update strips whitespace from fields."""
+        updated_response = {**sample_card_response, "word": "nuevo"}
+        mock_cursor = MagicMock()
+        mock_cursor.fetchone.return_value = updated_response
+        
+        with patch.object(card_service, 'get_card', return_value=sample_card_response):
+            with patch.object(card_service, '_get_deck_info', return_value={"word_lang": "es", "trans_lang": "en"}):
+                with patch('services.card_service.get_db_cursor') as mock_db:
+                    mock_db.return_value.__enter__.return_value = mock_cursor
+                    result = card_service.update_card("user-123", 1, {"word": "  nuevo  "})
+        
+        # Verify database was called with stripped values
+        assert mock_cursor.execute.called
+        query, params = mock_cursor.execute.call_args[0]
+        
+        # Check that string parameters don't contain leading/trailing whitespace
+        string_params = [p for p in params if isinstance(p, str)]
+        for param in string_params:
+            assert param == param.strip(), f"Parameter '{param}' still has whitespace"
+    
+    def test_update_card_handles_none_values(self, card_service, sample_card_response):
+        """Test update handles None values correctly."""
+        updated_response = {**sample_card_response, "definition": None}
+        mock_cursor = MagicMock()
+        mock_cursor.fetchone.return_value = updated_response
+        
+        with patch.object(card_service, 'get_card', return_value=sample_card_response):
+            with patch.object(card_service, '_get_deck_info', return_value={"word_lang": "es", "trans_lang": "en"}):
+                with patch('services.card_service.get_db_cursor') as mock_db:
+                    mock_db.return_value.__enter__.return_value = mock_cursor
+                    result = card_service.update_card("user-123", 1, {"definition": None})
+        
+        assert result is not None
+    
+    def test_update_card_with_image_url(self, card_service, sample_card_response):
+        """Test updating image downloads and stores new image."""
+        updated_response = {**sample_card_response, "image": "images/card_1.jpg"}
+        mock_cursor = MagicMock()
+        mock_cursor.fetchone.return_value = updated_response
+        
+        mock_download = MagicMock(return_value="images/card_1.jpg")
+        mock_delete = MagicMock(return_value=True)
+        
+        with patch.object(card_service, 'get_card', return_value=sample_card_response):
+            with patch.object(card_service, '_get_deck_info', return_value={"word_lang": "es", "trans_lang": "en"}):
+                with patch.object(card_service, '_download_and_store_image', mock_download):
+                    with patch.object(card_service, '_delete_from_minio', mock_delete):
+                        with patch('services.card_service.get_db_cursor') as mock_db:
+                            mock_db.return_value.__enter__.return_value = mock_cursor
+                            result = card_service.update_card("user-123", 1, {"image": "http://example.com/new.jpg"})
+        
+        # Verify download was called with new image URL and correct card_id
+        mock_download.assert_called_once_with("http://example.com/new.jpg", 1)
+        # Note: Old image deletion not checked since sample_card_response has image=None
+    
+    def test_update_card_regenerates_tts_when_word_changes(self, card_service, sample_card_response):
+        """Test updating word regenerates word TTS but not translation TTS."""
+        updated_response = {**sample_card_response, "word": "nuevo", "word_audio": "audio/card_1_word.wav"}
+        mock_cursor = MagicMock()
+        mock_cursor.fetchone.return_value = updated_response
+        
+        mock_tts = MagicMock(return_value="audio/card_1_word.wav")
+        mock_delete = MagicMock(return_value=True)
+        
+        with patch.object(card_service, 'get_card', return_value=sample_card_response):
+            with patch.object(card_service, '_get_deck_info', return_value={"word_lang": "es", "trans_lang": "en"}):
+                with patch.object(card_service, '_generate_and_store_tts', mock_tts):
+                    with patch.object(card_service, '_delete_from_minio', mock_delete):
+                        with patch('services.card_service.get_db_cursor') as mock_db:
+                            mock_db.return_value.__enter__.return_value = mock_cursor
+                            result = card_service.update_card("user-123", 1, {"word": "nuevo"})
+        
+        # Should only regenerate word TTS, not translation
+        mock_tts.assert_called_once()
+        
+        # Verify correct parameters: new word, Spanish language, card_id, field type
+        call_args = mock_tts.call_args[0]
+        assert call_args[0] == "nuevo", "New word not passed to TTS"
+        assert call_args[1] == "es", "Language should be Spanish"
+        assert call_args[2] == 1, "Card ID incorrect"
+        assert call_args[3] == "word", "Field type should be 'word'"
+        
+        # Note: Old audio deletion not checked since sample_card_response has word_audio=None
 
 
 class TestDeleteCard:
@@ -420,62 +758,3 @@ class TestGetCardsForReview:
                 result = card_service.get_cards_for_review("user-123", 1)
         
         assert len(result) == 1
-    
-    def test_get_cards_for_review_exclude_new(self, card_service):
-        """Test excluding new cards from review."""
-        mock_cursor = MagicMock()
-        mock_cursor.fetchall.return_value = []
-        
-        with patch.object(card_service, '_verify_deck_ownership', return_value=True):
-            with patch('services.card_service.get_db_cursor') as mock_db:
-                mock_db.return_value.__enter__.return_value = mock_cursor
-                result = card_service.get_cards_for_review("user-123", 1, include_new=False)
-        
-        assert result == []
-
-
-class TestGetDecksWithDueCards:
-    """Tests for get_decks_with_due_cards method."""
-    
-    def test_get_decks_with_due_cards_success(self, card_service):
-        """Test retrieval of decks with due cards."""
-        mock_cursor = MagicMock()
-        mock_cursor.fetchall.return_value = [
-            {"d_id": 1, "deck_name": "Spanish", "due_count": 5, "total_cards": 10}
-        ]
-        
-        with patch('services.card_service.get_db_cursor') as mock_db:
-            mock_db.return_value.__enter__.return_value = mock_cursor
-            result = card_service.get_decks_with_due_cards("user-123")
-        
-        assert len(result) == 1
-        assert result[0]["due_count"] == 5
-
-
-class TestGetRecentDecks:
-    """Tests for get_recent_decks method."""
-    
-    def test_get_recent_decks_success(self, card_service):
-        """Test retrieval of recently reviewed decks."""
-        mock_cursor = MagicMock()
-        mock_cursor.fetchall.return_value = [
-            {"d_id": 1, "deck_name": "Spanish", "card_count": 10}
-        ]
-        
-        with patch('services.card_service.get_db_cursor') as mock_db:
-            mock_db.return_value.__enter__.return_value = mock_cursor
-            result = card_service.get_recent_decks("user-123")
-        
-        assert len(result) == 1
-    
-    def test_get_recent_decks_with_limit(self, card_service):
-        """Test limit parameter for recent decks."""
-        mock_cursor = MagicMock()
-        mock_cursor.fetchall.return_value = []
-        
-        with patch('services.card_service.get_db_cursor') as mock_db:
-            mock_db.return_value.__enter__.return_value = mock_cursor
-            card_service.get_recent_decks("user-123", limit=5)
-        
-        # Verify the query was called (we check it doesn't error)
-        assert mock_cursor.execute.called
