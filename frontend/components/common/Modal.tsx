@@ -1,6 +1,7 @@
 import { COLORS } from "@/constants/colors";
 import { ReactNode } from "react";
-import { Pressable, Modal as RNModal, StyleSheet, View } from "react-native";
+import { Modal as RNModal, View } from "react-native";
+import { CButton } from "./CButton";
 import { CText } from "./CText";
 
 interface ModalProps {
@@ -27,31 +28,21 @@ export const Modal = ({
   const Buttons = (
     <View style={{ rowGap: 8 }}>
       {onSubmit && (
-        <Pressable
+        <CButton
           onPress={onSubmit}
-          style={[
-            buttonStyles.base,
-            {
-              backgroundColor: COLORS.button.fillPrimary,
-            },
-          ]}
-        >
-          <CText bold>{submitLabel}</CText>
-        </Pressable>
+          variant="primary"
+          label={submitLabel}
+          style={{ width: "100%" }}
+        />
       )}
-      <Pressable
-        onPress={onClose}
-        style={[
-          buttonStyles.base,
-          {
-            backgroundColor: COLORS.backgroundPrimary,
-            borderColor: COLORS.text.primary,
-            borderWidth: 2,
-          },
-        ]}
-      >
-        <CText bold>{closeLabel}</CText>
-      </Pressable>
+      {onClose && (
+        <CButton
+          variant="secondary"
+          label={closeLabel}
+          onPress={onClose}
+          style={{ width: "100%" }}
+        />
+      )}
     </View>
   );
 
@@ -102,13 +93,3 @@ export const Modal = ({
     </RNModal>
   );
 };
-
-const buttonStyles = StyleSheet.create({
-  base: {
-    height: 32,
-    display: "flex",
-    justifyContent: "center",
-    borderRadius: 8,
-    alignItems: "center",
-  },
-});

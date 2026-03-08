@@ -5,7 +5,7 @@ export default function Decks() {
   return (
     <View
       style={{
-        flex: 1,
+        display: "flex",
         justifyContent: "center",
         alignItems: "center",
         padding: 10,

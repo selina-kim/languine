@@ -1,6 +1,7 @@
 import { AppLogo } from "@/assets/AppLogo";
 import { ProfileIcon } from "@/assets/icons/ProfileIcon";
 import { COLORS } from "@/constants/colors";
+import { SHADOWS } from "@/constants/shadows";
 import { Arimo_400Regular, Arimo_700Bold } from "@expo-google-fonts/arimo";
 import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
@@ -17,9 +18,9 @@ export default function RootLayout() {
       screenOptions={{
         headerStyle: {
           backgroundColor: COLORS.accent.primary,
+          ...SHADOWS.default,
         },
         headerTintColor: COLORS.text.primary,
-        headerShadowVisible: false,
         headerTitle: () => (
           <View style={{ width: 100 }}>
             <AppLogo />
