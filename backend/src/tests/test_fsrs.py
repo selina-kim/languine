@@ -1,4 +1,4 @@
-from services.fsrs.scheduler import Scheduler, STABILITY_MIN, DEFAULT_PARAMETERS
+from services.fsrs.scheduler import Scheduler, STABILITY_MIN, DEFAULT_PARAMETERS, DIFFICULTY_MAX, DIFFICULTY_MIN
 from services.fsrs.card import Card
 from services.fsrs.learning_state import LearningState
 from services.fsrs.review_log import ReviewLog
@@ -1189,3 +1189,329 @@ class TestPyFSRS:
         EXPECTED_ERROR_MESSAGE = f"ReviewLog card_id {DIFFERENT_CARD_ID} does not match Card card_id {card.card_id}"
         with pytest.raises(ValueError, match=re.escape(EXPECTED_ERROR_MESSAGE)):
             _ = scheduler.reschedule_card(card=card, review_logs=review_logs)
+
+    def test_review_card_does_not_mutate_original(self):
+        """
+        review_card() should not mutate the original Card object passed to it.
+        """
+        scheduler = Scheduler(enable_fuzzing=False)
+        card = Card()
+        original_card = deepcopy(card)
+
+        _, _ = scheduler.review_card(
+            card=card,
+            grade=Grade.Good,
+            review_datetime=datetime.now(timezone.utc),
+        )
+
+        assert card == original_card
+
+    def test_card_initial_state(self):
+        """
+        A freshly constructed Card should have the expected default field values.
+        """
+        card = Card()
+
+        assert isinstance(card.card_id, str)
+        assert card.learning_state == LearningState.Learning
+        assert card.step == 0
+        assert card.stability is None
+        assert card.difficulty is None
+        assert card.last_review is None
+        assert card.due <= datetime.now(timezone.utc)
+
+    def test_difficulty_bounds(self):
+        """
+        Card difficulty should always stay within [DIFFICULTY_MIN, DIFFICULTY_MAX]
+        after any sequence of reviews.
+        """
+        scheduler = Scheduler()
+        card = Card()
+
+        grades = [Grade.Again, Grade.Hard, Grade.Good, Grade.Easy] * 50
+        review_datetime = datetime(2022, 11, 29, 12, 30, 0, 0, timezone.utc)
+
+        for grade in grades:
+            card, _ = scheduler.review_card(
+                card=card, grade=grade, review_datetime=review_datetime
+            )
+            review_datetime = card.due + timedelta(days=1)
+            if card.difficulty is not None:
+                assert DIFFICULTY_MIN <= card.difficulty <= DIFFICULTY_MAX
+
+    def test_difficulty_direction(self):
+        """
+        In Review state, grading Again should increase difficulty
+        and grading Easy should decrease it.
+        """
+        scheduler = Scheduler(enable_fuzzing=False)
+
+        # advance card to Review state
+        card = Card()
+        review_datetime = datetime(2022, 11, 29, 12, 30, 0, 0, timezone.utc)
+        card, _ = scheduler.review_card(
+            card=card, grade=Grade.Good, review_datetime=review_datetime
+        )
+        card, _ = scheduler.review_card(
+            card=card, grade=Grade.Good, review_datetime=card.due
+        )
+        assert card.learning_state == LearningState.Review
+
+        # grading Easy should decrease difficulty
+        card_easy = deepcopy(card)
+        difficulty_before = card_easy.difficulty
+        card_easy, _ = scheduler.review_card(
+            card=card_easy,
+            grade=Grade.Easy,
+            review_datetime=card_easy.due + timedelta(days=1),
+        )
+        assert card_easy.difficulty < difficulty_before
+
+        # grading Again should increase difficulty
+        card_again = deepcopy(card)
+        difficulty_before = card_again.difficulty
+        card_again, _ = scheduler.review_card(
+            card=card_again,
+            grade=Grade.Again,
+            review_datetime=card_again.due + timedelta(days=1),
+        )
+        assert card_again.difficulty > difficulty_before
+
+    def test_stability_increases_after_successful_review(self):
+        """
+        In Review state, Hard/Good/Easy grades should increase stability;
+        Again should decrease it.
+        """
+        scheduler = Scheduler(enable_fuzzing=False)
+
+        # advance card to Review state
+        card = Card()
+        review_datetime = datetime(2022, 11, 29, 12, 30, 0, 0, timezone.utc)
+        card, _ = scheduler.review_card(
+            card=card, grade=Grade.Good, review_datetime=review_datetime
+        )
+        card, _ = scheduler.review_card(
+            card=card, grade=Grade.Good, review_datetime=card.due
+        )
+        assert card.learning_state == LearningState.Review
+
+        stability_before = card.stability
+
+        # Hard, Good, and Easy should each increase stability
+        for grade in (Grade.Hard, Grade.Good, Grade.Easy):
+            card_copy = deepcopy(card)
+            card_copy, _ = scheduler.review_card(
+                card=card_copy,
+                grade=grade,
+                review_datetime=card_copy.due + timedelta(days=1),
+            )
+            assert card_copy.stability > stability_before, (
+                f"Expected stability to increase after {grade}, but it didn't"
+            )
+
+        # Again should decrease stability
+        card_again = deepcopy(card)
+        card_again, _ = scheduler.review_card(
+            card=card_again,
+            grade=Grade.Again,
+            review_datetime=card_again.due + timedelta(days=1),
+        )
+        assert card_again.stability < stability_before
+
+    def test_retrievability_decreases_over_time(self):
+        """
+        Retrievability should strictly decrease as more time passes since the last review.
+        """
+        scheduler = Scheduler(enable_fuzzing=False)
+
+        card = Card()
+        review_datetime = datetime(2022, 11, 29, 12, 30, 0, 0, timezone.utc)
+        card, _ = scheduler.review_card(
+            card=card, grade=Grade.Good, review_datetime=review_datetime
+        )
+        card, _ = scheduler.review_card(
+            card=card, grade=Grade.Good, review_datetime=card.due
+        )
+        assert card.learning_state == LearningState.Review
+
+        base_datetime = card.last_review
+        r_t0 = scheduler.get_card_retrievability(
+            card=card, current_datetime=base_datetime + timedelta(days=1)
+        )
+        r_t1 = scheduler.get_card_retrievability(
+            card=card, current_datetime=base_datetime + timedelta(days=10)
+        )
+        r_t2 = scheduler.get_card_retrievability(
+            card=card, current_datetime=base_datetime + timedelta(days=30)
+        )
+
+        assert r_t0 > r_t1 > r_t2
+
+    def test_get_card_retrievability_at_due_date(self):
+        """
+        At exactly the card's due date (fuzzing disabled), retrievability should
+        approximately equal the scheduler's desired_retention.
+        """
+        desired_retention = 0.9
+        scheduler = Scheduler(enable_fuzzing=False, desired_retention=desired_retention)
+
+        card = Card()
+        review_datetime = datetime(2022, 11, 29, 12, 30, 0, 0, timezone.utc)
+        card, _ = scheduler.review_card(
+            card=card, grade=Grade.Good, review_datetime=review_datetime
+        )
+        card, _ = scheduler.review_card(
+            card=card, grade=Grade.Good, review_datetime=card.due
+        )
+        assert card.learning_state == LearningState.Review
+
+        retrievability_at_due = scheduler.get_card_retrievability(
+            card=card, current_datetime=card.due
+        )
+
+        assert retrievability_at_due == pytest.approx(desired_retention, abs=0.05)
+
+    def test_short_term_stability_good_easy_cannot_decrease(self):
+        """
+        Same-day reviews with Good or Easy grades must not decrease stability.
+        """
+        scheduler = Scheduler(enable_fuzzing=False)
+
+        card = Card()
+        review_datetime = datetime(2022, 11, 29, 12, 30, 0, 0, timezone.utc)
+        card, _ = scheduler.review_card(
+            card=card, grade=Grade.Good, review_datetime=review_datetime
+        )
+        stability_after_first = card.stability
+
+        same_day_datetime = review_datetime + timedelta(minutes=30)
+
+        # same-day Good review should not decrease stability
+        card_good = deepcopy(card)
+        card_good, _ = scheduler.review_card(
+            card=card_good, grade=Grade.Good, review_datetime=same_day_datetime
+        )
+        assert card_good.stability >= stability_after_first
+
+        # same-day Easy review should not decrease stability
+        card_easy = deepcopy(card)
+        card_easy, _ = scheduler.review_card(
+            card=card_easy, grade=Grade.Easy, review_datetime=same_day_datetime
+        )
+        assert card_easy.stability >= stability_after_first
+
+    def test_review_card_review_duration_in_log(self):
+        """
+        review_duration passed to review_card should appear in the returned ReviewLog.
+        """
+        scheduler = Scheduler()
+        card = Card()
+        review_datetime = datetime.now(timezone.utc)
+
+        review_duration_ms = 3500
+        _, review_log = scheduler.review_card(
+            card=card,
+            grade=Grade.Good,
+            review_datetime=review_datetime,
+            review_duration=review_duration_ms,
+        )
+        assert review_log.review_duration == review_duration_ms
+
+        # None review_duration should also be preserved
+        _, review_log_no_duration = scheduler.review_card(
+            card=card,
+            grade=Grade.Good,
+            review_datetime=review_datetime,
+            review_duration=None,
+        )
+        assert review_log_no_duration.review_duration is None
+
+    def test_reschedule_card_empty_review_logs(self):
+        """
+        reschedule_card with an empty review_logs list should return a card
+        with the same card_id but no review history.
+        """
+        scheduler = Scheduler(enable_fuzzing=False)
+
+        card = Card()
+        for grade in TEST_RATINGS_1:
+            card, _ = scheduler.review_card(
+                card=card, grade=grade, review_datetime=card.due
+            )
+
+        rescheduled_card = scheduler.reschedule_card(card=card, review_logs=[])
+
+        assert rescheduled_card.card_id == card.card_id
+        assert rescheduled_card.learning_state == LearningState.Learning
+        assert rescheduled_card.step == 0
+        assert rescheduled_card.stability is None
+        assert rescheduled_card.difficulty is None
+        assert rescheduled_card.last_review is None
+
+    def test_fuzz_range_bounds(self):
+        """
+        _get_fuzz_range should always return min_ivl >= 2, max_ivl <= maximum_interval,
+        and min_ivl <= max_ivl for a variety of interval lengths.
+        """
+        scheduler = Scheduler()
+
+        for interval_days in [2, 5, 10, 20, 50, 100, 365, 36500]:
+            min_ivl, max_ivl = scheduler._get_fuzz_range(interval_days)
+            assert min_ivl >= 2, (
+                f"min_ivl {min_ivl} < 2 for interval_days={interval_days}"
+            )
+            assert max_ivl <= scheduler.maximum_interval, (
+                f"max_ivl {max_ivl} > maximum_interval for interval_days={interval_days}"
+            )
+            assert min_ivl <= max_ivl, (
+                f"min_ivl {min_ivl} > max_ivl {max_ivl} for interval_days={interval_days}"
+            )
+
+    def test_performance_single_card_review(self):
+        """
+        A single review_card call should complete in under 10ms.
+        """
+        scheduler = Scheduler()
+        card = Card()
+
+        start = time.perf_counter()
+        card, _ = scheduler.review_card(
+            card=card,
+            grade=Grade.Good,
+            review_datetime=datetime.now(timezone.utc),
+        )
+        elapsed_ms = (time.perf_counter() - start) * 1000
+
+        assert elapsed_ms < 10, f"review_card took {elapsed_ms:.2f}ms, expected < 10ms"
+
+    def test_performance_reschedule_10000_cards(self):
+        """
+        Rescheduling 10,000 cards should complete in under 3 seconds.
+
+        Each card is given the same review history (TEST_RATINGS_1) so they all
+        have a realistic set of review logs. Only the rescheduling pass is timed.
+        """
+        scheduler = Scheduler(enable_fuzzing=False)
+
+        num_cards = 10_000
+        cards_and_logs = []
+
+        # build review history for each card (not timed)
+        for _ in range(num_cards):
+            card = Card()
+            review_logs = []
+            for grade in TEST_RATINGS_1:
+                card, review_log = scheduler.review_card(
+                    card=card, grade=grade, review_datetime=card.due
+                )
+                review_logs.append(review_log)
+            cards_and_logs.append((card, review_logs))
+
+        start = time.perf_counter()
+        for card, review_logs in cards_and_logs:
+            scheduler.reschedule_card(card=card, review_logs=review_logs)
+        elapsed_s = time.perf_counter() - start
+
+        assert elapsed_s < 3.0, (
+            f"Rescheduling 10,000 cards took {elapsed_s:.3f}s, expected < 3s"
+        )
