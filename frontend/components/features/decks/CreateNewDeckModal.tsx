@@ -1,3 +1,4 @@
+import { createDeck } from "@/app/apis/endpoints/decks";
 import { CText } from "@/components/common/CText";
 import { Dropdown } from "@/components/common/Dropdown";
 import { Modal } from "@/components/common/Modal";
@@ -30,7 +31,13 @@ export const CreateNewDeckModal = ({
   const [description, setDescription] = useState("");
 
   const onCreateDeck = () => {
-    console.log({ deckName, language, description });
+    createDeck({
+      deck_name: "Frontend test deck",
+      word_lang: "ja",
+      trans_lang: "en",
+      description: "Basic phrases",
+      is_public: false,
+    });
     // TODO: Handle deck creation
     onClose();
   };
