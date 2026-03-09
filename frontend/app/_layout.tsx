@@ -5,13 +5,40 @@ import { SHADOWS } from "@/constants/shadows";
 import { Arimo_400Regular, Arimo_700Bold } from "@expo-google-fonts/arimo";
 import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
-import { Pressable, View } from "react-native";
+import { ActivityIndicator, Pressable, View } from "react-native";
+import { AuthProvider, useAuth } from "./context/AuthContext";
 
-export default function RootLayout() {
-  useFonts({
-    Arimo_400Regular,
-    Arimo_700Bold,
-  });
+function HeaderRight() {
+  const { signOut, user } = useAuth();
+
+  // Only show profile icon if user is authenticated
+  if (!user) return null;
+
+  return (
+    <Pressable onPress={signOut} style={{ marginHorizontal: 15, width: 38 }}>
+      <ProfileIcon />
+    </Pressable>
+  );
+}
+
+function RootLayoutNav() {
+  const { isLoading } = useAuth();
+
+  // Show loading screen while checking auth
+  if (isLoading) {
+    return (
+      <View
+        style={{
+          flex: 1,
+          justifyContent: "center",
+          alignItems: "center",
+          backgroundColor: COLORS.backgroundPrimary,
+        }}
+      >
+        <ActivityIndicator size="large" color={COLORS.accent.primary} />
+      </View>
+    );
+  }
 
   return (
     <Stack
@@ -26,18 +53,24 @@ export default function RootLayout() {
             <AppLogo />
           </View>
         ),
-        headerRight: () => (
-          <Pressable
-            onPress={() => console.log("profile clicked")}
-            style={{ marginHorizontal: 15, width: 38 }}
-          >
-            <ProfileIcon />
-          </Pressable>
-        ),
+        headerRight: () => <HeaderRight />,
       }}
     >
-      <Stack.Screen name="(tabs)" options={{ headerShown: true }} />
       <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+      <Stack.Screen name="(tabs)" options={{ headerShown: true }} />
     </Stack>
+  );
+}
+
+export default function RootLayout() {
+  useFonts({
+    Arimo_400Regular,
+    Arimo_700Bold,
+  });
+
+  return (
+    <AuthProvider>
+      <RootLayoutNav />
+    </AuthProvider>
   );
 }

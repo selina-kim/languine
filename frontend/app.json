@@ -53,6 +53,12 @@
         {
           "launchMode": "most-recent"
         }
+      ],
+      [
+        "@react-native-google-signin/google-signin",
+        {
+          "iosUrlScheme": "com.googleusercontent.apps.languine"
+        }
       ]
     ],
     "experiments": {
