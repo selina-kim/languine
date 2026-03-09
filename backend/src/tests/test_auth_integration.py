@@ -131,6 +131,81 @@ class TestLogoutIntegration:
         assert "message" in data or "success" in data
     
 
+class TestUserCreationIntegration:
+    """Integration tests for user creation through OAuth."""
+    
+    def test_oauth_creates_user_in_database(self, client, skip_if_no_google_config, skip_if_no_google_token):
+        """Test that Google OAuth creates user in database."""
+        response = client.post(
+            "/auth/google",
+            json={"id_token": REAL_TOKEN}
+        )
+        
+        assert response.status_code == 200
+        data = response.get_json()
+        
+        # Verify user data is returned
+        assert "user" in data
+        user = data["user"]
+        assert "u_id" in user
+        assert "email" in user
+        assert "display_name" in user
+        assert "timezone" in user
+        
+        # Verify user can be retrieved
+        access_token = data["tokens"]["access_token"]
+        profile_response = client.get(
+            "/users/me",
+            headers={"Authorization": f"Bearer {access_token}"}
+        )
+        assert profile_response.status_code == 200
+        profile_data = profile_response.get_json()
+        assert profile_data["u_id"] == user["u_id"]
+        assert profile_data["email"] == user["email"]
+    
+    def test_oauth_returns_existing_user(self, client, skip_if_no_google_config, skip_if_no_google_token):
+        """Test that subsequent OAuth logins return existing user."""
+        # First login
+        response1 = client.post(
+            "/auth/google",
+            json={"id_token": REAL_TOKEN}
+        )
+        assert response1.status_code == 200
+        user1 = response1.get_json()["user"]
+        
+        # Second login with same token
+        response2 = client.post(
+            "/auth/google",
+            json={"id_token": REAL_TOKEN}
+        )
+        assert response2.status_code == 200
+        user2 = response2.get_json()["user"]
+        
+        # Should return same user
+        assert user1["u_id"] == user2["u_id"]
+        assert user1["email"] == user2["email"]
+    
+    def test_created_user_has_default_fsrs_settings(self, client, skip_if_no_google_config, skip_if_no_google_token):
+        """Test that newly created user has correct FSRS default values."""
+        response = client.post(
+            "/auth/google",
+            json={"id_token": REAL_TOKEN}
+        )
+        
+        assert response.status_code == 200
+        user = response.get_json()["user"]
+        
+        # Verify default FSRS settings
+        assert user["new_cards_per_day"] == 10
+        assert user["desired_retention"] == 0.9
+        assert user["auto_optimize"] is True
+        assert user["num_reviews_per_optimize"] == 256
+        assert user["total_reviews"] == 0
+        assert user["reviews_since_last_optimize"] == 0
+        # fsrs_parameters should be None initially
+        assert user["fsrs_parameters"] is None
+
+
 class TestAuthFlowIntegration:
     """Integration tests for complete authentication flow."""
     

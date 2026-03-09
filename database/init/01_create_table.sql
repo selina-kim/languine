@@ -6,8 +6,14 @@ create table Users (
     email varchar(255) unique not null,
     display_name varchar(30) not null,
     timezone text not null,
-    new_cards_per_day integer default 10,
-    desired_retention double precision default 0.9    
+    new_cards_per_day integer default 10, 
+    -- fsrs fields
+    desired_retention double precision default 0.9,
+    fsrs_parameters double precision[] default null, 
+    auto_optimize boolean default true not null,
+    num_reviews_per_optimize int default 256 not null, 
+    total_reviews int default 0 not null, 
+    reviews_since_last_optimize int default 0 not null
 );
 -- column definitions:
 -- u_id: primary key, storing user id from 'sub' field in Google ID Token
@@ -126,3 +132,6 @@ create table Review_Logs (
 
 -- index: all review history by card
 create index idx_review_logs_card ON Review_Logs(c_id);
+
+-- TODO: maybe split file into multiple files
+-- TODO: update schema_design.png

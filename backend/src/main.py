@@ -8,6 +8,7 @@ from routes.auth import auth_bp
 from routes.images import images_bp
 from routes.decks import decks_bp
 from routes.cards import cards_bp
+from routes.users import users_bp
 from dotenv import load_dotenv
 from flask_jwt_extended import JWTManager
 from flask_cors import CORS
@@ -48,6 +49,7 @@ def create_app():
     app.register_blueprint(images_bp)
     app.register_blueprint(decks_bp)
     app.register_blueprint(cards_bp)
+    app.register_blueprint(users_bp)
 
     return app
 

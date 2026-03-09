@@ -31,6 +31,23 @@ def fake_google_token_valid(*args, **kwargs):
     }
 
 
+def fake_user_data(*args, **kwargs):
+    """Mock user data returned from get_or_create_oauth_user."""
+    return {
+        'u_id': 'google-id-123',
+        'email': 'test@example.com',
+        'display_name': 'test',
+        'timezone': 'UTC',
+        'new_cards_per_day': 10,
+        'desired_retention': 0.9,
+        'fsrs_parameters': None,
+        'auto_optimize': True,
+        'num_reviews_per_optimize': 256,
+        'total_reviews': 0,
+        'reviews_since_last_optimize': 0
+    }
+
+
 def fake_google_token_invalid(*args, **kwargs):
     """Mock invalid Google token."""
     raise ValueError('Invalid token')
@@ -54,6 +71,11 @@ class TestGoogleOAuthUnit:
             "routes.auth.id_token.verify_oauth2_token",
             fake_google_token_valid
         )
+        # mock the database user creation/retrieval
+        monkeypatch.setattr(
+            "routes.auth.AuthService.get_or_create_oauth_user",
+            fake_user_data
+        )
         
         response = client.post(
             "/auth/google",
@@ -66,6 +88,101 @@ class TestGoogleOAuthUnit:
         assert response.status_code == 200
         assert "access_token" in data["tokens"]
         assert "refresh_token" in data["tokens"]
+    
+    def test_google_oauth_creates_new_user(self, client, monkeypatch):
+        """Test that Google OAuth creates a new user on first login."""
+        # Mock Google token verification
+        monkeypatch.setattr(
+            "routes.auth.id_token.verify_oauth2_token",
+            fake_google_token_valid
+        )
+        # Mock user creation
+        monkeypatch.setattr(
+            "routes.auth.AuthService.get_or_create_oauth_user",
+            fake_user_data
+        )
+        
+        response = client.post(
+            "/auth/google",
+            json={"id_token": "fake-google-token"}
+        )
+        
+        data = json.loads(response.data)
+        
+        # Verify user data is returned
+        assert response.status_code == 200
+        assert "user" in data
+        assert data["user"]["u_id"] == "google-id-123"
+        assert data["user"]["email"] == "test@example.com"
+        assert "display_name" in data["user"]
+        assert "timezone" in data["user"]
+        assert "new_cards_per_day" in data["user"]
+        assert "desired_retention" in data["user"]
+    
+    def test_google_oauth_returns_existing_user(self, client, monkeypatch):
+        """Test that Google OAuth returns existing user on subsequent logins."""
+        # Mock Google token verification
+        monkeypatch.setattr(
+            "routes.auth.id_token.verify_oauth2_token",
+            fake_google_token_valid
+        )
+        # Mock user retrieval
+        monkeypatch.setattr(
+            "routes.auth.AuthService.get_or_create_oauth_user",
+            fake_user_data
+        )
+        
+        # First login - creates user
+        response1 = client.post(
+            "/auth/google",
+            json={"id_token": "fake-google-token"}
+        )
+        data1 = json.loads(response1.data)
+        assert response1.status_code == 200
+        
+        # Second login - retrieves existing user
+        response2 = client.post(
+            "/auth/google",
+            json={"id_token": "fake-google-token"}
+        )
+        data2 = json.loads(response2.data)
+        
+        assert response2.status_code == 200
+        # Should return same user ID
+        assert data2["user"]["u_id"] == data1["user"]["u_id"]
+        assert data2["user"]["email"] == data1["user"]["email"]
+    
+    def test_google_oauth_user_has_fsrs_fields(self, client, monkeypatch):
+        """Test that created user has all FSRS fields initialized."""
+        monkeypatch.setattr(
+            "routes.auth.id_token.verify_oauth2_token",
+            fake_google_token_valid
+        )
+        monkeypatch.setattr(
+            "routes.auth.AuthService.get_or_create_oauth_user",
+            fake_user_data
+        )
+        
+        response = client.post(
+            "/auth/google",
+            json={"id_token": "fake-google-token"}
+        )
+        
+        data = json.loads(response.data)
+        user = data["user"]
+        
+        # Verify FSRS fields are present
+        assert "fsrs_parameters" in user
+        assert "auto_optimize" in user
+        assert "num_reviews_per_optimize" in user
+        assert "total_reviews" in user
+        assert "reviews_since_last_optimize" in user
+        
+        # Verify default values
+        assert user["auto_optimize"] is True
+        assert user["num_reviews_per_optimize"] == 256
+        assert user["total_reviews"] == 0
+        assert user["reviews_since_last_optimize"] == 0
     
     def test_google_oauth_missing_token(self, client, monkeypatch):
         """Test error handling when token is missing."""
