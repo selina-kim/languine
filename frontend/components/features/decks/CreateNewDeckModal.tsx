@@ -1,4 +1,4 @@
-import { createDeck } from "@/app/apis/endpoints/decks";
+import { createDeck } from "@/apis/endpoints/decks";
 import { CText } from "@/components/common/CText";
 import { Dropdown } from "@/components/common/Dropdown";
 import { Modal } from "@/components/common/Modal";

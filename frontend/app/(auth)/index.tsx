@@ -4,8 +4,8 @@ import { COLORS } from "@/constants/colors";
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
 import { useEffect, useState } from "react";
 import { ActivityIndicator, Alert, StyleSheet, View } from "react-native";
-import { exchangeGoogleToken } from "../apis/endpoints/auth";
-import { useAuth } from "../context/AuthContext";
+import { exchangeGoogleToken } from "@/apis/endpoints/auth";
+import { useAuth } from "@/context/AuthContext";
 
 // Configure Google Sign-In
 GoogleSignin.configure({

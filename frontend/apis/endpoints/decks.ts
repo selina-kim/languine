@@ -1,5 +1,5 @@
 import { CreateDeckRequestPayload } from "@/types/decks";
-import client from "../client";
+import client from "@/apis/client";
 
 // TODO
 export const getDecks = () => client.get("");

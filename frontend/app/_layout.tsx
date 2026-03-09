@@ -6,7 +6,7 @@ import { Arimo_400Regular, Arimo_700Bold } from "@expo-google-fonts/arimo";
 import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
 import { ActivityIndicator, Pressable, View } from "react-native";
-import { AuthProvider, useAuth } from "./context/AuthContext";
+import { AuthProvider, useAuth } from "@/context/AuthContext";
 
 function HeaderRight() {
   const { signOut, user } = useAuth();

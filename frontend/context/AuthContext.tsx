@@ -1,7 +1,7 @@
 import { User } from "@/types/auth";
 import { useRouter, useSegments } from "expo-router";
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { storage } from "../utils/storage";
+import { storage } from "@/utils/storage";
 
 interface AuthContextType {
   user: User | null;
