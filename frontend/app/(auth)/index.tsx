@@ -1,97 +1,71 @@
 import { CButton } from "@/components/common/CButton";
 import { CText } from "@/components/common/CText";
 import { COLORS } from "@/constants/colors";
-import * as Google from "expo-auth-session/providers/google";
-import * as WebBrowser from "expo-web-browser";
-import { useCallback, useEffect, useState } from "react";
+import { GoogleSignin } from "@react-native-google-signin/google-signin";
+import { useEffect, useState } from "react";
 import { ActivityIndicator, Alert, StyleSheet, View } from "react-native";
+import { exchangeGoogleToken } from "../apis/endpoints/auth";
 import { useAuth } from "../context/AuthContext";
 
-// Required for web-based OAuth flows
-WebBrowser.maybeCompleteAuthSession();
+// Configure Google Sign-In
+GoogleSignin.configure({
+  webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
+  // iosClientId: process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID,
+  offlineAccess: true, // To get refresh token
+  scopes: ["openid", "profile", "email"],
+});
 
 export default function LoginScreen() {
   const { signIn } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
 
-  // Configure Google OAuth request
-  const [, response, promptAsync] = Google.useAuthRequest({
-    webClientId: process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID,
-    // iosClientId: googleAuthConfig.iosClientId,
-    // androidClientId: googleAuthConfig.androidClientId,
-    scopes: ["profile", "email"],
-  });
-
-  const handleSuccessfulLogin = useCallback(
-    async (authentication: any) => {
-      try {
-        // Get user info from Google
-        const userInfoResponse = await fetch(
-          "https://www.googleapis.com/userinfo/v2/me",
-          {
-            headers: { Authorization: `Bearer ${authentication.accessToken}` },
-          },
-        );
-        const userInfo = await userInfoResponse.json();
-
-        console.log("User Info:", userInfo);
-        console.log("Access Token:", authentication.accessToken);
-
-        // TODO: Send the access token to your backend to verify and create/login user
-        // Example API call:
-        // const response = await fetch('YOUR_BACKEND_URL/auth/google', {
-        //   method: 'POST',
-        //   headers: { 'Content-Type': 'application/json' },
-        //   body: JSON.stringify({
-        //     accessToken: authentication.accessToken,
-        //     idToken: authentication.idToken,
-        //   }),
-        // });
-        // const data = await response.json();
-
-        // Store the user session/token (you might want to use AsyncStorage or SecureStore)
-        // await SecureStore.setItemAsync('userToken', data.token);
-
-        // Sign in the user - this will automatically redirect to tabs
-        signIn({
-          ...userInfo,
-          accessToken: authentication.accessToken,
-          idToken: authentication.idToken,
-        });
-
-        setIsLoading(false);
-      } catch (error) {
-        console.error("Error fetching user info:", error);
-        Alert.alert("Error", "Failed to get user information");
-        setIsLoading(false);
-      }
-    },
-    [signIn],
-  );
-
-  // Handle the OAuth response
+  // Check if Google Play Services are available on Android
   useEffect(() => {
-    if (response?.type === "success") {
-      const { authentication } = response;
-      handleSuccessfulLogin(authentication);
-    } else if (response?.type === "error") {
-      Alert.alert(
-        "Authentication Error",
-        response.error?.message || "Failed to authenticate",
-      );
-      setIsLoading(false);
-    } else if (response?.type === "dismiss" || response?.type === "cancel") {
-      setIsLoading(false);
-    }
-  }, [response, handleSuccessfulLogin]);
+    GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true }).catch(
+      (error) => {
+        console.error("Play Services not available:", error);
+      },
+    );
+  }, []);
 
   const handleGoogleSignIn = async () => {
     setIsLoading(true);
     try {
-      await promptAsync();
+      // Check if user is already signed in
+      await GoogleSignin.hasPlayServices();
+
+      // Trigger Google Sign-In
+      const userInfo = await GoogleSignin.signIn();
+
+      console.log("Google Sign-In successful:", userInfo);
+
+      // Get the ID token from the user info
+      const tokens = await GoogleSignin.getTokens();
+      const idToken = tokens.idToken;
+      const accessToken = tokens.accessToken;
+
+      if (!idToken) {
+        throw new Error("No ID token received from Google");
+      }
+
+      // Exchange Google tokens for your backend JWT token
+      const { user } = await exchangeGoogleToken(accessToken, idToken);
+
+      console.log("Backend authentication successful:", user.email);
+
+      // Sign in with backend token and user data
+      await signIn(user);
+
+      setIsLoading(false);
     } catch (error) {
-      console.error("Error prompting Google sign-in:", error);
-      Alert.alert("Error", "Failed to open Google sign-in");
+      console.error("Google Sign-In error:", error);
+
+      Alert.alert(
+        "Authentication Error",
+        error instanceof Error
+          ? error.message
+          : "Failed to authenticate with Google",
+      );
       setIsLoading(false);
     }
   };

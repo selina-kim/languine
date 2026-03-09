@@ -55,3 +55,25 @@ npx expo start
   - [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
 
 You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+
+### Build the Application
+
+#### Build for Android
+
+1. Install EAS CLI (if not already installed)
+
+```bash
+npm install -g eas-cli
+```
+
+2. Login to your Expo account
+
+```bash
+eas login
+```
+
+3.
+
+```bash
+eas build --profile development --platform android
+```
