@@ -1,10 +1,12 @@
 """Unit tests for DeckService.
 
-Tests the deck service logic with mocked dependencies:
-- Deck CRUD operations (create, read, list)
-- Deck queries (due cards, recent decks)
-- Import/export support methods
-- Database error handling
+Tests the deck import/export service logic without external dependencies:
+- Data format transformations (JSON, CSV, Anki)
+- Export functionality (deck data to various formats)
+- Import functionality (parsing various formats to deck data)
+- Data validation and error handling
+- Edge cases (empty data, invalid formats, malformed input)
+- No database, HTTP, or authentication dependencies
 
 Run this test file:
     docker compose exec backend pytest src/tests/test_decks_unit.py -v
@@ -14,351 +16,239 @@ Run with coverage:
 """
 
 import pytest
-import psycopg2
-from datetime import datetime
-from unittest.mock import MagicMock, patch
-from services.deck_service import (
-    DeckService,
-    DuplicateDeckNameError,
-    UserNotFoundError,
-    DatabaseError
-)
-
-
-class _FakeIntegrityError(psycopg2.IntegrityError):
-    """Custom IntegrityError that allows setting pgcode."""
-    def __init__(self, msg: str, pgcode: str):
-        super().__init__(msg)
-        self._pgcode = pgcode
-    
-    @property
-    def pgcode(self):
-        return self._pgcode
+import json
+from services.deck_service import DeckService
 
 
 @pytest.fixture
-def deck_service():
-    """Fixture for DeckService instance"""
-    return DeckService()
-
-
-@pytest.fixture
-def sample_deck_response():
-    """Sample deck row from database"""
+def sample_deck_data():
+    """Sample deck data for testing"""
     return {
-        "d_id": 1,
-        "deck_name": "Spanish Basics",
-        "word_lang": "es",
-        "trans_lang": "en",
-        "description": "Basic Spanish vocabulary",
-        "creation_date": datetime(2026, 1, 15),
-        "last_reviewed": None,
-        "is_public": False
-    }
-
-
-@pytest.fixture
-def sample_card_response():
-    """Sample card row from database"""
-    return {
-        "c_id": 1,
-        "word": "hola",
-        "translation": "hello",
-        "definition": "A greeting",
-        "word_example": "Hola, ¿cómo estás?",
-        "trans_example": "Hello, how are you?",
-        "word_roman": "oh-lah",
-        "trans_roman": "",
-        "image": "",
-        "learning_state": 0,
-        "difficulty": 0.3,
-        "stability": 1.0,
-        "due_date": "2026-01-15T00:00:00"
-    }
-
-
-class TestGetDeckWithCards:
-    """Tests for get_deck_with_cards method."""
-    
-    def test_get_deck_with_cards_success(self, deck_service, sample_deck_response, sample_card_response):
-        """Test successful deck retrieval with cards."""
-        mock_cursor = MagicMock()
-        mock_cursor.fetchone.return_value = sample_deck_response
-        mock_cursor.fetchall.return_value = [sample_card_response]
-        
-        with patch('services.deck_service.get_db_cursor') as mock_db:
-            mock_db.return_value.__enter__.return_value = mock_cursor
-            result = DeckService.get_deck_with_cards("user-123", 1)
-        
-        assert result is not None
-        assert result["deck"]["deck_name"] == "Spanish Basics"
-        assert len(result["cards"]) == 1
-        assert result["cards"][0]["word"] == "hola"
-    
-    def test_get_deck_with_cards_not_found(self, deck_service):
-        """Test retrieval of non-existent deck."""
-        mock_cursor = MagicMock()
-        mock_cursor.fetchone.return_value = None
-        
-        with patch('services.deck_service.get_db_cursor') as mock_db:
-            mock_db.return_value.__enter__.return_value = mock_cursor
-            result = DeckService.get_deck_with_cards("user-123", 999)
-        
-        assert result is None
-    
-    def test_get_deck_with_cards_empty_deck(self, deck_service, sample_deck_response):
-        """Test deck with no cards."""
-        mock_cursor = MagicMock()
-        mock_cursor.fetchone.return_value = sample_deck_response
-        mock_cursor.fetchall.return_value = []
-        
-        with patch('services.deck_service.get_db_cursor') as mock_db:
-            mock_db.return_value.__enter__.return_value = mock_cursor
-            result = DeckService.get_deck_with_cards("user-123", 1)
-        
-        assert result is not None
-        assert len(result["cards"]) == 0
-
-
-class TestGetDeckForExport:
-    """Tests for get_deck_for_export method."""
-    
-    def test_get_deck_for_export_success(self, deck_service, sample_deck_response, sample_card_response):
-        """Test successful deck export data retrieval."""
-        mock_cursor = MagicMock()
-        mock_cursor.fetchone.return_value = sample_deck_response
-        mock_cursor.fetchall.return_value = [sample_card_response]
-        
-        with patch('services.deck_service.get_db_cursor') as mock_db:
-            mock_db.return_value.__enter__.return_value = mock_cursor
-            result = DeckService.get_deck_for_export("user-123", 1)
-        
-        assert result is not None
-        assert "deck" in result
-        assert "cards" in result
-        assert result["deck"]["deck_name"] == "Spanish Basics"
-    
-    def test_get_deck_for_export_not_found(self, deck_service):
-        """Test export data for non-existent deck."""
-        mock_cursor = MagicMock()
-        mock_cursor.fetchone.return_value = None
-        
-        with patch('services.deck_service.get_db_cursor') as mock_db:
-            mock_db.return_value.__enter__.return_value = mock_cursor
-            result = DeckService.get_deck_for_export("user-123", 999)
-        
-        assert result is None
-
-
-class TestListUserDecks:
-    """Tests for list_user_decks method."""
-    
-    def test_list_user_decks_success(self, deck_service, sample_deck_response):
-        """Test listing user's decks."""
-        deck_with_count = {**sample_deck_response, "card_count": 10}
-        mock_cursor = MagicMock()
-        mock_cursor.fetchall.return_value = [deck_with_count]
-        
-        with patch('services.deck_service.get_db_cursor') as mock_db:
-            mock_db.return_value.__enter__.return_value = mock_cursor
-            result = DeckService.list_user_decks("user-123")
-        
-        assert len(result) == 1
-        assert result[0]["deck_name"] == "Spanish Basics"
-        assert result[0]["card_count"] == 10
-    
-    def test_list_user_decks_empty(self, deck_service):
-        """Test listing when user has no decks."""
-        mock_cursor = MagicMock()
-        mock_cursor.fetchall.return_value = []
-        
-        with patch('services.deck_service.get_db_cursor') as mock_db:
-            mock_db.return_value.__enter__.return_value = mock_cursor
-            result = DeckService.list_user_decks("user-123")
-        
-        assert len(result) == 0
-
-
-class TestCreateDeck:
-    """Tests for create_deck method."""
-    
-    def test_create_deck_success(self, deck_service, sample_deck_response):
-        """Test successful deck creation."""
-        mock_cursor = MagicMock()
-        mock_cursor.fetchone.return_value = sample_deck_response
-        
-        deck_data = {
+        "deck": {
             "deck_name": "Spanish Basics",
-            "word_lang": "es",
-            "trans_lang": "en",
-            "description": "Basic Spanish vocabulary"
-        }
-        
-        with patch('services.deck_service.get_db_cursor') as mock_db:
-            mock_db.return_value.__enter__.return_value = mock_cursor
-            result = DeckService.create_deck("user-123", deck_data)
-        
-        assert result["deck_name"] == "Spanish Basics"
-        assert "d_id" in result
-    
-    def test_create_deck_duplicate_name(self, deck_service):
-        """Test deck creation with duplicate name."""
-        mock_cursor = MagicMock()
-        
-        # Simulate unique constraint violation
-        integrity_error = _FakeIntegrityError("duplicate key", "23505")
-        mock_cursor.execute.side_effect = integrity_error
-        
-        deck_data = {
-            "deck_name": "Duplicate",
-            "word_lang": "es",
-            "trans_lang": "en"
-        }
-        
-        with patch('services.deck_service.get_db_cursor') as mock_db:
-            mock_db.return_value.__enter__.return_value = mock_cursor
-            with pytest.raises(DuplicateDeckNameError):
-                DeckService.create_deck("user-123", deck_data)
-    
-    def test_create_deck_user_not_found(self, deck_service):
-        """Test deck creation with non-existent user."""
-        mock_cursor = MagicMock()
-        
-        # Simulate foreign key violation
-        integrity_error = _FakeIntegrityError("foreign key violation", "23503")
-        mock_cursor.execute.side_effect = integrity_error
-        
-        deck_data = {
-            "deck_name": "Test",
-            "word_lang": "es",
-            "trans_lang": "en"
-        }
-        
-        with patch('services.deck_service.get_db_cursor') as mock_db:
-            mock_db.return_value.__enter__.return_value = mock_cursor
-            with pytest.raises(UserNotFoundError):
-                DeckService.create_deck("invalid-user", deck_data)
-    
-    def test_create_deck_database_error(self, deck_service):
-        """Test deck creation with database error."""
-        mock_cursor = MagicMock()
-        mock_cursor.execute.side_effect = psycopg2.ProgrammingError("syntax error")
-        
-        deck_data = {
-            "deck_name": "Test",
-            "word_lang": "es",
-            "trans_lang": "en"
-        }
-        
-        with patch('services.deck_service.get_db_cursor') as mock_db:
-            mock_db.return_value.__enter__.return_value = mock_cursor
-            with pytest.raises(DatabaseError):
-                DeckService.create_deck("user-123", deck_data)
+            "word_lang": "Spanish",
+            "trans_lang": "English",
+            "description": "Basic Spanish vocabulary",
+            "creation_date": "2026-01-30T00:00:00"
+        },
+        "cards": [
+            {
+                "word": "hola",
+                "translation": "hello",
+                "definition": "A greeting",
+                "word_example": "Hola, ¿cómo estás?",
+                "trans_example": "Hello, how are you?",
+                "word_roman": "oh-lah",
+                "trans_roman": "",
+                "image": ""
+            },
+            {
+                "word": "adiós",
+                "translation": "goodbye",
+                "definition": "A farewell",
+                "word_example": "Adiós, hasta luego",
+                "trans_example": "Goodbye, see you later",
+                "word_roman": "ah-dee-ohs",
+                "trans_roman": "",
+                "image": ""
+            }
+        ]
+    }
 
 
-class TestSaveImportedDeck:
-    """Tests for save_imported_deck method."""
+class TestDeckExport:
+    """Tests for deck export functionality"""
     
-    def test_save_imported_deck_success(self, deck_service, sample_deck_response):
-        """Test successful save of imported deck."""
-        mock_cursor = MagicMock()
-        mock_cursor.fetchone.return_value = sample_deck_response
+    def test_export_to_json_success(self, sample_deck_data):
+        """Test successful JSON export"""
+        result = DeckService.export_deck_to_json(sample_deck_data)
         
-        imported_data = {
-            "deck": {
-                "deck_name": "Imported Deck",
-                "word_lang": "fr",
-                "trans_lang": "en",
-                "description": "Imported"
-            },
-            "cards": [
-                {
-                    "word": "bonjour",
-                    "translation": "hello",
-                    "definition": "",
-                    "word_example": "",
-                    "trans_example": "",
-                    "word_roman": "",
-                    "trans_roman": "",
-                    "image": ""
-                }
-            ]
-        }
-        
-        with patch('services.deck_service.get_db_cursor') as mock_db:
-            mock_db.return_value.__enter__.return_value = mock_cursor
-            result = DeckService.save_imported_deck("user-123", imported_data)
-        
-        assert "deck_id" in result
-        assert result["cards_count"] == 1
+        assert result is not None
+        data = json.loads(result)
+        assert data["format"] == "capstone_deck_v1"
+        assert "exported_at" in data
+        assert data["deck"]["deck_name"] == "Spanish Basics"
+        assert len(data["cards"]) == 2
+        assert data["cards"][0]["word"] == "hola"
     
-    def test_save_imported_deck_empty_cards(self, deck_service, sample_deck_response):
-        """Test save imported deck with no cards."""
-        mock_cursor = MagicMock()
-        mock_cursor.fetchone.return_value = sample_deck_response
-        
-        imported_data = {
-            "deck": {
-                "deck_name": "Empty Deck",
-                "word_lang": "fr",
-                "trans_lang": "en"
-            },
+    def test_export_to_json_empty_cards(self):
+        """Test JSON export with no cards"""
+        deck_data = {
+            "deck": {"deck_name": "Empty", "word_lang": "en", "trans_lang": "es"},
             "cards": []
         }
-        
-        with patch('services.deck_service.get_db_cursor') as mock_db:
-            mock_db.return_value.__enter__.return_value = mock_cursor
-            result = DeckService.save_imported_deck("user-123", imported_data)
-        
-        assert result["cards_count"] == 0
-
-
-class TestGetDecksWithDueCards:
-    """Tests for get_decks_with_due_cards method."""
+        result = DeckService.export_deck_to_json(deck_data)
+        data = json.loads(result)
+        assert len(data["cards"]) == 0
     
-    def test_get_decks_with_due_cards_success(self, deck_service):
-        """Test retrieval of decks with due cards."""
-        mock_cursor = MagicMock()
-        mock_cursor.fetchall.return_value = [
-            {"d_id": 1, "deck_name": "Spanish", "due_count": 5, "total_cards": 10}
-        ]
+    def test_export_to_csv_success(self, sample_deck_data):
+        """Test successful CSV export"""
+        result = DeckService.export_deck_to_csv(sample_deck_data)
         
-        with patch('services.deck_service.get_db_cursor') as mock_db:
-            mock_db.return_value.__enter__.return_value = mock_cursor
-            result = DeckService.get_decks_with_due_cards("user-123")
+        assert result is not None
+        lines = result.strip().split('\n')
+        assert len(lines) == 3  # header + 2 cards
+        assert "word,translation" in lines[0]
+        assert "hola,hello" in lines[1]
+    
+    def test_export_to_csv_empty_cards(self):
+        """Test CSV export with no cards returns empty string"""
+        deck_data = {"deck": {}, "cards": []}
+        result = DeckService.export_deck_to_csv(deck_data)
+        assert result == ""
+    
+    def test_export_to_anki_success(self, sample_deck_data):
+        """Test successful Anki export"""
+        result = DeckService.export_deck_to_anki(sample_deck_data)
         
-        assert len(result) == 1
-        assert result[0]["due_count"] == 5
+        assert result is not None
+        lines = result.strip().split('\n')
+        
+        # Check metadata comments
+        assert any("#deck:" in line for line in lines)
+        assert any("#tags:" in line for line in lines)
+        
+        # Check cards are tab-separated
+        card_lines = [l for l in lines if not l.startswith('#')]
+        assert len(card_lines) == 2
+        assert "hola\thello" in card_lines[0]
+    
+    def test_export_to_anki_with_definition(self):
+        """Test Anki export includes definition in extra field"""
+        deck_data = {
+            "deck": {"deck_name": "Test", "word_lang": "es", "trans_lang": "en"},
+            "cards": [{
+                "word": "test",
+                "translation": "prueba",
+                "definition": "A trial",
+                "word_example": "",
+                "trans_example": "",
+                "word_roman": "",
+                "trans_roman": "",
+                "image": ""
+            }]
+        }
+        result = DeckService.export_deck_to_anki(deck_data)
+        assert "<b>Definition:</b> A trial" in result
 
 
-class TestGetRecentDecks:
-    """Tests for get_recent_decks method."""
+class TestDeckImport:
+    """Tests for deck import functionality"""
     
-    def test_get_recent_decks_success(self, deck_service):
-        """Test retrieval of recently reviewed decks."""
-        mock_cursor = MagicMock()
-        mock_cursor.fetchall.return_value = [
-            {"d_id": 1, "deck_name": "Spanish", "card_count": 10}
-        ]
+    def test_import_from_json_success(self, sample_deck_data):
+        """Test successful JSON import"""
+        json_data = DeckService.export_deck_to_json(sample_deck_data)
+        result = DeckService.import_deck_from_json(json_data)
         
-        with patch('services.deck_service.get_db_cursor') as mock_db:
-            mock_db.return_value.__enter__.return_value = mock_cursor
-            result = DeckService.get_recent_decks("user-123")
-        
-        assert len(result) == 1
+        assert result["deck"]["deck_name"] == "Spanish Basics"
+        assert len(result["cards"]) == 2
+        assert result["cards"][0]["word"] == "hola"
     
-    def test_get_recent_decks_with_limit(self, deck_service):
-        """Test limit parameter for recent decks."""
-        mock_cursor = MagicMock()
-        mock_cursor.fetchall.return_value = []
+    def test_import_from_json_invalid_format(self):
+        """Test JSON import with invalid format"""
+        with pytest.raises(ValueError, match="Invalid JSON format"):
+            DeckService.import_deck_from_json("not valid json")
+    
+    def test_import_from_json_missing_deck_field(self):
+        """Test JSON import missing required deck field"""
+        invalid_data = json.dumps({"cards": []})
+        with pytest.raises(ValueError, match="Missing 'deck' or 'cards' field"):
+            DeckService.import_deck_from_json(invalid_data)
+    
+    def test_import_from_json_missing_required_deck_info(self):
+        """Test JSON import with missing required deck info"""
+        invalid_data = json.dumps({
+            "deck": {"deck_name": "Test"},
+            "cards": []
+        })
+        with pytest.raises(ValueError, match="Missing required deck field"):
+            DeckService.import_deck_from_json(invalid_data)
+    
+    def test_import_from_json_invalid_card_structure(self):
+        """Test JSON import with invalid card structure"""
+        invalid_data = json.dumps({
+            "deck": {"deck_name": "Test", "word_lang": "es", "trans_lang": "en"},
+            "cards": [{"word": "test"}]  # missing translation
+        })
+        with pytest.raises(ValueError, match="missing required fields"):
+            DeckService.import_deck_from_json(invalid_data)
+    
+    def test_import_from_csv_success(self):
+        """Test successful CSV import"""
+        csv_data = """word,translation,definition,word_example,trans_example,word_roman,trans_roman,image
+hola,hello,A greeting,Hola!,Hello!,oh-lah,,
+adiós,goodbye,A farewell,Adiós,Goodbye,ah-dee-ohs,,"""
         
-        with patch('services.deck_service.get_db_cursor') as mock_db:
-            mock_db.return_value.__enter__.return_value = mock_cursor
-            DeckService.get_recent_decks("user-123", limit=5)
+        result = DeckService.import_deck_from_csv(
+            csv_data, "Spanish Basics", "Spanish", "English"
+        )
         
-        # Verify the query was called with correct parameters
-        assert mock_cursor.execute.called
-        query, params = mock_cursor.execute.call_args[0]
+        assert result["deck"]["deck_name"] == "Spanish Basics"
+        assert len(result["cards"]) == 2
+        assert result["cards"][0]["word"] == "hola"
+        assert result["cards"][1]["translation"] == "goodbye"
+    
+    def test_import_from_csv_missing_required_columns(self):
+        """Test CSV import with missing required columns"""
+        csv_data = "word,definition\nhola,greeting"
         
-        # Verify limit parameter is in the query params (exact position may vary)
-        assert 5 in params, "Limit parameter should be passed to query"
+        with pytest.raises(ValueError, match="must contain 'word' and 'translation' columns"):
+            DeckService.import_deck_from_csv(csv_data, "Test", "es", "en")
+    
+    def test_import_from_csv_empty_required_fields(self):
+        """Test CSV import with empty required fields"""
+        csv_data = "word,translation\nhola,\n,goodbye"
+        
+        with pytest.raises(ValueError, match="Missing required fields"):
+            DeckService.import_deck_from_csv(csv_data, "Test", "es", "en")
+    
+    def test_import_from_csv_no_valid_cards(self):
+        """Test CSV import with no valid cards"""
+        csv_data = "word,translation\n"
+        
+        with pytest.raises(ValueError, match="No valid cards found"):
+            DeckService.import_deck_from_csv(csv_data, "Test", "es", "en")
+    
+    def test_import_from_anki_success(self):
+        """Test successful Anki import"""
+        anki_data = """#deck: Spanish Basics
+#tags: spanish
+hola\thello\t<b>Definition:</b> greeting
+adiós\tgoodbye"""
+        
+        result = DeckService.import_deck_from_anki(
+            anki_data, "Spanish Basics", "Spanish", "English"
+        )
+        
+        assert result["deck"]["deck_name"] == "Spanish Basics"
+        assert len(result["cards"]) == 2
+        assert result["cards"][0]["word"] == "hola"
+        assert result["cards"][0]["translation"] == "hello"
+    
+    def test_import_from_anki_skips_comments(self):
+        """Test Anki import skips comment lines"""
+        anki_data = """#deck: Test
+#this is a comment
+word1\ttranslation1
+#another comment
+word2\ttranslation2"""
+        
+        result = DeckService.import_deck_from_anki(anki_data, "Test", "es", "en")
+        assert len(result["cards"]) == 2
+    
+    def test_import_from_anki_no_valid_cards(self):
+        """Test Anki import with no valid cards"""
+        anki_data = "#deck: Test\n#only comments"
+        
+        with pytest.raises(ValueError, match="No valid cards found"):
+            DeckService.import_deck_from_anki(anki_data, "Test", "es", "en")
+    
+    def test_import_from_anki_skips_invalid_lines(self):
+        """Test Anki import skips lines with insufficient data"""
+        anki_data = """word1\ttranslation1
+invalid_line_without_tab
+word2\ttranslation2"""
+        
+        result = DeckService.import_deck_from_anki(anki_data, "Test", "es", "en")
+        # Should only import valid lines
+        assert len(result["cards"]) == 2

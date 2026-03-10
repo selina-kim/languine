@@ -2,7 +2,6 @@ import json
 from flask import Blueprint, request, Response, send_file
 from io import BytesIO
 from services.deck_service import DeckService, DuplicateDeckNameError, UserNotFoundError, DatabaseError
-from services.deck_import_export_service import DeckImportExportService
 from flask_jwt_extended import jwt_required, get_jwt_identity
 
 decks_bp = Blueprint("decks", __name__)
@@ -50,17 +49,17 @@ def export_deck(deck_id: int):
     
     try:
         if export_format == "json":
-            content = DeckImportExportService.export_deck_to_json(deck_data)
+            content = deck_service.export_deck_to_json(deck_data)
             mimetype = "application/json"
             filename = f"{deck_data['deck']['deck_name']}.json"
         
         elif export_format == "csv":
-            content = DeckImportExportService.export_deck_to_csv(deck_data)
+            content = deck_service.export_deck_to_csv(deck_data)
             mimetype = "text/csv"
             filename = f"{deck_data['deck']['deck_name']}.csv"
         
         elif export_format == "anki":
-            content = DeckImportExportService.export_deck_to_anki(deck_data)
+            content = deck_service.export_deck_to_anki(deck_data)
             mimetype = "text/plain"
             filename = f"{deck_data['deck']['deck_name']}.txt"
         
@@ -121,7 +120,7 @@ def import_deck():
         file_content = file.read().decode('utf-8')
         
         if import_format == 'json':
-            imported_data = DeckImportExportService.import_deck_from_json(file_content)
+            imported_data = deck_service.import_deck_from_json(file_content)
         
         elif import_format == 'csv':
             deck_name = request.form.get('deck_name')
@@ -131,7 +130,7 @@ def import_deck():
             if not all([deck_name, word_lang, trans_lang]):
                 return error_response("CSV import requires deck_name, word_lang, and trans_lang", status=400)
             
-            imported_data = DeckImportExportService.import_deck_from_csv(
+            imported_data = deck_service.import_deck_from_csv(
                 file_content, deck_name, word_lang, trans_lang
             )
         
@@ -143,7 +142,7 @@ def import_deck():
             if not all([deck_name, word_lang, trans_lang]):
                 return error_response("Anki import requires deck_name, word_lang, and trans_lang", status=400)
             
-            imported_data = DeckImportExportService.import_deck_from_anki(
+            imported_data = deck_service.import_deck_from_anki(
                 file_content, deck_name, word_lang, trans_lang
             )
         
@@ -270,49 +269,3 @@ def create_deck():
     except Exception as e:
         # Fallback: don't leak full DB details in production, but keep some info for debugging
         return error_response(f"Database error: {str(e)}", status=500)
-
-
-@decks_bp.route("/decks/due", methods=["GET"])
-@jwt_required()
-def get_decks_with_due_cards():
-    """
-    Get decks that have cards due for review
-    
-    Query params:
-    - limit: Number of decks to return (default: 3)
-    
-    Returns: JSON with list of decks containing due_count and total_cards
-    """
-    user_id = get_jwt_identity()
-    limit = request.args.get("limit", 3, type=int)
-    limit = min(max(limit, 1), 20)  # Clamp between 1 and 20
-    
-    try:
-        decks = deck_service.get_decks_with_due_cards(user_id, limit)
-        return json_response({"decks": decks})
-    
-    except Exception as e:
-        return error_response(f"Database error: {str(e)}")
-
-
-@decks_bp.route("/decks/recent", methods=["GET"])
-@jwt_required()
-def get_recent_decks():
-    """
-    Get most recently reviewed decks
-    
-    Query params:
-    - limit: Number of decks to return (default: 3)
-    
-    Returns: JSON with list of recently reviewed decks
-    """
-    user_id = get_jwt_identity()
-    limit = request.args.get("limit", 3, type=int)
-    limit = min(max(limit, 1), 10)  # Clamp between 1 and 10
-    
-    try:
-        decks = deck_service.get_recent_decks(user_id, limit)
-        return json_response({"decks": decks})
-    
-    except Exception as e:
-        return error_response(f"Database error: {str(e)}")

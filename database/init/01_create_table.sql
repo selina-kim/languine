@@ -6,14 +6,8 @@ create table Users (
     email varchar(255) unique not null,
     display_name varchar(30) not null,
     timezone text not null,
-    new_cards_per_day integer default 10, 
-    -- fsrs fields
-    desired_retention double precision default 0.9,
-    fsrs_parameters double precision[] default null, 
-    auto_optimize boolean default true not null,
-    num_reviews_per_optimize int default 256 not null, 
-    total_reviews int default 0 not null, 
-    reviews_since_last_optimize int default 0 not null
+    new_cards_per_day integer default 10,
+    desired_retention double precision default 0.9    
 );
 -- column definitions:
 -- u_id: primary key, storing user id from 'sub' field in Google ID Token
@@ -74,7 +68,7 @@ create table Cards (
     trans_example text,
     word_audio text,
     trans_audio text,
-    word_roman text,
+    word_roman text not null,
     trans_roman text,
     -- FSRS fields: 
     learning_state integer, 
