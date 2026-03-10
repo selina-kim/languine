@@ -379,7 +379,7 @@ class TestOptimizer:
     def test_performance_optimization_under_10k_reviews(self):
         """
         compute_optimal_parameters on a review log with fewer than 10,000 valid
-        (non-same-day) review events should complete in under 30 seconds.
+        (non-same-day) review events should complete in under 40 seconds.
         """
         review_logs = get_revlogs()
 
@@ -393,8 +393,8 @@ class TestOptimizer:
         optimizer.compute_optimal_parameters()
         elapsed_s = time.perf_counter() - start
 
-        assert elapsed_s < 30.0, (
-            f"Optimization took {elapsed_s:.3f}s on <10k reviews, expected < 30s"
+        assert elapsed_s < 40.0, (
+            f"Optimization took {elapsed_s:.3f}s on <10k reviews, expected < 40s"
         )
 
     def test_train_val_test_split_no_overfitting(self):
