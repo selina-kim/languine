@@ -316,3 +316,86 @@ def get_recent_decks():
     
     except Exception as e:
         return error_response(f"Database error: {str(e)}")
+
+
+@decks_bp.route("/decks/<int:deck_id>", methods=["PUT"])
+@jwt_required()
+def update_deck(deck_id: int):
+    """
+    Update an existing deck
+    
+    Body: (all fields optional)
+    - deck_name: Name of the deck
+    - word_lang: Language of learning words
+    - trans_lang: Language the user knows
+    - description: Description
+    - is_public: Boolean
+    - link: Link string
+    
+    Returns: JSON with updated deck info
+    """
+    data = request.get_json(silent=True)
+    if not data:
+        return error_response("No data provided", status=400)
+    
+    # Validate deck_name if provided
+    if "deck_name" in data:
+        deck_name = str(data["deck_name"]).strip()
+        if not deck_name:
+            return error_response("deck_name cannot be empty", status=400)
+        data["deck_name"] = deck_name
+    
+    # Normalize other string fields if present
+    if "word_lang" in data:
+        data["word_lang"] = str(data["word_lang"]).strip()
+    if "trans_lang" in data:
+        data["trans_lang"] = str(data["trans_lang"]).strip()
+    
+    user_id = get_jwt_identity()
+    
+    try:
+        updated_deck = deck_service.update_deck(user_id, deck_id, data)
+        
+        if not updated_deck:
+            return error_response("Deck not found or access denied", status=404)
+        
+        return json_response({
+            "message": "Deck updated successfully",
+            "deck": updated_deck
+        })
+    
+    except DuplicateDeckNameError as e:
+        return error_response(str(e) or "A deck with this name already exists for you", status=409)
+    
+    except DatabaseError:
+        return error_response("Database error", status=500)
+    
+    except Exception as e:
+        return error_response(f"Database error: {str(e)}", status=500)
+
+
+@decks_bp.route("/decks/<int:deck_id>", methods=["DELETE"])
+@jwt_required()
+def delete_deck(deck_id: int):
+    """
+    Delete a deck and all its cards
+    
+    Returns: JSON with success message
+    """
+    user_id = get_jwt_identity()
+    
+    try:
+        deleted = deck_service.delete_deck(user_id, deck_id)
+        
+        if not deleted:
+            return error_response("Deck not found or access denied", status=404)
+        
+        return json_response({
+            "message": "Deck deleted successfully"
+        })
+    
+    except DatabaseError:
+        return error_response("Database error", status=500)
+    
+    except Exception as e:
+        return error_response(f"Database error: {str(e)}", status=500)
