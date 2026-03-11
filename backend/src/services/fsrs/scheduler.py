@@ -477,7 +477,12 @@ class Scheduler(BaseModel):
 
         return short_term_stability
 
+    def _linear_damping(self, delta_difficulty: float, difficulty: float) -> float:
+        return (10.0 - difficulty) * delta_difficulty / 9.0
 
+    def _mean_reversion(self, arg_1: float, arg_2: float) -> float:
+        return self.parameters[7] * arg_1 + (1 - self.parameters[7]) * arg_2
+    
     def _next_difficulty(self, difficulty: float, grade: Grade) -> float:
         """
         Calculates the next difficulty given the current difficulty and grade.
@@ -489,18 +494,13 @@ class Scheduler(BaseModel):
         Returns:
             float: the next difficulty, after clamping.
         """
-        def _linear_damping(delta_difficulty: float, difficulty: float) -> float:
-            return (10.0 - difficulty) * delta_difficulty / 9.0
-
-        def _mean_reversion(arg_1: float, arg_2: float) -> float:
-            return self.parameters[7] * arg_1 + (1 - self.parameters[7]) * arg_2
 
         arg_1 = self._initial_difficulty(grade=Grade.Easy, clamp=False)
 
         delta_difficulty = -(self.parameters[6] * (grade - 3))
-        arg_2 = difficulty + _linear_damping(delta_difficulty, difficulty)
+        arg_2 = difficulty + self._linear_damping(delta_difficulty, difficulty)
 
-        next_difficulty = _mean_reversion(arg_1, arg_2)
+        next_difficulty = self._mean_reversion(arg_1, arg_2)
 
         next_difficulty = self._clamp_difficulty_min_max(next_difficulty)
 
