@@ -9,10 +9,12 @@ from services.user_service import (
     UserNotFoundError,
     DatabaseError
 )
+from services.fsrs_service import FsrsService
 from flask_jwt_extended import jwt_required, get_jwt_identity
 
 users_bp = Blueprint("users", __name__)
 user_service = UserService()
+fsrs_service = FsrsService()
 
 
 def json_response(data, status=200, ensure_ascii=False):
@@ -74,6 +76,7 @@ def update_current_user():
     - num_reviews_per_optimize: Number of reviews before optimization (positive integer)
     - total_reviews: Total review count (non-negative integer)
     - reviews_since_last_optimize: Reviews since last optimization (non-negative integer)
+    - reset_fsrs_params: resets the fsrs's optimization params to the default params
     
     Returns: Updated user profile
     """
@@ -150,6 +153,19 @@ def update_current_user():
                 data['fsrs_parameters'] = [float(x) for x in data['fsrs_parameters']]
             except (ValueError, TypeError):
                 return error_response("fsrs_parameters must contain only numbers", status=400)
+    
+    if 'reset_fsrs_params' in data:
+        try:
+            if not isinstance(data['reset_fsrs_params'], bool):
+                return error_response("reset_fsrs_params must be a boolean", status=400)
+            
+            if data['reset_fsrs_params'] == True:
+                fsrs_service.reset_optimization_params(user_id)
+        except DatabaseError as e:
+            return error_response(f"Database error: {str(e)}", status=500)
+        
+        # make sure to remove reset_fsrs_params from data before trying to pass it to the update_user func
+        data.pop('reset_fsrs_params', None)
     
     try:
         updated_user = user_service.update_user(user_id, data)

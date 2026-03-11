@@ -189,6 +189,7 @@ class TestUpdateUser:
             
             assert "User not found" in str(exc_info.value)
 
+    # testing updating FSRS parameters with reset_fsrs_params flag will be tested in the unit tests for fsrs_service
 
 class TestDeleteUser:
     """Tests for delete_user method."""

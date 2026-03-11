@@ -15,6 +15,8 @@ Run all integration tests with:
 Unless otherwise specified.
 """
 
+MOCK_OPTIMIZED_PARAMS = (0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5)
+
 def cleanup_minio_test_data():
     """Clean up all test files from MinIO bucket."""
     try:
@@ -101,9 +103,9 @@ def db_setup(db_schema):
         
         # Insert test user
         cursor.execute("""
-            INSERT INTO Users (u_id, email, display_name, timezone)
-            VALUES ('test-user-id', 'test@example.com', 'Test User', 'America/Toronto')
-        """)
+            INSERT INTO Users (u_id, email, display_name, timezone, fsrs_parameters)
+            VALUES ('test-user-id', 'test@example.com', 'Test User', 'America/Toronto', %s)
+        """, (list(MOCK_OPTIMIZED_PARAMS),))
         
         # Reset the decks sequence to ensure we get d_id = 1  
         cursor.execute("SELECT setval('decks_d_id_seq', 1, false)")

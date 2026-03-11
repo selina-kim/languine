@@ -20,9 +20,9 @@ Run with coverage:
 
 import pytest
 import json
+from conftest import MOCK_OPTIMIZED_PARAMS
 
 pytestmark = pytest.mark.integration
-
 
 # ==================== Get User Profile Tests ====================
 
@@ -40,6 +40,7 @@ def test_get_current_user_success(client, auth_headers):
     assert result["email"] == "test@example.com"
     assert result["display_name"] == "Test User"
     assert result["timezone"] == "America/Toronto"
+    assert result["fsrs_parameters"] == list(MOCK_OPTIMIZED_PARAMS)
     assert "new_cards_per_day" in result
     assert "desired_retention" in result
 
@@ -351,6 +352,67 @@ def test_update_without_auth(client):
     assert response.status_code == 401
 
 
+# ==================== Reset FSRS Params Tests ====================
+
+def test_reset_fsrs_params_true(client, auth_headers):
+    """Test that reset_fsrs_params=True resets the user's FSRS parameters."""
+
+    update_data = {
+        "reset_fsrs_params": True,
+        "display_name": "Reset Test User"
+    }
+
+    response = client.patch(
+        "/users/me",
+        data=json.dumps(update_data),
+        content_type='application/json',
+        headers=auth_headers
+    )
+
+    assert response.status_code == 200
+    result = json.loads(response.data)
+    assert result["user"]["display_name"] == "Reset Test User"
+    assert result["user"]["fsrs_parameters"] is None
+    # reset_fsrs_params is a control flag and must not appear in the returned user object
+    assert 'reset_fsrs_params' not in result["user"]
+
+
+def test_reset_fsrs_params_false(client, auth_headers):
+    """Test that reset_fsrs_params=False skips the reset and proceeds with the normal update."""
+    update_data = {
+        "reset_fsrs_params": False,
+        "display_name": "No Reset User"
+    }
+
+    response = client.patch(
+        "/users/me",
+        data=json.dumps(update_data),
+        content_type='application/json',
+        headers=auth_headers
+    )
+
+    assert response.status_code == 200
+    result = json.loads(response.data)
+    assert result["user"]["display_name"] == "No Reset User"
+    assert 'reset_fsrs_params' not in result["user"]
+
+def test_reset_fsrs_params_invalid_value(client, auth_headers):
+    """Test that providing an invalid value for reset_fsrs_params results in a validation error."""
+    update_data = {
+        "reset_fsrs_params": "not a boolean",
+        "display_name": "Clean Response User"
+    }
+
+    response = client.patch(
+        "/users/me",
+        data=json.dumps(update_data),
+        content_type='application/json',
+        headers=auth_headers
+    )
+
+    assert response.status_code == 400
+    result = json.loads(response.data)
+    assert "reset_fsrs_params must be a boolean" in result["error"]
 # ==================== Delete User Tests ====================
 
 
