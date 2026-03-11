@@ -68,7 +68,7 @@ create table Cards (
     trans_example text,
     word_audio text,
     trans_audio text,
-    word_roman text not null,
+    word_roman text,
     trans_roman text,
     -- FSRS fields: 
     learning_state integer, 
