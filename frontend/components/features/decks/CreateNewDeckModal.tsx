@@ -30,16 +30,24 @@ export const CreateNewDeckModal = ({
   const [language, setLanguage] = useState<string | null>(null);
   const [description, setDescription] = useState("");
 
-  const onCreateDeck = () => {
-    createDeck({
-      deck_name: "Frontend test deck",
-      word_lang: "ja",
+  const onCreateDeck = async () => {
+    if (deckName === "") {
+      return;
+    }
+      
+    if (!language) {
+        return;
+    }
+
+    const { data, error } = await createDeck({
+      deck_name: deckName,
+      word_lang: language,
       trans_lang: "en",
-      description: "Basic phrases",
+      description: description,
       is_public: false,
     });
-    // TODO: Handle deck creation
-    onClose();
+    console.log("data", data);
+    console.log("error", error);
   };
 
   useEffect(() => {

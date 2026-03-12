@@ -39,7 +39,7 @@ export default function LoginScreen() {
       // Trigger Google Sign-In
       const userInfo = await GoogleSignin.signIn();
 
-      console.log("Google Sign-In successful:", userInfo);
+      // console.log("Google Sign-In successful:", userInfo);
 
       // Get the ID token from the user info
       const tokens = await GoogleSignin.getTokens();
@@ -53,7 +53,7 @@ export default function LoginScreen() {
       // Exchange Google tokens for your backend JWT token
       const { user } = await exchangeGoogleToken(accessToken, idToken);
 
-      console.log("Backend authentication successful:", user.email);
+      // console.log("Backend authentication successful:", user.email);
 
       // Sign in with backend token and user data
       await signIn(user);

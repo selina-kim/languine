@@ -72,8 +72,18 @@ npm install -g eas-cli
 eas login
 ```
 
-3.
+3. Build the app for Android
 
 ```bash
 eas build --profile development --platform android
 ```
+
+4. Launch tha app
+
+```bash
+npx expo start
+# click `a` for android emulator
+```
+
+On Android Emulator:
+- If app screen on emulator shows error on launch instead of bundling the app, might have to manually type in `<ip address>:8081` for the local server on the expo app

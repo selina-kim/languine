@@ -22,46 +22,53 @@ const request = async (
   method: MethodType,
   endpoint: string,
   body: BodyInit | null | undefined = null,
-) => {
+): Promise<{ data: any; error: string | null }> => {
   const url = `${process.env.EXPO_PUBLIC_API_URL}${endpoint}`;
 
-  // Get token from secure storage
-  const token = await getAuthToken();
-
   try {
+    // Get token from secure storage
+    const token = await getAuthToken();
+
+    if (!token) {
+      throw new Error(`HTTP 500 - Internal Server Error. User token not found`);
+    }
+
     const headers: HeadersInit = {
       "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
     };
-
-    // Add Authorization header if token exists
-    if (token) {
-      headers.Authorization = `Bearer ${token}`;
-    }
 
     const response = await fetch(url, {
       method,
       headers,
-      body: body,
+      body,
     });
 
-    if (!response.ok) {
-      throw new Error(
-        `HTTP Error Status: ${response.status} - ${response.statusText}`,
-      );
-    }
-
-    // 204 No Content (common for deletes) has no body to parse
-    if (response.status === 204) {
-      return { data: null, error: null };
-    }
-
+    console.log("got response");
     const data = await response.json();
-    return { data, error: null };
+    console.log("parsed response");
+
+    // Handle HTTP error responses
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status} - ${data.error}`);
+    }
+
+    // // 204 No Content (common for deletes) has no body to parse
+    // if (response.status === 204) {
+    //   return { data: null, error: null };
+    // }
+
+    return { data: data, error: null };
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : error;
+    const errorMessage =
+      error instanceof Error ? error.message : (error as string);
+    console.log(`Error fetching from ${url}. ${errorMessage}`);
+    // Split error message by " - " and return the last part
+    const errorParts = errorMessage.split(" - ");
+    const cleanError = errorParts[errorParts.length - 1];
     return {
       data: null,
-      error: `Error fetching from ${url}. ${errorMessage}`,
+      error: cleanError,
     };
   }
 };
