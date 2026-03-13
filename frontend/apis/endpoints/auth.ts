@@ -27,7 +27,6 @@ export const exchangeGoogleToken = async (
   accessToken: string,
   idToken: string,
 ): Promise<{ token: string; user: User }> => {
-
   const url = `${process.env.EXPO_PUBLIC_API_URL}/auth/google`;
 
   const response = await fetch(url, {

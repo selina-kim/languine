@@ -15,12 +15,15 @@ function HeaderRight() {
 
   const handleProfilePress = () => {
     signOut(); // TODO: temporary, replace with profile page later
-  }
+  };
 
   if (!user) return null;
 
   return (
-    <Pressable onPress={handleProfilePress} style={{ marginHorizontal: 15, width: 38 }}>
+    <Pressable
+      onPress={handleProfilePress}
+      style={{ marginHorizontal: 15, width: 38 }}
+    >
       <ProfileIcon />
     </Pressable>
   );
