@@ -11,6 +11,7 @@ interface ModalProps {
   children: ReactNode;
   onSubmit?: () => void;
   submitLabel?: string;
+  submitVariant?: "primary" | "secondary" | "deletePrimary" | "deleteSecondary";
   onClose: () => void;
   closeLabel?: string;
 }
@@ -22,6 +23,7 @@ export const Modal = ({
   children,
   onSubmit,
   submitLabel = "Submit",
+  submitVariant = "primary",
   onClose,
   closeLabel = "Cancel",
 }: ModalProps) => {
@@ -30,7 +32,7 @@ export const Modal = ({
       {onSubmit && (
         <CButton
           onPress={onSubmit}
-          variant="primary"
+          variant={submitVariant}
           label={submitLabel}
           style={{ width: "100%" }}
         />
