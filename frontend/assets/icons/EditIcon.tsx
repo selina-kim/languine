@@ -1,7 +1,6 @@
 import { COLORS } from "@/constants/colors";
 import React from "react";
-import Svg, { Path } from "react-native-svg";
-import { Text } from "react-native";
+import { Path, Svg } from "react-native-svg";
 
 export const EditIcon: React.FC<{
   stroke?: string;
@@ -9,11 +8,6 @@ export const EditIcon: React.FC<{
 }> = ({
   stroke = COLORS.icon.outlineTertiary,
 }) => {
-  // If react-native-svg isn't available in the environment, fall back to a simple char
-  if (!Svg) {
-    return <Text style={{ color: stroke, fontSize: 16 }}>✎</Text>;
-  }
-
   return (
     <Svg width="100%" height="100%" viewBox="0 0 19 19" fill="none">
       <Path
