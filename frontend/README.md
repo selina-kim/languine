@@ -86,4 +86,5 @@ npx expo start
 ```
 
 On Android Emulator:
+
 - If app screen on emulator shows error on launch instead of bundling the app, might have to manually type in `<ip address>:8081` for the local server on the expo app

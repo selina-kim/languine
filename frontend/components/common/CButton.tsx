@@ -33,7 +33,7 @@ const buttonVariants = StyleSheet.create({
   },
 });
 
-const buttonTextProps: { [variant: string]: CTextProps } = {
+const buttonTextProps: { [buttonTextVariant: string]: CTextProps } = {
   primary: {
     bold: true,
   },
@@ -48,7 +48,7 @@ const buttonTextProps: { [variant: string]: CTextProps } = {
 type ButtonVariantType = keyof typeof buttonVariants;
 
 interface CButtonProps extends PressableProps {
-  variant?: ButtonVariantType;
+  variant: ButtonVariantType;
   label: string;
   Icon?: ReactNode;
 }
@@ -78,7 +78,6 @@ export const CButton: React.FC<CButtonProps> = ({
         style={{
           textAlign: "center",
         }}
-        bold
         {...(variant && buttonTextProps[variant])}
       >
         {label}

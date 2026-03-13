@@ -34,9 +34,9 @@ export const CreateNewDeckModal = ({
     if (deckName === "") {
       return;
     }
-      
+
     if (!language) {
-        return;
+      return;
     }
 
     const { data, error } = await createDeck({
