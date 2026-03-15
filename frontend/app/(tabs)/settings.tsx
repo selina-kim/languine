@@ -1,10 +1,10 @@
-import { View, ScrollView } from "react-native";
 import { DeleteButton } from "@/components/common/DeleteButton";
+import { EditModal } from "@/components/common/EditModal";
 import { DisplayNameSettings } from "@/components/features/settings/DisplayNameSetting";
 import { OptimizationSettings } from "@/components/features/settings/OptimizationSettings";
 import { UserSettings } from "@/components/features/settings/UserSettings";
-import { EditModal } from "@/components/features/settings/EditModal";
 import React, { useState } from "react";
+import { ScrollView, View } from "react-native";
 
 export type SettingsValues = {
   displayName: string;
