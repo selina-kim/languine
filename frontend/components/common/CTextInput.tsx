@@ -20,10 +20,10 @@ const inputBaseStyle = StyleSheet.create({
 
 const inputVariants = StyleSheet.create({
   form: {
-    backgroundColor: COLORS.backgroundSecondary,
+    backgroundColor: COLORS.background.secondary,
   },
   editModal: {
-    backgroundColor: COLORS.backgroundPrimary,
+    backgroundColor: COLORS.background.primary,
     borderWidth: 2,
     borderColor: COLORS.icon.outlineTertiary,
     fontSize: 18,

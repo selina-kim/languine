@@ -20,7 +20,7 @@ export const LastReviewedDeckItem = ({
         borderWidth: 3,
         borderColor: COLORS.icon.outlineSecondary,
         borderRadius: 16,
-        backgroundColor: COLORS.backgroundPrimary,
+        backgroundColor: COLORS.background.primary,
         ...SHADOWS.default,
       }}
     >

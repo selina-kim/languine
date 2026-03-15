@@ -15,7 +15,7 @@ export function CSwitch({
   value,
   onChange,
   activeColor = COLORS.button.fillPrimary,
-  inactiveColor = COLORS.backgroundTertiary,
+  inactiveColor = COLORS.background.tertiary,
   thumbColor = "#ffffff",
   disabled = false,
 }: MySwitchProps) {
@@ -24,7 +24,6 @@ export function CSwitch({
       onPress={() => {
         if (disabled) return;
         const next = !value;
-        console.log("CSwitch toggled:", next);
         onChange(next);
       }}
       accessibilityRole="switch"

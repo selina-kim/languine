@@ -33,6 +33,9 @@ export const fonts = StyleSheet.create({
   bold: {
     fontFamily: "Arimo_700Bold",
   },
+  special: {
+    fontFamily: "Commissioner_700Bold",
+  },
 });
 
 export const textVariants = StyleSheet.create({
@@ -44,6 +47,11 @@ export const textVariants = StyleSheet.create({
     lineHeight: 24,
     ...fonts.bold,
   },
+  inputError: {
+    color: COLORS.text.error,
+    fontSize: 16,
+    lineHeight: 20,
+  },
   containerLabel: {
     color: COLORS.text.primary,
     fontSize: 18,
@@ -53,6 +61,30 @@ export const textVariants = StyleSheet.create({
     color: COLORS.text.secondary,
     fontSize: 18,
     lineHeight: 28,
+    ...fonts.bold,
+  },
+  google: {
+    color: COLORS.text.primary,
+    fontSize: 20,
+    lineHeight: 24,
+    ...fonts.bold,
+  },
+  deckPreviewTitle: {
+    color: COLORS.text.primary,
+    fontSize: 22,
+    lineHeight: 28,
+    ...fonts.bold,
+  },
+  deckPreviewLanguage: {
+    color: COLORS.text.language,
+    fontSize: 16,
+    lineHeight: 24,
+    ...fonts.special,
+  },
+  deckPreviewContent: {
+    color: COLORS.text.secondary,
+    fontSize: 18,
+    lineHeight: 24,
     ...fonts.bold,
   },
 });

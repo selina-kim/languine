@@ -5,10 +5,7 @@ import Svg, { Path } from "react-native-svg";
 export const PlayIcon: React.FC<{
   stroke?: string;
   fill?: string;
-}> = ({
-  stroke = COLORS.icon.outlinePrimary,
-  fill = COLORS.icon.fillPrimary,
-}) => (
+}> = ({ stroke = COLORS.icon.outlinePrimary, fill = "transparent" }) => (
   <Svg width="100%" height="100%" viewBox="0 0 20 20" fill="none">
     <Path
       d="M5 3V17L17 10L7 3H5Z"

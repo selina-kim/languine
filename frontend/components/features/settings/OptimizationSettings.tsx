@@ -1,99 +1,51 @@
-import { CSwitch } from "@/components/common/CSwitch";
-import { CText } from "@/components/common/CText";
-import { DeleteButton } from "@/components/common/DeleteButton";
-import { COLORS } from "@/constants/colors";
-import { SHADOWS } from "@/constants/shadows";
-import React, { useState } from "react";
-import { View } from "react-native";
-import { SettingsRow } from "./SettingsRow";
+import { CButton } from "@/components/common/CButton";
+import { useState } from "react";
+import { SettingGroup } from "./SettingGroup";
 
-type OptimizationSettingsProps = {
-  reviewsBeforeNextOptimization: number;
-  onEdit: () => void;
-  onResetParameters: () => void;
-};
+export const OptimizationSettings = () => {
+  const [autoOptimizeToggle, setAutoOptimizeToggle] = useState(true);
+  const [reviews, setReviews] = useState("100");
 
-export function OptimizationSettings({
-  reviewsBeforeNextOptimization,
-  onEdit,
-  onResetParameters,
-}: OptimizationSettingsProps) {
-  const [autoOptimizeEnabled, setAutoOptimizeEnabled] = useState(true);
+  const onSaveReviews = (value: string) => {
+    // TODO
+    setReviews(value);
+    return true;
+  };
+
+  const onAutoOptimizeToggle = (value: boolean) => {
+    // TODO
+    console.log("autoOptimizeToggle:", value);
+    setAutoOptimizeToggle(value);
+    return true;
+  };
 
   return (
-    <View
-      style={{
-        display: "flex",
-        marginTop: 20,
-        width: "100%",
-        borderWidth: 3,
-        borderColor: COLORS.icon.outlineSecondary,
-        borderRadius: 16,
-        backgroundColor: COLORS.backgroundPrimary,
-        ...SHADOWS.default,
-      }}
-    >
-      <View
-        style={{
-          display: "flex",
-          paddingHorizontal: 25,
-          paddingTop: 15,
-          paddingBottom: 20,
-          flexDirection: "row",
-          justifyContent: "space-between",
-          alignItems: "center",
+    <SettingGroup>
+      <SettingGroup.Item
+        label="Auto-Optimize Parameters"
+        value={autoOptimizeToggle}
+        onToggle={onAutoOptimizeToggle}
+      />
+      <SettingGroup.Item
+        visible={autoOptimizeToggle}
+        label="Reviews Before Next Optimization"
+        description="Number of reviews that must be completed before parameters are updated again (minimum: 100)"
+        value={reviews}
+        onSave={onSaveReviews}
+      />
+      <CButton
+        label="Reset Parameters"
+        variant="criticalSecondary"
+        onConfirm={() => {
+          // TODO
+          console.log("parameters have been reset");
         }}
-      >
-        <CText bold style={{ fontSize: 16, color: COLORS.text.primary }}>
-          Auto-Optimize Parameters
-        </CText>
-        <CSwitch
-          value={autoOptimizeEnabled}
-          onChange={setAutoOptimizeEnabled}
-        />
-      </View>
-      {autoOptimizeEnabled && (
-        <View
-          style={{
-            paddingHorizontal: 25,
-          }}
-        >
-          <View
-            style={{
-              borderTopWidth: 2,
-              borderTopColor: COLORS.icon.outlineSecondary,
-            }}
-          >
-            <SettingsRow
-              label="Reviews Before Next Optimization"
-              value={reviewsBeforeNextOptimization}
-              onPress={onEdit}
-              isLast={true}
-            />
-          </View>
-        </View>
-      )}
-      <View
+        confirmHeader="Reset Parameters"
+        confirmDescription="This action will reset all optimization parameters to their default values"
         style={{
-          paddingHorizontal: 25,
+          marginVertical: 20,
         }}
-      >
-        <View
-          style={{
-            borderTopWidth: 2,
-            borderTopColor: COLORS.icon.outlineSecondary,
-            paddingVertical: 20,
-          }}
-        >
-          <DeleteButton
-            label="Reset Parameters"
-            onConfirm={onResetParameters}
-            deleteVariant="deleteSecondary"
-            submitLabel="Reset Parameters"
-            confirmDescription="This action will reset all optimization parameters to their default values"
-          />
-        </View>
-      </View>
-    </View>
+      />
+    </SettingGroup>
   );
-}
+};

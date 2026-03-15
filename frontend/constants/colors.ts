@@ -1,7 +1,9 @@
 const lightTheme = {
-  backgroundPrimary: "#FFFCF9",
-  backgroundSecondary: "#FFF5DB",
-  backgroundTertiary: "#FCE6B1",
+  background: {
+    primary: "#FFFCF9",
+    secondary: "#FFF5DB",
+    tertiary: "#FCE6B1",
+  },
   icon: {
     outlinePrimary: "#8D481C",
     outlineSecondary: "#FFBA26",
@@ -13,7 +15,9 @@ const lightTheme = {
     primary: "#5C2C0E",
     secondary: "#8D481C",
     tertiary: "#bc8b63",
+    error: "#D41605",
     white: "#FFFCF9",
+    language: "#FF8B25",
   },
   accent: {
     primary: "#FFBA26",
@@ -23,6 +27,7 @@ const lightTheme = {
   button: {
     fillPrimary: "#FFBA26",
     fillSecondary: "#FFFCF9",
+    outlinePrimary: "#8D481C",
   },
 } as const;
 
