@@ -65,12 +65,8 @@ export default function TabLayout() {
         />
         <View
           style={{
-            position: "absolute",
             top: 120,
-            left: 0,
-            right: 0,
             backgroundColor: COLORS.backgroundPrimary,
-            paddingVertical: 10,
             ...SHADOWS.default,
             borderBottomWidth: 8,
             borderBottomColor: COLORS.accent.primary,
@@ -80,27 +76,25 @@ export default function TabLayout() {
             <Pressable
               onPress={handleSettings}
               style={{
-                paddingVertical: 14,
+                height: 60,
+                justifyContent: "center",
                 alignItems: "center",
                 borderBottomWidth: 1,
                 borderBottomColor: "#D0D0D0",
               }}
             >
-              <CText style={{ top: -3 }} bold>
-                User Settings
-              </CText>
+              <CText bold>User Settings</CText>
             </Pressable>
           )}
           <Pressable
             onPress={handleLogout}
             style={{
-              paddingVertical: 14,
+              height: 60,
+              justifyContent: "center",
               alignItems: "center",
             }}
           >
-            <CText style={{ top: 5 }} bold>
-              Logout
-            </CText>
+            <CText bold>Logout</CText>
           </Pressable>
         </View>
       </Modal>
