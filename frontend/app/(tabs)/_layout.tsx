@@ -18,13 +18,13 @@ export default function TabLayout() {
   const [menuVisible, setMenuVisible] = useState(false);
 
   const handleSettings = () => {
+    router.push("/(tabs)/settings");
     setMenuVisible(false);
-    router.push("/(tabs)/settings"); // Navigate to settings within tabs
   };
 
   const handleLogout = () => {
-    setMenuVisible(false);
     signOut();
+    setMenuVisible(false);
   };
 
   const handleProfilePress = () => {
@@ -94,7 +94,7 @@ export default function TabLayout() {
               alignItems: "center",
             }}
           >
-            <CText bold>Logout</CText>
+            <CText bold>Sign out</CText>
           </Pressable>
         </View>
       </Modal>
@@ -154,12 +154,7 @@ export default function TabLayout() {
             tabBarIcon: ({ color }) => <HelpIcon stroke={color} />,
           }}
         />
-        <Tabs.Screen
-          name="settings"
-          options={{
-            href: null, // Hide from tab bar
-          }}
-        />
+        <Tabs.Screen name="settings" options={{ href: null }} />
       </Tabs>
       {menuVisible && <UserDropdownMenu />}
     </>
