@@ -12,6 +12,7 @@ export const ProfileSettings = () => {
   const onSave = (value: string) => {
     // TODO
     setDisplayName(value);
+    return true;
   };
 
   return (

@@ -13,7 +13,8 @@ interface SettingGroupItemProps {
   value: string | boolean;
   description?: string;
   visible?: boolean;
-  onSave?: (value: string) => void;
+  inputError?: string;
+  onSave?: (value: string) => boolean;
   onToggle?: (value: boolean) => void;
   isLast?: boolean;
 }
@@ -25,6 +26,7 @@ const SettingGroupItem = ({
   visible = true,
   onSave,
   onToggle,
+  inputError,
   isLast = false,
 }: SettingGroupItemProps) => {
   const currentValue = typeof value === "string" ? value : "";
@@ -38,8 +40,10 @@ const SettingGroupItem = ({
   };
 
   const handleSubmit = () => {
-    onSave?.(newValue);
-    setIsEditing(false);
+    const saved = onSave?.(newValue);
+    if (saved) {
+      setIsEditing(false);
+    }
   };
 
   const handleClose = () => {
@@ -96,6 +100,11 @@ const SettingGroupItem = ({
               variant="editModal"
               style={{ marginTop: 10, marginBottom: 20 }}
             />
+            {inputError && (
+              <CText variant="inputError" style={{ marginBottom: 20 }}>
+                {inputError}
+              </CText>
+            )}
           </Modal>
         )}
       </>

@@ -4,14 +4,24 @@ import { SettingGroup } from "./SettingGroup";
 export const AccountSettings = () => {
   const [newCardsPerDay, setNewCardsPerDay] = useState("10");
   const [retrievability, setRetrievability] = useState("90");
+  const [retrievabilityInputError, setRetrievabilityInputError] =
+    useState<string>();
 
   const onSaveNewCardsPerDay = (value: string) => {
     // TODO
     setNewCardsPerDay(value);
+    return true;
   };
   const onSaveRetrievability = (value: string) => {
+    setRetrievabilityInputError(undefined);
+
+    if (Number(value) < 75 || Number(value) > 95) {
+      setRetrievabilityInputError("Value not within range");
+      return false;
+    }
     // TODO
     setRetrievability(value);
+    return true;
   };
 
   return (
@@ -28,6 +38,7 @@ export const AccountSettings = () => {
         description="Target success rate for reviews (minimum: 75, maximum: 95)"
         value={retrievability}
         onSave={onSaveRetrievability}
+        inputError={retrievabilityInputError}
         isLast
       />
     </SettingGroup>

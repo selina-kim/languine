@@ -9,12 +9,14 @@ export const OptimizationSettings = () => {
   const onSaveReviews = (value: string) => {
     // TODO
     setReviews(value);
+    return true;
   };
 
   const onAutoOptimizeToggle = (value: boolean) => {
     // TODO
     console.log("autoOptimizeToggle:", value);
     setAutoOptimizeToggle(value);
+    return true;
   };
 
   return (
