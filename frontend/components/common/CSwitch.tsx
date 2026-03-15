@@ -1,6 +1,6 @@
-import React from "react";
-import { Pressable, View, StyleSheet } from "react-native";
 import { COLORS } from "@/constants/colors";
+import React from "react";
+import { Pressable, StyleSheet, View } from "react-native";
 
 interface MySwitchProps {
   value: boolean;
@@ -24,7 +24,6 @@ export function CSwitch({
       onPress={() => {
         if (disabled) return;
         const next = !value;
-        // eslint-disable-next-line no-console
         console.log("CSwitch toggled:", next);
         onChange(next);
       }}

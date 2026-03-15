@@ -1,17 +1,16 @@
-import React, { useState } from "react";
+import { CSwitch } from "@/components/common/CSwitch";
 import { CText } from "@/components/common/CText";
-import { COLORS } from "@/constants/colors";
-import { SHADOWS } from "@/constants/shadows";
-import { View } from "react-native";
-import { CButton } from "@/components/common/CButton";
 import { DeleteButton } from "@/components/common/DeleteButton";
 import { SettingsRow } from "@/components/features/settings/SettingsRow";
-import { CSwitch } from "@/components/common/CSwitch";
+import { COLORS } from "@/constants/colors";
+import { SHADOWS } from "@/constants/shadows";
+import React, { useState } from "react";
+import { View } from "react-native";
 
 type OptimizationSettingsProps = {
   reviewsBeforeNextOptimization: number;
   onEdit: () => void;
-  onResetParameters?: () => void;
+  onResetParameters: () => void;
 };
 
 export function OptimizationSettings({
@@ -20,14 +19,6 @@ export function OptimizationSettings({
   onResetParameters,
 }: OptimizationSettingsProps) {
   const [autoOptimizeEnabled, setAutoOptimizeEnabled] = useState(true);
-
-  // debug: ensure imported components are defined
-  // eslint-disable-next-line no-console
-  console.log("OptimizationSettings imports:", {
-    CSwitchDefined: typeof CSwitch !== "undefined",
-    SettingsRowDefined: typeof SettingsRow !== "undefined",
-    CButtonDefined: typeof CButton !== "undefined",
-  });
 
   return (
     <View
@@ -77,7 +68,6 @@ export function OptimizationSettings({
           </View>
         </View>
       )}
-
       <View
         style={{
           paddingHorizontal: 25,
@@ -92,9 +82,7 @@ export function OptimizationSettings({
         >
           <DeleteButton
             label="Reset Parameters"
-            onConfirm={() => {
-              // onResetParameters should handle the logic to reset parameters to default values
-            }}
+            onConfirm={onResetParameters}
             deleteVariant="deleteSecondary"
             submitLabel="Reset Parameters"
             confirmDescription="This action will reset all optimization parameters to their default values"

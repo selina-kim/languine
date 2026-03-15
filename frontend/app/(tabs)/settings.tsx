@@ -102,6 +102,7 @@ export default function Settings() {
           settingsState.reviewsBeforeNextOptimization
         }
         onEdit={() => openModal("reviewsBeforeNextOptimization")}
+        onResetParameters={() => {}} // TODO
       />
 
       <View style={{ marginTop: 60 }}>
