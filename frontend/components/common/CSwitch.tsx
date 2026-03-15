@@ -24,7 +24,6 @@ export function CSwitch({
       onPress={() => {
         if (disabled) return;
         const next = !value;
-        console.log("CSwitch toggled:", next);
         onChange(next);
       }}
       accessibilityRole="switch"

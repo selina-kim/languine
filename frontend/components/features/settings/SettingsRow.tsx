@@ -21,7 +21,6 @@ export const SettingsRow = ({
       style={{
         borderBottomWidth: isLast ? 0 : 1,
         borderBottomColor: COLORS.icon.outlinePrimary,
-        paddingVertical: 16,
         display: "flex",
         flexDirection: "row",
         justifyContent: "space-between",

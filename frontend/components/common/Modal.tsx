@@ -1,17 +1,17 @@
 import { COLORS } from "@/constants/colors";
 import { ReactNode } from "react";
 import { Modal as RNModal, View } from "react-native";
-import { CButton } from "./CButton";
+import { ButtonVariantType, CButton } from "./CButton";
 import { CText } from "./CText";
 
 interface ModalProps {
   visible: boolean;
   header: string;
   subheader?: string;
-  children: ReactNode;
+  children?: ReactNode;
   onSubmit?: () => void;
   submitLabel?: string;
-  submitVariant?: "primary" | "secondary" | "deletePrimary" | "deleteSecondary";
+  submitVariant?: ButtonVariantType;
   onClose: () => void;
   closeLabel?: string;
 }

@@ -1,7 +1,8 @@
 import { COLORS } from "@/constants/colors";
-import { ReactNode } from "react";
+import { ReactNode, useState } from "react";
 import { Pressable, PressableProps, StyleSheet, View } from "react-native";
 import { CText, CTextProps } from "./CText";
+import { Modal } from "./Modal";
 
 const buttonBaseStyle = StyleSheet.create({
   base: {
@@ -31,10 +32,10 @@ const buttonVariants = StyleSheet.create({
     borderColor: COLORS.button.outlinePrimary,
     borderWidth: 2,
   },
-  deletePrimary: {
+  criticalPrimary: {
     backgroundColor: COLORS.accent.delete,
   },
-  deleteSecondary: {
+  criticalSecondary: {
     backgroundColor: COLORS.backgroundPrimary,
     borderColor: COLORS.accent.delete,
     borderWidth: 2,
@@ -51,53 +52,86 @@ const buttonTextProps: { [buttonTextVariant: string]: CTextProps } = {
   google: {
     variant: "google",
   },
-  deletePrimary: {
+  criticalPrimary: {
     bold: false,
     style: { color: COLORS.text.white },
   },
-  deleteSecondary: {
+  criticalSecondary: {
     bold: false,
     style: { color: COLORS.accent.delete },
   },
 };
 
-type ButtonVariantType = keyof typeof buttonVariants;
+export type ButtonVariantType = keyof typeof buttonVariants;
 
 interface CButtonProps extends PressableProps {
   variant: ButtonVariantType;
   label: string;
   Icon?: ReactNode;
+  onConfirm?: () => void;
+  confirmHeader?: string;
+  confirmDescription?: string;
 }
 
 export const CButton: React.FC<CButtonProps> = ({
   variant,
   label,
   Icon,
+  onConfirm,
+  confirmHeader = "Are you sure?",
+  confirmDescription,
   style,
+  onPress,
   ...props
 }) => {
+  const [modalVisible, setModalVisible] = useState(false);
+
+  const handleConfirm = () => {
+    onConfirm?.();
+    setModalVisible(false);
+  };
+
+  const handleInitialPress = () => {
+    setModalVisible(true);
+  };
+
   return (
-    <Pressable
-      style={
-        typeof style === "function"
-          ? (state) => [
-              buttonBaseStyle.base,
-              variant && buttonVariants[variant],
-              style(state),
-            ]
-          : [buttonBaseStyle.base, variant && buttonVariants[variant], style]
-      }
-      {...props}
-    >
-      {Icon && <View style={{ minWidth: "auto" }}>{Icon}</View>}
-      <CText
-        style={{
-          textAlign: "center",
-        }}
-        {...(variant && buttonTextProps[variant])}
+    <>
+      <Pressable
+        style={
+          typeof style === "function"
+            ? (state) => [
+                buttonBaseStyle.base,
+                variant && buttonVariants[variant],
+                style(state),
+              ]
+            : [buttonBaseStyle.base, variant && buttonVariants[variant], style]
+        }
+        onPress={onConfirm ? handleInitialPress : onPress}
+        {...props}
       >
-        {label}
-      </CText>
-    </Pressable>
+        {Icon && <View style={{ minWidth: "auto" }}>{Icon}</View>}
+        <CText
+          style={{
+            textAlign: "center",
+          }}
+          {...(variant && buttonTextProps[variant])}
+        >
+          {label}
+        </CText>
+      </Pressable>
+      {onConfirm && (
+        <Modal
+          visible={modalVisible}
+          header={confirmHeader}
+          subheader={confirmDescription}
+          submitLabel={label}
+          submitVariant={variant}
+          closeLabel="Cancel"
+          onClose={() => setModalVisible(false)}
+          onSubmit={handleConfirm}
+        />
+      )}
+    </>
   );
 };
