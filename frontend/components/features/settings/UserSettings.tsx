@@ -5,7 +5,7 @@ import { COLORS } from "@/constants/colors";
 import { EditIcon } from "@/assets/icons/EditIcon";
 import { SHADOWS } from "@/constants/shadows";
 
-type SettingKey = "timeZone" | "newCardsPerDay" | "retrievability" ;
+type SettingKey = "timeZone" | "newCardsPerDay" | "retrievability";
 
 export type UserSettingsValues = {
   timeZone: string;
@@ -58,11 +58,16 @@ export const UserSettings = ({ values, onEdit }: UserSettingsProps) => {
           >
             <View style={{ flex: 1, paddingRight: 8 }}>
               <CText bold>{setting.label}</CText>
-              <CText style={{ color: COLORS.text.secondary }}>{String(values[setting.key])}</CText>
+              <CText style={{ color: COLORS.text.secondary }}>
+                {String(values[setting.key])}
+              </CText>
             </View>
 
             {setting.key !== "timeZone" && (
-              <Pressable onPress={() => onEdit(setting.key)} style={{ width: 25, alignItems: "center" }}>
+              <Pressable
+                onPress={() => onEdit(setting.key)}
+                style={{ width: 25, alignItems: "center" }}
+              >
                 <EditIcon />
               </Pressable>
             )}

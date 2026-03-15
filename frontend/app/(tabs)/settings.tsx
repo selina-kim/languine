@@ -1,4 +1,4 @@
-import { View, ScrollView} from "react-native";
+import { View, ScrollView } from "react-native";
 import { DeleteButton } from "@/components/common/DeleteButton";
 import { DisplayNameSettings } from "@/components/features/settings/DisplayNameSetting";
 import { OptimizationSettings } from "@/components/features/settings/OptimizationSettings";
@@ -22,17 +22,33 @@ const initialSettings: SettingsValues = {
   reviewsBeforeNextOptimization: 100,
 };
 
-const SETTING_LABELS: Record<keyof SettingsValues, { label: string; description?: string }> = {
+const SETTING_LABELS: Record<
+  keyof SettingsValues,
+  { label: string; description?: string }
+> = {
   displayName: { label: "Display Name", description: "Your profile name" },
-  timeZone: { label: "Time Zone", description: "Your local time zone for scheduling" },
-  newCardsPerDay: { label: "New Cards Per Day", description: "Maximum new cards to study daily\nmin: 1" },
-  retrievability: { label: "Retrievability %", description: "Target success rate for reviews\nmin: 75  max: 95" },
-  reviewsBeforeNextOptimization: { label: "Reviews Before Optimization", description: "Number of reviews that must be completed before parameters are updated again\nmin: 100" },
+  timeZone: {
+    label: "Time Zone",
+    description: "Your local time zone for scheduling",
+  },
+  newCardsPerDay: {
+    label: "New Cards Per Day",
+    description: "Maximum new cards to study daily\nmin: 1",
+  },
+  retrievability: {
+    label: "Retrievability %",
+    description: "Target success rate for reviews\nmin: 75  max: 95",
+  },
+  reviewsBeforeNextOptimization: {
+    label: "Reviews Before Optimization",
+    description:
+      "Number of reviews that must be completed before parameters are updated again\nmin: 100",
+  },
 };
 
-
 export default function Settings() {
-  const [settingsState, setSettingsState] = useState<SettingsValues>(initialSettings);
+  const [settingsState, setSettingsState] =
+    useState<SettingsValues>(initialSettings);
   const [modalVisible, setModalVisible] = useState(false);
   const [modalKey, setModalKey] = useState<keyof SettingsValues | null>(null);
   const [modalValue, setModalValue] = useState("");
@@ -82,7 +98,9 @@ export default function Settings() {
 
       {/* Block 3 */}
       <OptimizationSettings
-        reviewsBeforeNextOptimization={settingsState.reviewsBeforeNextOptimization}
+        reviewsBeforeNextOptimization={
+          settingsState.reviewsBeforeNextOptimization
+        }
         onEdit={() => openModal("reviewsBeforeNextOptimization")}
       />
 

@@ -23,7 +23,11 @@ export function OptimizationSettings({
 
   // debug: ensure imported components are defined
   // eslint-disable-next-line no-console
-  console.log("OptimizationSettings imports:", { CSwitchDefined: typeof CSwitch !== "undefined", SettingsRowDefined: typeof SettingsRow !== "undefined", CButtonDefined: typeof CButton !== "undefined" });
+  console.log("OptimizationSettings imports:", {
+    CSwitchDefined: typeof CSwitch !== "undefined",
+    SettingsRowDefined: typeof SettingsRow !== "undefined",
+    CButtonDefined: typeof CButton !== "undefined",
+  });
 
   return (
     <View
@@ -58,25 +62,25 @@ export function OptimizationSettings({
 
       {autoOptimizeEnabled && (
         <View style={{ paddingHorizontal: 25 }}>
-          <View 
-            style={{ 
+          <View
+            style={{
               borderTopWidth: 2,
               borderTopColor: COLORS.icon.outlineSecondary,
             }}
           >
-          <SettingsRow
-            label="Reviews Before Next Optimization"
-            value={reviewsBeforeNextOptimization}
-            onPress={onEdit}
-            isLast={true}
-          />
+            <SettingsRow
+              label="Reviews Before Next Optimization"
+              value={reviewsBeforeNextOptimization}
+              onPress={onEdit}
+              isLast={true}
+            />
           </View>
         </View>
       )}
 
-      <View 
-        style={{ 
-          paddingHorizontal: 25, 
+      <View
+        style={{
+          paddingHorizontal: 25,
         }}
       >
         <View

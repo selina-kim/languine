@@ -32,7 +32,10 @@ export function CSwitch({
       accessibilityState={{ checked: value, disabled }}
       style={({ pressed }) => [
         styles.track,
-        { backgroundColor: value ? activeColor : inactiveColor, opacity: pressed ? 0.6 : 1 },
+        {
+          backgroundColor: value ? activeColor : inactiveColor,
+          opacity: pressed ? 0.6 : 1,
+        },
         disabled && styles.disabled,
       ]}
     >
@@ -40,7 +43,11 @@ export function CSwitch({
         <View
           style={[
             styles.thumb,
-            { backgroundColor: thumbColor, opacity: pressed ? 0.8 : 1, transform: [{ scale: pressed ? 0.96 : 1 }] },
+            {
+              backgroundColor: thumbColor,
+              opacity: pressed ? 0.8 : 1,
+              transform: [{ scale: pressed ? 0.96 : 1 }],
+            },
             value ? styles.thumbOn : styles.thumbOff,
           ]}
         />

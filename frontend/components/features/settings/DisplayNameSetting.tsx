@@ -8,7 +8,10 @@ type DisplayNameSettingsProps = {
   onEdit?: () => void;
 };
 
-export const DisplayNameSettings = ({ displayName, onEdit }: DisplayNameSettingsProps) => {
+export const DisplayNameSettings = ({
+  displayName,
+  onEdit,
+}: DisplayNameSettingsProps) => {
   return (
     <View
       style={{
@@ -22,7 +25,12 @@ export const DisplayNameSettings = ({ displayName, onEdit }: DisplayNameSettings
       }}
     >
       <View style={{ paddingHorizontal: 25 }}>
-        <SettingsRow label="Display Name" value={displayName} onPress={onEdit} isLast={true} />
+        <SettingsRow
+          label="Display Name"
+          value={displayName}
+          onPress={onEdit}
+          isLast={true}
+        />
       </View>
     </View>
   );

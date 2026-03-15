@@ -33,9 +33,9 @@ export default function RootLayout() {
   return (
     <>
       <Stack>
-        <Stack.Screen 
-          name="(tabs)" 
-          options={{ 
+        <Stack.Screen
+          name="(tabs)"
+          options={{
             headerShown: true,
             headerStyle: {
               backgroundColor: COLORS.accent.primary,
@@ -55,7 +55,7 @@ export default function RootLayout() {
                 <ProfileIcon />
               </Pressable>
             ),
-          }} 
+          }}
         />
         <Stack.Screen name="(auth)" options={{ headerShown: false }} />
       </Stack>
@@ -66,10 +66,7 @@ export default function RootLayout() {
         animationType="fade"
         onRequestClose={() => setMenuVisible(false)}
       >
-        <Pressable
-          style={{ flex: 1}}
-          onPress={() => setMenuVisible(false)}
-        >
+        <Pressable style={{ flex: 1 }} onPress={() => setMenuVisible(false)}>
           <View
             style={{
               position: "absolute",
@@ -92,10 +89,7 @@ export default function RootLayout() {
                 borderBottomColor: "#D0D0D0",
               }}
             >
-              <CText 
-                style={{top: -3,}} 
-              bold 
-              >
+              <CText style={{ top: -3 }} bold>
                 User Settings
               </CText>
             </TouchableOpacity>
@@ -106,10 +100,7 @@ export default function RootLayout() {
                 alignItems: "center",
               }}
             >
-              <CText 
-                style={{top: 5,}} 
-              bold 
-              >
+              <CText style={{ top: 5 }} bold>
                 Logout
               </CText>
             </TouchableOpacity>

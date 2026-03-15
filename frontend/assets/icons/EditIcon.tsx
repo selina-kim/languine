@@ -5,9 +5,7 @@ import { Path, Svg } from "react-native-svg";
 export const EditIcon: React.FC<{
   stroke?: string;
   fill?: string;
-}> = ({
-  stroke = COLORS.icon.outlineTertiary,
-}) => {
+}> = ({ stroke = COLORS.icon.outlineTertiary }) => {
   return (
     <Svg width="100%" height="100%" viewBox="0 0 19 19" fill="none">
       <Path
