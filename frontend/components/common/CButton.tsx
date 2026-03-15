@@ -1,7 +1,7 @@
 import { COLORS } from "@/constants/colors";
 import { ReactNode } from "react";
 import { Pressable, PressableProps, StyleSheet, View } from "react-native";
-import { CText } from "./CText";
+import { CText, CTextProps } from "./CText";
 
 const buttonBaseStyle = StyleSheet.create({
   base: {
@@ -25,16 +25,32 @@ const buttonVariants = StyleSheet.create({
     borderColor: COLORS.text.primary,
     borderWidth: 2,
   },
+  deletePrimary: {
+    backgroundColor: COLORS.accent.delete,
+  },
+  deleteSecondary: {
+    backgroundColor: COLORS.backgroundPrimary,
+    borderColor: COLORS.accent.delete,
+    borderWidth: 2,
+  },
 });
 
-// const buttonTextProps: { [variant: string]: CTextProps } = {
-//   primary: {
-//     bold: true,
-//   },
-//   secondary: {
-//     bold: true,
-//   },
-// };
+const buttonTextProps: { [variant: string]: CTextProps } = {
+  primary: {
+    bold: true,
+  },
+  secondary: {
+    bold: true,
+  },
+  deletePrimary: {
+    bold: false,
+    style: { color: COLORS.text.white },
+  },
+  deleteSecondary: {
+    bold: false,
+    style: { color: COLORS.accent.delete },
+  },
+};
 
 type ButtonVariantType = keyof typeof buttonVariants;
 
@@ -69,8 +85,7 @@ export const CButton: React.FC<CButtonProps> = ({
         style={{
           textAlign: "center",
         }}
-        bold
-        // {...buttonTextProps[variant]}
+        {...buttonTextProps[variant]}
       >
         {label}
       </CText>

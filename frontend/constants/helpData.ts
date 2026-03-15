@@ -24,6 +24,11 @@ export const DATA_FAQ = [
     answer:
       "Yes. You can edit or delete cards at any time.\n\nTo edit or delete a card, go to the deck page, view the deck that contains card you want to edit, locate the card, and then select the edit or delete icon.",
   },
+  {
+    question: "What are Parameters and Auto-Optimization?",
+    answer:
+      "Parameters are settings that control how the spaced repetition algorithm works. They are initially set to default values.\n\nAuto-Optimization adjusts the parameter values based on your performance to improve learning efficiency.\n\nYou can set how often the optimizer will update the parameters, pause Auto-Optimization, and reset parameters to default values in the User Settings.",
+  },
 ];
 
 export const DATA_TIP = [
