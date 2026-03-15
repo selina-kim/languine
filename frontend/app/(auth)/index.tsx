@@ -1,13 +1,13 @@
-import { CButton } from "@/components/common/CButton";
-import { COLORS } from "@/constants/colors";
-import { GoogleSignin } from "@react-native-google-signin/google-signin";
-import { useEffect, useState } from "react";
-import { ActivityIndicator, Alert, View } from "react-native";
 import { exchangeGoogleToken } from "@/apis/endpoints/auth";
-import { useAuth } from "@/context/AuthContext";
 import { AppLogo } from "@/assets/AppLogo";
 import { LoginBackground } from "@/assets/LoginBackground";
 import { PastaLogo } from "@/assets/PastaLogo";
+import { CButton } from "@/components/common/CButton";
+import { COLORS } from "@/constants/colors";
+import { useAuth } from "@/context/AuthContext";
+import { GoogleSignin } from "@react-native-google-signin/google-signin";
+import { useEffect, useState } from "react";
+import { ActivityIndicator, Alert, View } from "react-native";
 
 // Configure Google Sign-In
 GoogleSignin.configure({
@@ -36,7 +36,7 @@ export default function LoginScreen() {
       await GoogleSignin.hasPlayServices();
 
       // Trigger Google Sign-In
-      const userInfo = await GoogleSignin.signIn();
+      await GoogleSignin.signIn();
 
       // console.log("Google Sign-In successful:", userInfo);
 
