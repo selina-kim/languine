@@ -182,24 +182,6 @@ def test_update_auto_optimize_true(client, auth_headers):
     assert result["user"]["reviews_since_last_optimize"] == 0
 
 
-def test_update_fsrs_parameters(client, auth_headers):
-    """Test updating FSRS parameters."""
-    update_data = {
-        "fsrs_parameters": [1.0, 2.0, 3.0, 4.0]
-    }
-    
-    response = client.patch(
-        "/users/me",
-        data=json.dumps(update_data),
-        content_type='application/json',
-        headers=auth_headers
-    )
-    
-    assert response.status_code == 200
-    result = json.loads(response.data)
-    assert result["user"]["fsrs_parameters"] == [1.0, 2.0, 3.0, 4.0]
-
-
 def test_update_multiple_fields(client, auth_headers):
     """Test updating multiple fields at once."""
     update_data = {
@@ -310,43 +292,6 @@ def test_update_invalid_auto_optimize_type(client, auth_headers):
     assert response.status_code == 400
     result = json.loads(response.data)
     assert "boolean" in result["error"]
-
-
-def test_update_invalid_fsrs_parameters(client, auth_headers):
-    """Test updating with invalid FSRS parameters."""
-    update_data = {
-        "fsrs_parameters": "not an array"
-    }
-    
-    response = client.patch(
-        "/users/me",
-        data=json.dumps(update_data),
-        content_type='application/json',
-        headers=auth_headers
-    )
-    
-    assert response.status_code == 400
-    result = json.loads(response.data)
-    assert "array" in result["error"]
-
-
-def test_update_fsrs_parameters_invalid_elements(client, auth_headers):
-    """Test updating with FSRS parameters containing non-numeric values."""
-    update_data = {
-        "fsrs_parameters": [1.0, "invalid", 3.0]
-    }
-    
-    response = client.patch(
-        "/users/me",
-        data=json.dumps(update_data),
-        content_type='application/json',
-        headers=auth_headers
-    )
-    
-    assert response.status_code == 400
-    result = json.loads(response.data)
-    assert "numbers" in result["error"]
-
 
 def test_update_no_data_provided(client, auth_headers):
     """Test update with no data provided."""

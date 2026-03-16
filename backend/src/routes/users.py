@@ -73,7 +73,6 @@ def update_current_user():
     - timezone: User's timezone (e.g., 'America/Toronto')
     - new_cards_per_day: Number of new cards per day (integer)
     - desired_retention: Desired retention rate (0.0-1.0)
-    - fsrs_parameters: Array of FSRS parameters (array of floats)
     - auto_optimize: Enable/disable auto-optimization (boolean)
     - num_reviews_per_optimize: Number of reviews before optimization (positive integer)
     - total_reviews: Total review count (non-negative integer)
@@ -145,16 +144,6 @@ def update_current_user():
             data['reviews_since_last_optimize'] = reviews
         except (ValueError, TypeError):
             return error_response("reviews_since_last_optimize must be an integer", status=400)
-    
-    if 'fsrs_parameters' in data:
-        if data['fsrs_parameters'] is not None:
-            if not isinstance(data['fsrs_parameters'], list):
-                return error_response("fsrs_parameters must be an array", status=400)
-            try:
-                # Validate all elements are numbers
-                data['fsrs_parameters'] = [float(x) for x in data['fsrs_parameters']]
-            except (ValueError, TypeError):
-                return error_response("fsrs_parameters must contain only numbers", status=400)
     
     if 'reset_fsrs_params' in data:
         try:

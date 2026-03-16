@@ -66,9 +66,8 @@ class UserService:
                 allowed_fields = {
                     'display_name', 'timezone', 
                     'new_cards_per_day', 'desired_retention',
-                    'fsrs_parameters', 'auto_optimize',
-                    'num_reviews_per_optimize', 'total_reviews',
-                    'reviews_since_last_optimize'
+                    'auto_optimize', 'num_reviews_per_optimize', 
+                    'total_reviews', 'reviews_since_last_optimize'
                 }
                 
                 # Filter to only allowed fields that are present in data
@@ -88,9 +87,8 @@ class UserService:
                     WHERE u_id = %s
                     RETURNING u_id, email, display_name, timezone, 
                               new_cards_per_day, desired_retention,
-                              fsrs_parameters, auto_optimize,
-                              num_reviews_per_optimize, total_reviews,
-                              reviews_since_last_optimize
+                              auto_optimize,num_reviews_per_optimize, 
+                              total_reviews, reviews_since_last_optimize
                 """
                 
                 cursor.execute(query, values)
