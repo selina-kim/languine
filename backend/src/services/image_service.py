@@ -7,11 +7,18 @@ class UnsplashService:
     """Service for interacting with Unsplash API"""
     
     BASE_URL = "https://api.unsplash.com"
+    DEFAULT_TIMEOUT_SECONDS = 10.0
     
     def __init__(self, access_key: Optional[str] = None):
         self.access_key = access_key or os.getenv("UNSPLASH_ACCESS_KEY")
         if not self.access_key:
             raise ValueError("UNSPLASH_ACCESS_KEY not set in environment")
+
+        timeout_value = os.getenv("UNSPLASH_TIMEOUT_SECONDS", str(self.DEFAULT_TIMEOUT_SECONDS))
+        try:
+            self.timeout_seconds = float(timeout_value)
+        except (TypeError, ValueError):
+            self.timeout_seconds = self.DEFAULT_TIMEOUT_SECONDS
         
         self.headers = {
             "Authorization": f"Client-ID {self.access_key}",
@@ -59,7 +66,12 @@ class UnsplashService:
             params["color"] = color
         
         try:
-            response = requests.get(endpoint, headers=self.headers, params=params)
+            response = requests.get(
+                endpoint,
+                headers=self.headers,
+                params=params,
+                timeout=self.timeout_seconds,
+            )
             response.raise_for_status()
             return response.json()
         except Exception as e:
@@ -78,7 +90,11 @@ class UnsplashService:
         endpoint = f"{self.BASE_URL}/photos/{photo_id}/download"
         
         try:
-            response = requests.get(endpoint, headers=self.headers)
+            response = requests.get(
+                endpoint,
+                headers=self.headers,
+                timeout=self.timeout_seconds,
+            )
             response.raise_for_status()
             return response.json()
         except Exception as e:

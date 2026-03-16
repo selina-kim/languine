@@ -71,6 +71,13 @@ class TestUnsplashServiceInit:
         service = UnsplashService()
         assert service.access_key == "env_key_456"
         assert service.headers["Authorization"] == "Client-ID env_key_456"
+        assert service.timeout_seconds == 10.0
+
+    @patch.dict('os.environ', {'UNSPLASH_ACCESS_KEY': 'env_key_456', 'UNSPLASH_TIMEOUT_SECONDS': '3.5'})
+    def test_init_with_custom_timeout(self):
+        """Test initialization with custom timeout from environment variable"""
+        service = UnsplashService()
+        assert service.timeout_seconds == 3.5
     
     @patch.dict('os.environ', {}, clear=True)
     def test_init_without_key_raises_error(self):
@@ -104,6 +111,7 @@ class TestSearchPhotos:
         assert call_args[1]["params"]["query"] == "nature"
         assert call_args[1]["params"]["page"] == 1
         assert call_args[1]["params"]["per_page"] == 10
+        assert call_args[1]["timeout"] == 10.0
     
     @patch('services.image_service.requests.get')
     def test_search_photos_with_filters(self, mock_get, mock_unsplash_response):
@@ -126,6 +134,7 @@ class TestSearchPhotos:
         assert call_args["orientation"] == "landscape"
         assert call_args["color"] == "orange"
         assert call_args["order_by"] == "latest"
+        assert mock_get.call_args[1]["timeout"] == 10.0
     
     @patch('services.image_service.requests.get')
     def test_search_photos_respects_max_per_page(self, mock_get, mock_unsplash_response):
@@ -141,6 +150,7 @@ class TestSearchPhotos:
         # Verify per_page is capped at 30
         call_args = mock_get.call_args[1]["params"]
         assert call_args["per_page"] == 30
+        assert mock_get.call_args[1]["timeout"] == 10.0
     
     @patch('services.image_service.requests.get')
     def test_search_photos_request_exception(self, mock_get):
@@ -174,6 +184,7 @@ class TestTrackDownload:
         # Verify API call
         mock_get.assert_called_once()
         assert "https://api.unsplash.com/photos/abc123/download" in mock_get.call_args[0]
+        assert mock_get.call_args[1]["timeout"] == 10.0
     
     @patch('services.image_service.requests.get')
     def test_track_download_request_exception(self, mock_get):
