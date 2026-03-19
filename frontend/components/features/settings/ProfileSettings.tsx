@@ -7,8 +7,6 @@ export const ProfileSettings = () => {
 
   const [displayName, setDisplayName] = useState(user?.name || "");
 
-  if (!user) return;
-
   const onSave = (value: string) => {
     // TODO
     setDisplayName(value);

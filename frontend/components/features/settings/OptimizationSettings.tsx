@@ -1,6 +1,7 @@
 import { CButton } from "@/components/common/CButton";
 import { useState } from "react";
 import { SettingGroup } from "./SettingGroup";
+import { ResetParametersButton } from "./ResetParametersButton";
 
 export const OptimizationSettings = () => {
   const [autoOptimizeToggle, setAutoOptimizeToggle] = useState(true);
@@ -33,19 +34,7 @@ export const OptimizationSettings = () => {
         value={reviews}
         onSave={onSaveReviews}
       />
-      <CButton
-        label="Reset Parameters"
-        variant="criticalSecondary"
-        onConfirm={() => {
-          // TODO
-          console.log("parameters have been reset");
-        }}
-        confirmHeader="Reset Parameters"
-        confirmDescription="This action will reset all optimization parameters to their default values"
-        style={{
-          marginVertical: 20,
-        }}
-      />
+      <ResetParametersButton />
     </SettingGroup>
   );
 };

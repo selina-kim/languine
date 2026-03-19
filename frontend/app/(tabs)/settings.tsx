@@ -1,5 +1,5 @@
-import { CButton } from "@/components/common/CButton";
 import { AccountSettings } from "@/components/features/settings/AccountSettings";
+import { DeleteAccountButton } from "@/components/features/settings/DeleteAccountButton";
 import { OptimizationSettings } from "@/components/features/settings/OptimizationSettings";
 import { ProfileSettings } from "@/components/features/settings/ProfileSettings";
 import { useFocusEffect } from "@react-navigation/native";
@@ -28,19 +28,7 @@ export default function Settings() {
       <ProfileSettings />
       <AccountSettings />
       <OptimizationSettings />
-      <CButton
-        variant="criticalPrimary"
-        label="Delete Account"
-        onConfirm={() => {
-          // TODO
-          console.log("deleted account");
-        }}
-        confirmDescription="This action will permanently delete your account and all associated data"
-        style={{
-          marginTop: 40,
-          marginBottom: 20,
-        }}
-      />
+      <DeleteAccountButton />
     </ScrollView>
   );
 }

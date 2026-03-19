@@ -25,13 +25,14 @@ export default function TabLayout() {
   const handleLogout = () => {
     signOut();
     setMenuVisible(false);
+    router.push("/(auth)");
   };
 
   const handleProfilePress = () => {
     setMenuVisible(!menuVisible);
   };
 
-  function HeaderRight() {
+  const HeaderRight = () => {
     if (!user) return null;
 
     return (
@@ -42,9 +43,9 @@ export default function TabLayout() {
         <ProfileIcon />
       </Pressable>
     );
-  }
+  };
 
-  function UserDropdownMenu() {
+  const UserDropdownMenu = () => {
     const pathname = usePathname();
     const showSettingsOption = pathname !== "/settings";
     return (
@@ -99,7 +100,7 @@ export default function TabLayout() {
         </View>
       </Modal>
     );
-  }
+  };
 
   return (
     <>

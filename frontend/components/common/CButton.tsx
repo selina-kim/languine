@@ -53,11 +53,11 @@ const buttonTextProps: { [buttonTextVariant: string]: CTextProps } = {
     variant: "google",
   },
   criticalPrimary: {
-    bold: false,
+    bold: true,
     style: { color: COLORS.text.white },
   },
   criticalSecondary: {
-    bold: false,
+    bold: true,
     style: { color: COLORS.accent.delete },
   },
 };
@@ -68,33 +68,15 @@ interface CButtonProps extends PressableProps {
   variant: ButtonVariantType;
   label: string;
   Icon?: ReactNode;
-  onConfirm?: () => void;
-  confirmHeader?: string;
-  confirmDescription?: string;
 }
 
 export const CButton: React.FC<CButtonProps> = ({
   variant,
   label,
   Icon,
-  onConfirm,
-  confirmHeader = "Are you sure?",
-  confirmDescription,
   style,
-  onPress,
   ...props
 }) => {
-  const [modalVisible, setModalVisible] = useState(false);
-
-  const handleConfirm = () => {
-    onConfirm?.();
-    setModalVisible(false);
-  };
-
-  const handleInitialPress = () => {
-    setModalVisible(true);
-  };
-
   return (
     <>
       <Pressable
@@ -107,7 +89,6 @@ export const CButton: React.FC<CButtonProps> = ({
               ]
             : [buttonBaseStyle.base, variant && buttonVariants[variant], style]
         }
-        onPress={onConfirm ? handleInitialPress : onPress}
         {...props}
       >
         {Icon && <View style={{ width: 16, height: 16 }}>{Icon}</View>}
@@ -120,18 +101,6 @@ export const CButton: React.FC<CButtonProps> = ({
           {label}
         </CText>
       </Pressable>
-      {onConfirm && (
-        <Modal
-          visible={modalVisible}
-          header={confirmHeader}
-          subheader={confirmDescription}
-          submitLabel={label}
-          submitVariant={variant}
-          closeLabel="Cancel"
-          onClose={() => setModalVisible(false)}
-          onSubmit={handleConfirm}
-        />
-      )}
     </>
   );
 };
