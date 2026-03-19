@@ -40,6 +40,27 @@ class AuthService:
                 """, (google_id, email, display_name, timezone))
                 
                 new_user = cursor.fetchone()
+
+                # Copy built-in system decks and their cards to the new user.
+                # A single CTE handles both inserts atomically:
+                #   1. Insert one deck per system deck, returning the new d_id + deck_name.
+                #   2. Join back to the system cards and insert copies into the new decks.
+                # due_date is set to CURRENT_TIMESTAMP so cards are immediately reviewable.
+                cursor.execute("""
+                    WITH new_decks AS (
+                        INSERT INTO Decks (u_id, deck_name, word_lang, trans_lang, description, is_public)
+                        SELECT %s, deck_name, word_lang, trans_lang, description, false
+                        FROM Decks
+                        WHERE u_id = 'system'
+                        RETURNING d_id, deck_name
+                    )
+                    INSERT INTO Cards (d_id, word, translation, due_date)
+                    SELECT nd.d_id, c.word, c.translation, CURRENT_TIMESTAMP
+                    FROM Cards c
+                    JOIN Decks sd ON c.d_id = sd.d_id AND sd.u_id = 'system'
+                    JOIN new_decks nd ON nd.deck_name = sd.deck_name
+                """, (google_id,))
+
                 return dict(new_user)
                 
         except Exception as e:
