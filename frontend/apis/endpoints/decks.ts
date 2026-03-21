@@ -1,4 +1,8 @@
-import { CreateDeckRequestPayload, Deck } from "@/types/decks";
+import {
+  CreateDeckRequestPayload,
+  Deck,
+  GetSingleDeckResponseData,
+} from "@/types/decks";
 import client from "@/apis/client";
 
 export const getDecks = (): Promise<{
@@ -6,7 +10,14 @@ export const getDecks = (): Promise<{
   error: string | null;
 }> => client.get(`/decks`);
 
+export const getSingleDeck = (
+  deckId: string | number,
+): Promise<{
+  data: GetSingleDeckResponseData;
+  error: string | null;
+}> => client.get(`/decks/${deckId}`);
+
 export const createDeck = (data: CreateDeckRequestPayload) =>
   client.post(`/decks/new`, JSON.stringify(data));
 
-export default { getDecks, createDeck };
+export default { getDecks, getSingleDeck, createDeck };

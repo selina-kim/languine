@@ -8,12 +8,14 @@ import { PlusFilledIcon } from "@/assets/icons/PlusFilledIcon";
 import { COLORS } from "@/constants/colors";
 import { CreateNewDeckModal } from "@/components/features/decks/CreateNewDeckModal";
 import { SHADOWS } from "@/constants/shadows";
-import SingleDeckView from "@/components/features/decks/SingleDeckView";
+import { SingleDeckView } from "@/components/features/decks/SingleDeckView";
+import { usePathname } from "expo-router";
 
 export default function Decks() {
   const [decks, setDecks] = useState<Deck[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [focusedDeckId, setFocusedDeckId] = useState<string>();
+  const pathname = usePathname();
 
   const getAllDecks = async () => {
     const { data, error } = await getDecks();
@@ -26,7 +28,7 @@ export default function Decks() {
   useEffect(() => {
     setFocusedDeckId(undefined);
     getAllDecks();
-  }, [isModalOpen]);
+  }, [isModalOpen, pathname]);
 
   const renderDecksView = () => (
     <>
@@ -65,7 +67,9 @@ export default function Decks() {
               description={deck.description}
               cardCount={deck.card_count}
               onViewDeck={() => setFocusedDeckId(deck.d_id)}
-              onDeleteDeck={() => console.log(`clicked delete deck for ${deck.deck_name}`)}
+              onDeleteDeck={() =>
+                console.log(`clicked delete deck for ${deck.deck_name}`)
+              }
             />
           ))
         )}

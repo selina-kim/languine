@@ -62,6 +62,7 @@ export const textVariants = StyleSheet.create({
     color: COLORS.text.primary,
     fontSize: 18,
     lineHeight: 24,
+    ...fonts.bold,
   },
   title: {
     color: COLORS.text.secondary,
