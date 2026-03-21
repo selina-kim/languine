@@ -1,14 +1,16 @@
+import { TrashIcon } from "@/assets/icons/TrashIcon";
 import { CButton } from "@/components/common/CButton";
 import { CText } from "@/components/common/CText";
 import { COLORS } from "@/constants/colors";
-import { View } from "react-native";
+import { Pressable, View } from "react-native";
 
 interface DeckPreviewProps {
   deckName: string;
   description?: string;
   language: string;
   cardCount: number;
-  onReview: () => void;
+  onViewDeck: () => void;
+  onDeleteDeck: () => void;
 }
 
 export const DeckPreview = ({
@@ -16,7 +18,8 @@ export const DeckPreview = ({
   description,
   language,
   cardCount,
-  onReview,
+  onViewDeck,
+  onDeleteDeck,
 }: DeckPreviewProps) => {
   const hasDescription = description && description.trim() !== "";
 
@@ -48,6 +51,7 @@ export const DeckPreview = ({
       </CText>
       {hasDescription && (
         <CText
+          numberOfLines={2}
           style={{
             marginTop: 15,
           }}
@@ -63,7 +67,19 @@ export const DeckPreview = ({
       >
         {cardCount} cards
       </CText>
-      <CButton onPress={onReview} variant="primary" label="View Deck" />
+      <CButton onPress={onViewDeck} variant="primary" label="View Deck" />
+      <Pressable
+        style={{
+          width: 16,
+          height: 16,
+          position: "absolute",
+          top: 20,
+          right: 20,
+        }}
+        onPress={onDeleteDeck}
+      >
+        <TrashIcon />
+      </Pressable>
     </View>
   );
 };

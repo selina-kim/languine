@@ -13,7 +13,7 @@ export default function Revision() {
     <ScrollView
       contentContainerStyle={{
         display: "flex",
-        justifyContent: "center",
+        justifyContent: "flex-start",
         alignItems: "center",
         paddingHorizontal: 25,
         paddingVertical: 25,

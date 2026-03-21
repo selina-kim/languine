@@ -7,65 +7,69 @@ import { DeckPreview } from "@/components/features/decks/DeckPreview";
 import { PlusFilledIcon } from "@/assets/icons/PlusFilledIcon";
 import { COLORS } from "@/constants/colors";
 import { CreateNewDeckModal } from "@/components/features/decks/CreateNewDeckModal";
+import { SHADOWS } from "@/constants/shadows";
+import SingleDeckView from "@/components/features/decks/SingleDeckView";
 
 export default function Decks() {
   const [decks, setDecks] = useState<Deck[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [focusedDeckId, setFocusedDeckId] = useState<string>();
 
   const getAllDecks = async () => {
     const { data, error } = await getDecks();
 
     setDecks(data.decks);
 
-    console.log("data", data);
     console.log("error", error);
   };
 
   useEffect(() => {
+    setFocusedDeckId(undefined);
     getAllDecks();
-  }, []);
+  }, [isModalOpen]);
 
-  return (
-    <ScrollView
-      contentContainerStyle={{
-        display: "flex",
-        justifyContent: "flex-start",
-        alignItems: "center",
-        paddingHorizontal: 25,
-        paddingVertical: 25,
-        rowGap: 20,
-        height: "100%",
-      }}
-    >
-      {decks.length === 0 ? (
-        <View
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            padding: 10,
-          }}
-        >
-          <NoDecksBanner
-            onCreateNewDeck={() => {
-              setIsModalOpen(true);
+  const renderDecksView = () => (
+    <>
+      <ScrollView
+        contentContainerStyle={{
+          display: "flex",
+          justifyContent: "flex-start",
+          alignItems: "center",
+          paddingHorizontal: 25,
+          paddingVertical: 25,
+          rowGap: 20,
+          borderColor: "red",
+        }}
+      >
+        {decks.length === 0 ? (
+          <View
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              padding: 10,
             }}
-          />
-        </View>
-      ) : (
-        decks.map((deck) => (
-          <DeckPreview
-            key={`deck_preview_card_${deck.deck_name}`}
-            deckName={deck.deck_name}
-            language={deck.word_lang}
-            description={deck.description}
-            cardCount={deck.card_count}
-            onReview={() =>
-              console.log(`clicked for the deck ${deck.deck_name}`)
-            }
-          />
-        ))
-      )}
+          >
+            <NoDecksBanner
+              onCreateNewDeck={() => {
+                setIsModalOpen(true);
+              }}
+            />
+          </View>
+        ) : (
+          decks.map((deck) => (
+            <DeckPreview
+              key={`deck_preview_card_${deck.deck_name}`}
+              deckName={deck.deck_name}
+              language={deck.word_lang}
+              description={deck.description}
+              cardCount={deck.card_count}
+              onViewDeck={() => setFocusedDeckId(deck.d_id)}
+              onDeleteDeck={() => console.log(`clicked delete deck for ${deck.deck_name}`)}
+            />
+          ))
+        )}
+      </ScrollView>
       <Pressable
         style={{
           right: 10,
@@ -76,6 +80,7 @@ export default function Decks() {
           padding: 15,
           backgroundColor: COLORS.button.fillPrimary,
           borderRadius: 10,
+          ...SHADOWS.smallButton,
         }}
         onPress={() => setIsModalOpen(true)}
       >
@@ -85,6 +90,16 @@ export default function Decks() {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
       />
-    </ScrollView>
+    </>
+  );
+
+  return (
+    <View style={{ height: "100%" }}>
+      {focusedDeckId ? (
+        <SingleDeckView deck_id={focusedDeckId} />
+      ) : (
+        renderDecksView()
+      )}
+    </View>
   );
 }

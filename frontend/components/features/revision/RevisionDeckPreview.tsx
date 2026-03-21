@@ -41,7 +41,7 @@ export const RevisionDeckPreview = ({
         style={{ color: COLORS.text.language, fontSize: 16, lineHeight: 24 }}
         special
       >
-        {language}
+        {language.toUpperCase()}
       </CText>
       <CText
         style={{
