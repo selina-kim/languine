@@ -2,7 +2,14 @@ import {
   SupportedTranslationLanguagesResponseData,
   getSupportedLanguages,
 } from "@/apis/endpoints/translation";
-import React, { createContext, useContext, useEffect, useState } from "react";
+import { useAuth } from "@/context/AuthContext";
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 
 interface LanguageOptionsContextType {
   sourceLanguages: SupportedTranslationLanguagesResponseData["source"];
@@ -29,6 +36,7 @@ export const LanguageOptionsProvider = ({
 }: {
   children: React.ReactNode;
 }) => {
+  const { user, isLoading: isAuthLoading } = useAuth();
   const [sourceLanguages, setSourceLanguages] = useState<
     SupportedTranslationLanguagesResponseData["source"]
   >([]);
@@ -41,7 +49,16 @@ export const LanguageOptionsProvider = ({
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const refreshLanguages = async () => {
+  const refreshLanguages = useCallback(async () => {
+    if (!user) {
+      setSourceLanguages([]);
+      setTargetLanguages([]);
+      setLanguageNameByCode({});
+      setError(null);
+      setIsLoading(false);
+      return;
+    }
+
     setIsLoading(true);
     setError(null);
 
@@ -71,11 +88,24 @@ export const LanguageOptionsProvider = ({
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [user]);
 
   useEffect(() => {
+    if (isAuthLoading) {
+      return;
+    }
+
+    if (!user) {
+      setSourceLanguages([]);
+      setTargetLanguages([]);
+      setLanguageNameByCode({});
+      setError(null);
+      setIsLoading(false);
+      return;
+    }
+
     refreshLanguages();
-  }, []);
+  }, [isAuthLoading, user, refreshLanguages]);
 
   return (
     <LanguageOptionsContext.Provider
