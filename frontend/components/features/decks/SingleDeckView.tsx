@@ -126,6 +126,21 @@ export const SingleDeckView = ({ deckId }: SingleDeckViewProps) => {
         wordLanguageCode={deckDetails.word_lang}
         translationLanguageCode={deckDetails.trans_lang}
         isOpen={isCreateCardModalOpen}
+        onOptimisticCreate={(optimisticCard) =>
+          setCards((prevCards) => [optimisticCard, ...prevCards])
+        }
+        onCreateSuccess={(tempCardId, createdCard) =>
+          setCards((prevCards) =>
+            prevCards.map((card) =>
+              card.c_id === tempCardId ? createdCard : card,
+            ),
+          )
+        }
+        onCreateFailed={(tempCardId) =>
+          setCards((prevCards) =>
+            prevCards.filter((card) => card.c_id !== tempCardId),
+          )
+        }
         onClose={() => setIsCreateCardModalOpen(false)}
       />
     </View>

@@ -9,6 +9,7 @@ import { CText } from "@/components/common/CText";
 import { CTextInput } from "@/components/common/CTextInput";
 import { Modal } from "@/components/common/Modal";
 import { COLORS } from "@/constants/colors";
+import { Card } from "@/types/decks";
 import { useEffect, useState } from "react";
 import { ScrollView, View } from "react-native";
 
@@ -17,6 +18,9 @@ interface CreateNewCardModalProps {
   wordLanguageCode: string;
   translationLanguageCode: string;
   isOpen: boolean;
+  onOptimisticCreate: (card: Card) => void;
+  onCreateSuccess: (tempCardId: number, createdCard: Card) => void;
+  onCreateFailed: (tempCardId: number) => void;
   onClose: () => void;
 }
 
@@ -25,6 +29,9 @@ export const CreateNewCardModal = ({
   wordLanguageCode,
   translationLanguageCode,
   isOpen,
+  onOptimisticCreate,
+  onCreateSuccess,
+  onCreateFailed,
   onClose,
 }: CreateNewCardModalProps) => {
   const [sourceWord, setSourceWord] = useState("");
@@ -59,12 +66,31 @@ export const CreateNewCardModal = ({
       return;
     }
 
+    const tempCardId = -Date.now();
+    const optimisticCard: Card = {
+      c_id: tempCardId,
+      word: targetWord,
+      translation: sourceWord,
+      word_example: targetExample || null,
+      trans_example: sourceExample || null,
+      word_roman: null,
+      trans_roman: null,
+      image: null,
+      learning_state: 0,
+      difficulty: 0,
+      stability: 0,
+      due_date: null,
+    };
+
+    onOptimisticCreate(optimisticCard);
+    onClose();
+
     setIsCreatingCard(true);
 
     // const start = performance.now();
 
     try {
-      const { error } = await createCard(deckId, {
+      const { data, error } = await createCard(deckId, {
         word: targetWord,
         translation: sourceWord,
         word_example: targetExample,
@@ -72,10 +98,14 @@ export const CreateNewCardModal = ({
       });
 
       if (!error) {
-        onClose();
+        onCreateSuccess(tempCardId, data.card);
       } else {
+        onCreateFailed(tempCardId);
         setWordInputError(error);
       }
+    } catch {
+      onCreateFailed(tempCardId);
+      setWordInputError("Failed to create card");
     } finally {
       // const end = performance.now();
       // const elapsedMs = end - start;
