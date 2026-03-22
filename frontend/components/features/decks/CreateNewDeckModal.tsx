@@ -6,7 +6,7 @@ import { Modal } from "@/components/common/Modal";
 import { COLORS } from "@/constants/colors";
 import { useLanguageOptions } from "@/context/LanguageOptionsContext";
 import { DeckDetails } from "@/types/decks";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { View } from "react-native";
 
 interface CreateNewDeckModalProps {
@@ -47,8 +47,11 @@ export const CreateNewDeckModal = ({
 
   const isEditMode = mode === "edit";
 
-  const getLanguageName = (code: string) =>
-    languageNameByCode[code.toUpperCase()] ?? code.toUpperCase();
+  const getLanguageName = useCallback(
+    (code: string) =>
+      languageNameByCode[code.toUpperCase()] ?? code.toUpperCase(),
+    [languageNameByCode],
+  );
 
   const lockedLanguageLabel = deckToEdit
     ? getLanguageName(deckToEdit.word_lang)
@@ -131,7 +134,7 @@ export const CreateNewDeckModal = ({
       setDeckNameInputError(undefined);
       setLanguageInputError(undefined);
     }
-  }, [isOpen, languageLoadError, isEditMode, deckToEdit, languageNameByCode]);
+  }, [isOpen, languageLoadError, isEditMode, deckToEdit, getLanguageName]);
 
   return (
     <Modal
