@@ -2,6 +2,7 @@ import {
   CreateDeckRequestPayload,
   Deck,
   GetSingleDeckResponseData,
+  UpdateDeckRequestPayload,
 } from "@/types/decks";
 import client from "@/apis/client";
 
@@ -20,4 +21,9 @@ export const getSingleDeck = (
 export const createDeck = (data: CreateDeckRequestPayload) =>
   client.post(`/decks/new`, JSON.stringify(data));
 
-export default { getDecks, getSingleDeck, createDeck };
+export const updateDeck = (
+  deckId: string | number,
+  data: UpdateDeckRequestPayload,
+) => client.put(`/decks/${deckId}`, JSON.stringify(data));
+
+export default { getDecks, getSingleDeck, createDeck, updateDeck };

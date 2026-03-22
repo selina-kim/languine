@@ -12,6 +12,7 @@ import { EditCardModal } from "./EditCardModal";
 import { PlusFilledIcon } from "@/assets/icons/PlusFilledIcon";
 import { CardsList } from "./CardsList";
 import { SingleDeckDetails } from "./SingleDeckDetails";
+import { CreateNewDeckModal } from "./CreateNewDeckModal";
 
 interface SingleDeckViewProps {
   deckId: string;
@@ -21,6 +22,7 @@ export const SingleDeckView = ({ deckId }: SingleDeckViewProps) => {
   const [cards, setCards] = useState<Card[]>([]);
   const [deckDetails, setDeckDetails] = useState<DeckDetails>();
   const [isCreateCardModalOpen, setIsCreateCardModalOpen] = useState(false);
+  const [isEditDeckModalOpen, setIsEditDeckModalOpen] = useState(false);
   const [isEditCardModalOpen, setIsEditCardModalOpen] = useState(false);
   const [cardBeingEdited, setCardBeingEdited] = useState<Card | null>(null);
 
@@ -86,6 +88,7 @@ export const SingleDeckView = ({ deckId }: SingleDeckViewProps) => {
         <SingleDeckDetails
           deckDetails={deckDetails}
           numOfCards={cards.length}
+          onEditDeck={() => setIsEditDeckModalOpen(true)}
         />
         <CButton
           variant="primary"
@@ -151,6 +154,26 @@ export const SingleDeckView = ({ deckId }: SingleDeckViewProps) => {
           )
         }
         onClose={() => setIsCreateCardModalOpen(false)}
+      />
+      <CreateNewDeckModal
+        isOpen={isEditDeckModalOpen}
+        onClose={() => setIsEditDeckModalOpen(false)}
+        mode="edit"
+        deckToEdit={deckDetails}
+        onSuccess={(updatedDeck) => {
+          if (!updatedDeck) {
+            return;
+          }
+
+          setDeckDetails((prevDeck) =>
+            prevDeck
+              ? {
+                  ...prevDeck,
+                  ...updatedDeck,
+                }
+              : prevDeck,
+          );
+        }}
       />
       {cardBeingEdited && (
         <EditCardModal

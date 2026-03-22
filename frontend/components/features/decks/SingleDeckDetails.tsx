@@ -9,9 +9,11 @@ import { useLanguageOptions } from "@/context/LanguageOptionsContext";
 export const SingleDeckDetails = ({
   deckDetails,
   numOfCards,
+  onEditDeck,
 }: {
   deckDetails: DeckDetails;
   numOfCards: number;
+  onEditDeck: () => void;
 }) => {
   const { languageNameByCode } = useLanguageOptions();
 
@@ -92,7 +94,7 @@ export const SingleDeckDetails = ({
           top: 20,
           right: 20,
         }}
-        onPress={() => console.log("edit clicked")}
+        onPress={onEditDeck}
       >
         <EditIcon />
       </Pressable>

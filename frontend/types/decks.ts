@@ -50,6 +50,13 @@ export interface CreateDeckRequestPayload {
   link?: string;
 }
 
+export interface UpdateDeckRequestPayload {
+  deck_name?: string;
+  description?: string;
+  is_public?: boolean;
+  link?: string;
+}
+
 export interface CreateCardRequestPayload {
   word: string;
   translation: string;
