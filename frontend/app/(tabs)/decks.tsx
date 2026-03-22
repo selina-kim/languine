@@ -76,7 +76,9 @@ export default function Decks() {
           rowGap: 20,
         }}
       >
-        {deleteDeckError && <CText variant="inputError">{deleteDeckError}</CText>}
+        {deleteDeckError && (
+          <CText variant="inputError">{deleteDeckError}</CText>
+        )}
         {decks.length === 0 ? (
           <View
             style={{

@@ -27,8 +27,11 @@ export const CreateNewDeckModal = ({
   const [deckName, setDeckName] = useState("");
   const [language, setLanguage] = useState<string | null>(null);
   const [description, setDescription] = useState("");
-  const { sourceLanguages, languageNameByCode, error: languageLoadError } =
-    useLanguageOptions();
+  const {
+    sourceLanguages,
+    languageNameByCode,
+    error: languageLoadError,
+  } = useLanguageOptions();
 
   const [deckNameInputError, setDeckNameInputError] = useState<string>();
   const [languageInputError, setLanguageInputError] = useState<string>();
@@ -58,7 +61,7 @@ export const CreateNewDeckModal = ({
     const isDeckNameEmpty = deckName.trim() === "";
 
     const selectedLanguageCode = isEditMode
-      ? deckToEdit?.word_lang ?? null
+      ? (deckToEdit?.word_lang ?? null)
       : language
         ? languageCodeByName[language]
         : null;
@@ -159,7 +162,7 @@ export const CreateNewDeckModal = ({
           {isEditMode ? (
             <CTextInput
               value={lockedLanguageLabel}
-              style={{color: COLORS.text.tertiary}}
+              style={{ color: COLORS.text.tertiary }}
               onChangeText={() => {}}
               editable={false}
             />
