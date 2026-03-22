@@ -1,5 +1,6 @@
 import { createCard } from "@/apis/endpoints/cards";
 import { getWordDefinition } from "@/apis/endpoints/example";
+import { searchImages } from "@/apis/endpoints/image";
 import { getTranslation } from "@/apis/endpoints/translation";
 import { MagicWandIcon } from "@/assets/icons/MagicWandIcon";
 import { CButton } from "@/components/common/CButton";
@@ -10,7 +11,7 @@ import { COLORS } from "@/constants/colors";
 import { useLanguageOptions } from "@/context/LanguageOptionsContext";
 import { Card } from "@/types/decks";
 import { useEffect, useState } from "react";
-import { ScrollView, View } from "react-native";
+import { Image, ScrollView, View } from "react-native";
 
 interface CreateNewCardModalProps {
   deckId: string;
@@ -40,10 +41,13 @@ export const CreateNewCardModal = ({
   const [isCreatingCard, setIsCreatingCard] = useState(false);
   const [isTranslatingWord, setIsTranslatingWord] = useState(false);
   const [isGeneratingExample, setIsGeneratingExample] = useState(false);
+  const [image, setImage] = useState<string | null>(null);
+  const [isGeneratingImage, setIsGeneratingImage] = useState(false);
   const { languageNameByCode } = useLanguageOptions();
 
   const [wordInputError, setWordInputError] = useState<string>();
   const [exampleError, setExampleError] = useState<string>();
+  const [imageError, setImageError] = useState<string>();
 
   const getLanguageName = (code: string) =>
     languageNameByCode[code.toUpperCase()] ?? code.toUpperCase();
@@ -214,12 +218,37 @@ export const CreateNewCardModal = ({
     }
   };
 
-  // TODO: replace with actual image generation api logic
-  const handleAutoGenerateImage = () => {
-    console.log("auto-generate image");
-    if (targetWord.trim() === "") {
-      setWordInputError("The word(s) cannot be empty");
+  // Generate image using word as search query
+  const handleAutoGenerateImage = async () => {
+    if (isGeneratingImage) {
       return;
+    }
+
+    setImageError(undefined);
+
+    if (targetWord.trim() === "") {
+      setImageError("The word cannot be empty");
+      return;
+    }
+
+    setIsGeneratingImage(true);
+
+    try {
+      const { data, error } = await searchImages(targetWord.trim());
+
+      if (error) {
+        setImageError(error);
+        return;
+      }
+
+      if (data.results && data.results.length > 0) {
+        const imageUrl = data.results[0].urls.regular;
+        setImage(imageUrl);
+      } else {
+        setImageError("No images found for this word");
+      }
+    } finally {
+      setIsGeneratingImage(false);
     }
   };
 
@@ -229,10 +258,14 @@ export const CreateNewCardModal = ({
       setTargetWord("");
       setSourceExample("");
       setTargetExample("");
+      setImage(null);
       setWordInputError(undefined);
+      setExampleError(undefined);
+      setImageError(undefined);
       setIsCreatingCard(false);
       setIsTranslatingWord(false);
       setIsGeneratingExample(false);
+      setIsGeneratingImage(false);
     }
   }, [isOpen]);
 
@@ -304,17 +337,30 @@ export const CreateNewCardModal = ({
               justifyContent: "center",
               alignItems: "center",
               borderRadius: 10,
+              overflow: "hidden",
             }}
           >
-            <CText bold style={{ color: COLORS.text.tertiary }}>
-              No image generated
-            </CText>
+            {image ? (
+              <Image
+                source={{ uri: image }}
+                style={{ width: "100%", height: "100%" }}
+                resizeMode="cover"
+              />
+            ) : (
+              <CText bold style={{ color: COLORS.text.tertiary }}>
+                No image generated
+              </CText>
+            )}
           </View>
+          {imageError && (
+            <CText variant="inputError">{imageError}</CText>
+          )}
           <CButton
             variant="primary"
-            label="Auto-generate"
+            label={isGeneratingImage ? "Generating..." : "Auto-generate"}
             Icon={<MagicWandIcon />}
-            onPress={handleAutoGenerateImage} // TODO
+            disabled={isGeneratingImage}
+            onPress={handleAutoGenerateImage}
           />
         </ScrollView>
       </View>

@@ -34,7 +34,7 @@ export const SingleDeckView = ({ deckId }: SingleDeckViewProps) => {
     };
 
     getDeck();
-  }, [deckId, isCreateCardModalOpen]);
+  }, [deckId]);
 
   const renderNoCardsBanner = () => (
     <View
