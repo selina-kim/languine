@@ -1,6 +1,5 @@
 import { createCard } from "@/apis/endpoints/cards";
 import {
-  getSupportedLanguages,
   getTranslation,
 } from "@/apis/endpoints/translation";
 import { MagicWandIcon } from "@/assets/icons/MagicWandIcon";
@@ -9,6 +8,7 @@ import { CText } from "@/components/common/CText";
 import { CTextInput } from "@/components/common/CTextInput";
 import { Modal } from "@/components/common/Modal";
 import { COLORS } from "@/constants/colors";
+import { useLanguageOptions } from "@/context/LanguageOptionsContext";
 import { Card } from "@/types/decks";
 import { useEffect, useState } from "react";
 import { ScrollView, View } from "react-native";
@@ -36,14 +36,12 @@ export const CreateNewCardModal = ({
 }: CreateNewCardModalProps) => {
   const [sourceWord, setSourceWord] = useState("");
   const [targetWord, setTargetWord] = useState("");
-  const [languageNameByCode, setLanguageNameByCode] = useState<
-    Record<string, string>
-  >({});
   const [sourceExample, setSourceExample] = useState("");
   const [targetExample, setTargetExample] = useState("");
   const [wordInputError, setWordInputError] = useState<string>();
   const [isCreatingCard, setIsCreatingCard] = useState(false);
   const [isTranslatingWord, setIsTranslatingWord] = useState(false);
+  const { languageNameByCode } = useLanguageOptions();
 
   const getLanguageName = (code: string) =>
     languageNameByCode[code.toUpperCase()] ?? code.toUpperCase();
@@ -172,33 +170,6 @@ export const CreateNewCardModal = ({
   };
 
   useEffect(() => {
-    const loadSupportedLanguages = async () => {
-      const { data, error } = await getSupportedLanguages();
-
-      if (error) {
-        console.log("error", error);
-        return;
-      }
-
-      const sourceLanguages = data?.source ?? [];
-      const targetLanguages = data?.target ?? [];
-      const allLanguages = [...sourceLanguages, ...targetLanguages];
-
-      const languageMap = allLanguages.reduce(
-        (acc, language) => ({
-          ...acc,
-          [language.code.toUpperCase()]: language.name,
-        }),
-        {} as Record<string, string>,
-      );
-
-      setLanguageNameByCode(languageMap);
-    };
-
-    if (isOpen && Object.keys(languageNameByCode).length === 0) {
-      loadSupportedLanguages();
-    }
-
     if (!isOpen) {
       setSourceWord("");
       setTargetWord("");
@@ -208,7 +179,7 @@ export const CreateNewCardModal = ({
       setIsCreatingCard(false);
       setIsTranslatingWord(false);
     }
-  }, [isOpen, languageNameByCode]);
+  }, [isOpen]);
 
   return (
     <Modal

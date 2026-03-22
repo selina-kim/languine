@@ -1,5 +1,4 @@
 import { getDecks } from "@/apis/endpoints/decks";
-import { getSupportedLanguages } from "@/apis/endpoints/translation";
 import { NoDecksBanner } from "@/components/features/decks/NoDecksBanner";
 import { Pressable, ScrollView, View } from "react-native";
 import { Deck } from "@/types/decks";
@@ -9,17 +8,16 @@ import { PlusFilledIcon } from "@/assets/icons/PlusFilledIcon";
 import { COLORS } from "@/constants/colors";
 import { CreateNewDeckModal } from "@/components/features/decks/CreateNewDeckModal";
 import { SHADOWS } from "@/constants/shadows";
+import { useLanguageOptions } from "@/context/LanguageOptionsContext";
 import { SingleDeckView } from "@/components/features/decks/SingleDeckView";
 import { usePathname } from "expo-router";
 
 export default function Decks() {
   const [decks, setDecks] = useState<Deck[]>([]);
-  const [languageNameByCode, setLanguageNameByCode] = useState<
-    Record<string, string>
-  >({});
   const [isCreateDeckModalOpen, setIsCreateDeckModalOpen] = useState(false);
   const [focusedDeckId, setFocusedDeckId] = useState<string>();
   const pathname = usePathname();
+  const { languageNameByCode } = useLanguageOptions();
 
   const getAllDecks = async () => {
     const { data, error } = await getDecks();
@@ -29,33 +27,12 @@ export default function Decks() {
     console.log("error", error);
   };
 
-  const getLanguageOptions = async () => {
-    const { data, error } = await getSupportedLanguages();
-
-    if (error) {
-      console.log("error", error);
-      return;
-    }
-
-    const sourceLanguages = data?.source ?? [];
-    const languageMap = sourceLanguages.reduce(
-      (acc, language) => ({
-        ...acc,
-        [language.code.toUpperCase()]: language.name,
-      }),
-      {} as Record<string, string>,
-    );
-
-    setLanguageNameByCode(languageMap);
-  };
-
   const getLanguageName = (code: string) =>
     languageNameByCode[code.toUpperCase()] ?? code.toUpperCase();
 
   useEffect(() => {
     setFocusedDeckId(undefined);
     getAllDecks();
-    getLanguageOptions();
   }, [isCreateDeckModalOpen, pathname]);
 
   const renderDecksView = () => (

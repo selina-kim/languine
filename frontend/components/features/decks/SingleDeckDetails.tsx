@@ -4,6 +4,7 @@ import { Pressable, View } from "react-native";
 import { SHADOWS } from "@/constants/shadows";
 import { CText } from "@/components/common/CText";
 import { EditIcon } from "@/assets/icons/EditIcon";
+import { useLanguageOptions } from "@/context/LanguageOptionsContext";
 
 export const SingleDeckDetails = ({
   deckDetails,
@@ -12,6 +13,11 @@ export const SingleDeckDetails = ({
   deckDetails: DeckDetails;
   numOfCards: number;
 }) => {
+  const { languageNameByCode } = useLanguageOptions();
+
+  const getLanguageName = (code: string) =>
+    languageNameByCode[code.toUpperCase()] ?? code.toUpperCase();
+
   const DeckDetailItem = ({
     label,
     value,
@@ -61,7 +67,10 @@ export const SingleDeckDetails = ({
           marginTop: 16,
         }}
       >
-        <DeckDetailItem label="Language" value={deckDetails.word_lang} />
+        <DeckDetailItem
+          label="Language"
+          value={getLanguageName(deckDetails.word_lang)}
+        />
         <DeckDetailItem
           label="Last Reviewed"
           value={deckDetails.last_reviewed}

@@ -1,9 +1,9 @@
-import { getSupportedLanguages } from "@/apis/endpoints/translation";
 import { createDeck } from "@/apis/endpoints/decks";
 import { CText } from "@/components/common/CText";
 import { CTextInput } from "@/components/common/CTextInput";
 import { Dropdown } from "@/components/common/Dropdown";
 import { Modal } from "@/components/common/Modal";
+import { useLanguageOptions } from "@/context/LanguageOptionsContext";
 import { useEffect, useState } from "react";
 import { View } from "react-native";
 
@@ -19,13 +19,19 @@ export const CreateNewDeckModal = ({
   const [deckName, setDeckName] = useState("");
   const [language, setLanguage] = useState<string | null>(null);
   const [description, setDescription] = useState("");
-  const [languageOptions, setLanguageOptions] = useState<string[]>([]);
-  const [languageCodeByName, setLanguageCodeByName] = useState<
-    Record<string, string>
-  >({});
+  const { sourceLanguages, error: languageLoadError } = useLanguageOptions();
 
   const [deckNameInputError, setDeckNameInputError] = useState<string>();
   const [languageInputError, setLanguageInputError] = useState<string>();
+
+  const languageOptions = sourceLanguages.map((lang) => lang.name);
+  const languageCodeByName = sourceLanguages.reduce(
+    (acc, lang) => ({
+      ...acc,
+      [lang.name]: lang.code,
+    }),
+    {} as Record<string, string>,
+  );
 
   const onCreateDeck = async () => {
     setDeckNameInputError(undefined);
@@ -63,31 +69,8 @@ export const CreateNewDeckModal = ({
   };
 
   useEffect(() => {
-    const loadSupportedLanguages = async () => {
-      const { data, error } = await getSupportedLanguages();
-
-      if (error) {
-        setLanguageInputError("Failed to load languages");
-        return;
-      }
-
-      const sourceLanguages = data?.source ?? [];
-
-      const options = sourceLanguages.map((lang) => lang.name);
-      const codeMap = sourceLanguages.reduce(
-        (acc, lang) => ({
-          ...acc,
-          [lang.name]: lang.code,
-        }),
-        {} as Record<string, string>,
-      );
-
-      setLanguageOptions(options);
-      setLanguageCodeByName(codeMap);
-    };
-
-    if (isOpen && languageOptions.length === 0) {
-      loadSupportedLanguages();
+    if (isOpen && languageLoadError) {
+      setLanguageInputError("Failed to load languages");
     }
 
     if (!isOpen) {
@@ -97,7 +80,7 @@ export const CreateNewDeckModal = ({
       setDeckNameInputError(undefined);
       setLanguageInputError(undefined);
     }
-  }, [isOpen, languageOptions.length]);
+  }, [isOpen, languageLoadError]);
 
   return (
     <Modal
