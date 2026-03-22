@@ -6,6 +6,7 @@ import { COLORS } from "@/constants/colors";
 import { Card } from "@/types/decks";
 import { useState } from "react";
 import { Pressable, View } from "react-native";
+import { Modal } from "@/components/common/Modal";
 
 interface CardsListProps {
   deckId: string;
@@ -14,8 +15,9 @@ interface CardsListProps {
 }
 
 export const CardsList = ({ deckId, cards, onCardDeleted }: CardsListProps) => {
-  const [deletingCardId, setDeletingCardId] = useState<number | null>(null);
+  const [deletingCardId, setDeletingCardId] = useState<number>();
   const [deleteCardError, setDeleteCardError] = useState<string>();
+  const [cardIdToDelete, setCardIdToDelete] = useState<number>();
 
   const handleDeleteCard = async (cardId: number) => {
     if (deletingCardId) {
@@ -35,7 +37,8 @@ export const CardsList = ({ deckId, cards, onCardDeleted }: CardsListProps) => {
 
       onCardDeleted(cardId);
     } finally {
-      setDeletingCardId(null);
+      setDeletingCardId(undefined);
+      setCardIdToDelete(undefined);
     }
   };
 
@@ -64,10 +67,8 @@ export const CardsList = ({ deckId, cards, onCardDeleted }: CardsListProps) => {
         style={{
           width: 20,
           height: 20,
-          opacity: deletingCardId === cardId ? 0.5 : 1,
         }}
-        disabled={deletingCardId !== null}
-        onPress={() => handleDeleteCard(cardId)}
+        onPress={() => setCardIdToDelete(cardId)}
       >
         <TrashIcon />
       </Pressable>
@@ -150,6 +151,18 @@ export const CardsList = ({ deckId, cards, onCardDeleted }: CardsListProps) => {
             )}
           </View>
           <CardButtons cardId={card.c_id} />
+          {cardIdToDelete && (
+            <Modal
+              visible={!!cardIdToDelete}
+              header="Are you sure?"
+              submitLabel="Delete Card"
+              subheader="This action will delete this card permanently"
+              submitVariant="criticalPrimary"
+              closeLabel="Cancel"
+              onClose={() => setCardIdToDelete(undefined)}
+              onSubmit={() => handleDeleteCard(cardIdToDelete)}
+            />
+          )}
         </View>
       ))}
     </View>
