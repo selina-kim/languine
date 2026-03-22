@@ -12,6 +12,7 @@ import { useLanguageOptions } from "@/context/LanguageOptionsContext";
 import { Card } from "@/types/decks";
 import { useEffect, useState } from "react";
 import { Image, ScrollView, View } from "react-native";
+import { getImageUrl } from "@/utils/imageUtils";
 
 interface EditCardModalProps {
   deckId: string;
@@ -308,6 +309,7 @@ export const EditCardModal = ({
           <CText bold>Image</CText>
           <View
             style={{
+              width: "100%",
               height: 200,
               backgroundColor: COLORS.background.secondary,
               display: "flex",
@@ -320,7 +322,7 @@ export const EditCardModal = ({
             {image ? (
               <Image
                 key={image}
-                source={{ uri: image }}
+                source={{ uri: getImageUrl(image) ?? image }}
                 style={{ width: "100%", height: "100%" }}
                 resizeMode="cover"
               />

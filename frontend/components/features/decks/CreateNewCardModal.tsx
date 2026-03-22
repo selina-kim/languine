@@ -12,6 +12,7 @@ import { useLanguageOptions } from "@/context/LanguageOptionsContext";
 import { Card } from "@/types/decks";
 import { useEffect, useState } from "react";
 import { Image, ScrollView, View } from "react-native";
+import { getImageUrl } from "@/utils/imageUtils";
 
 interface CreateNewCardModalProps {
   deckId: string;
@@ -343,7 +344,7 @@ export const CreateNewCardModal = ({
           >
             {image ? (
               <Image
-                source={{ uri: image }}
+                source={{ uri: getImageUrl(image) ?? image }}
                 style={{ width: "100%", height: "100%" }}
                 resizeMode="cover"
               />

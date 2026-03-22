@@ -30,6 +30,8 @@ export const searchImages = (
   page: number = 1,
   perPage: number = 5,
 ): Promise<{ data: ImageSearchResponse; error: string | null }> =>
-  client.get(`/images/search?query=${encodeURIComponent(query)}&page=${page}&per_page=${perPage}`);
+  client.get(
+    `/images/search?query=${encodeURIComponent(query)}&page=${page}&per_page=${perPage}`,
+  );
 
 export default { searchImages };

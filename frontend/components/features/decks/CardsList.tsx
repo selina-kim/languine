@@ -5,8 +5,9 @@ import { CText } from "@/components/common/CText";
 import { COLORS } from "@/constants/colors";
 import { Card } from "@/types/decks";
 import { useState } from "react";
-import { Pressable, View } from "react-native";
+import { Image, Pressable, View } from "react-native";
 import { Modal } from "@/components/common/Modal";
+import { getImageUrl } from "@/utils/imageUtils";
 
 interface CardsListProps {
   deckId: string;
@@ -15,7 +16,12 @@ interface CardsListProps {
   onCardEdit: (card: Card) => void;
 }
 
-export const CardsList = ({ deckId, cards, onCardDeleted, onCardEdit }: CardsListProps) => {
+export const CardsList = ({
+  deckId,
+  cards,
+  onCardDeleted,
+  onCardEdit,
+}: CardsListProps) => {
   const [deletingCardId, setDeletingCardId] = useState<number>();
   const [deleteCardError, setDeleteCardError] = useState<string>();
   const [cardIdToDelete, setCardIdToDelete] = useState<number>();
@@ -151,6 +157,22 @@ export const CardsList = ({ deckId, cards, onCardDeleted, onCardEdit }: CardsLis
               </CText>
             )}
           </View>
+          {card.image && (
+            <View
+              style={{
+                marginTop: 14,
+                height: 120,
+                width: "100%",
+                overflow: "hidden",
+              }}
+            >
+              <Image
+                source={{ uri: getImageUrl(card.image) ?? card.image }}
+                style={{ height: "100%", maxWidth: "auto",}}
+                resizeMode="center"
+              />
+            </View>
+          )}
           <CardButtons card={card} />
           {cardIdToDelete && (
             <Modal
@@ -161,7 +183,9 @@ export const CardsList = ({ deckId, cards, onCardDeleted, onCardEdit }: CardsLis
               submitVariant="criticalPrimary"
               closeLabel="Cancel"
               onClose={() => setCardIdToDelete(undefined)}
-              onSubmit={() => handleDeleteCard(cardIdToDelete)}
+              onSubmit={() =>
+                cardIdToDelete && handleDeleteCard(cardIdToDelete)
+              }
             />
           )}
         </View>
