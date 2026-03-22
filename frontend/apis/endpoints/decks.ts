@@ -26,4 +26,7 @@ export const updateDeck = (
   data: UpdateDeckRequestPayload,
 ) => client.put(`/decks/${deckId}`, JSON.stringify(data));
 
-export default { getDecks, getSingleDeck, createDeck, updateDeck };
+export const deleteDeck = (deckId: string | number) =>
+  client.delete(`/decks/${deckId}`);
+
+export default { getDecks, getSingleDeck, createDeck, updateDeck, deleteDeck };

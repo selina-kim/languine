@@ -1,4 +1,4 @@
-import { getDecks } from "@/apis/endpoints/decks";
+import { deleteDeck, getDecks } from "@/apis/endpoints/decks";
 import { NoDecksBanner } from "@/components/features/decks/NoDecksBanner";
 import { Pressable, ScrollView, View } from "react-native";
 import { Deck } from "@/types/decks";
@@ -11,11 +11,16 @@ import { SHADOWS } from "@/constants/shadows";
 import { useLanguageOptions } from "@/context/LanguageOptionsContext";
 import { SingleDeckView } from "@/components/features/decks/SingleDeckView";
 import { usePathname } from "expo-router";
+import { Modal } from "@/components/common/Modal";
+import { CText } from "@/components/common/CText";
 
 export default function Decks() {
   const [decks, setDecks] = useState<Deck[]>([]);
   const [isCreateDeckModalOpen, setIsCreateDeckModalOpen] = useState(false);
   const [focusedDeckId, setFocusedDeckId] = useState<string>();
+  const [deckIdToDelete, setDeckIdToDelete] = useState<string>();
+  const [isDeletingDeck, setIsDeletingDeck] = useState(false);
+  const [deleteDeckError, setDeleteDeckError] = useState<string>();
   const pathname = usePathname();
   const { languageNameByCode } = useLanguageOptions();
 
@@ -36,6 +41,29 @@ export default function Decks() {
     getAllDecks();
   }, [isCreateDeckModalOpen, pathname]);
 
+  const handleDeleteDeck = async (deckId: string) => {
+    if (isDeletingDeck) {
+      return;
+    }
+
+    setDeleteDeckError(undefined);
+    setIsDeletingDeck(true);
+
+    try {
+      const { error } = await deleteDeck(deckId);
+
+      if (error) {
+        setDeleteDeckError(error);
+        return;
+      }
+
+      setDecks((prevDecks) => prevDecks.filter((deck) => deck.d_id !== deckId));
+      setDeckIdToDelete(undefined);
+    } finally {
+      setIsDeletingDeck(false);
+    }
+  };
+
   const renderDecksView = () => (
     <>
       <ScrollView
@@ -48,6 +76,7 @@ export default function Decks() {
           rowGap: 20,
         }}
       >
+        {deleteDeckError && <CText variant="inputError">{deleteDeckError}</CText>}
         {decks.length === 0 ? (
           <View
             style={{
@@ -66,15 +95,13 @@ export default function Decks() {
         ) : (
           decks.map((deck) => (
             <DeckPreview
-              key={`deck_preview_card_${deck.deck_name}`}
+              key={`deck_preview_card_${deck.d_id}`}
               deckName={deck.deck_name}
               language={getLanguageName(deck.word_lang)}
               description={deck.description}
               cardCount={deck.card_count}
               onViewDeck={() => setFocusedDeckId(deck.d_id)}
-              onDeleteDeck={() =>
-                console.log(`clicked delete deck for ${deck.deck_name}`)
-              }
+              onDeleteDeck={() => setDeckIdToDelete(deck.d_id)}
             />
           ))
         )}
@@ -99,6 +126,19 @@ export default function Decks() {
         isOpen={isCreateDeckModalOpen}
         onClose={() => setIsCreateDeckModalOpen(false)}
       />
+      {deckIdToDelete && (
+        <Modal
+          visible={!!deckIdToDelete}
+          header="Are you sure?"
+          submitLabel="Delete Deck"
+          subheader="This action will delete this deck permanently"
+          submitVariant="criticalPrimary"
+          closeLabel="Cancel"
+          isLoading={isDeletingDeck}
+          onClose={() => setDeckIdToDelete(undefined)}
+          onSubmit={() => handleDeleteDeck(deckIdToDelete)}
+        />
+      )}
     </>
   );
 
