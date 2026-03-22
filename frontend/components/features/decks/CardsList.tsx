@@ -12,9 +12,10 @@ interface CardsListProps {
   deckId: string;
   cards: Card[];
   onCardDeleted: (cardId: number) => void;
+  onCardEdit: (card: Card) => void;
 }
 
-export const CardsList = ({ deckId, cards, onCardDeleted }: CardsListProps) => {
+export const CardsList = ({ deckId, cards, onCardDeleted, onCardEdit }: CardsListProps) => {
   const [deletingCardId, setDeletingCardId] = useState<number>();
   const [deleteCardError, setDeleteCardError] = useState<string>();
   const [cardIdToDelete, setCardIdToDelete] = useState<number>();
@@ -42,7 +43,7 @@ export const CardsList = ({ deckId, cards, onCardDeleted }: CardsListProps) => {
     }
   };
 
-  const CardButtons = ({ cardId }: { cardId: number }) => (
+  const CardButtons = ({ card }: { card: Card }) => (
     <View
       style={{
         position: "absolute",
@@ -59,7 +60,7 @@ export const CardsList = ({ deckId, cards, onCardDeleted }: CardsListProps) => {
           width: 20,
           height: 20,
         }}
-        onPress={() => console.log("edit clicked")} // TODO
+        onPress={() => onCardEdit(card)}
       >
         <EditIcon />
       </Pressable>
@@ -68,7 +69,7 @@ export const CardsList = ({ deckId, cards, onCardDeleted }: CardsListProps) => {
           width: 20,
           height: 20,
         }}
-        onPress={() => setCardIdToDelete(cardId)}
+        onPress={() => setCardIdToDelete(card.c_id)}
       >
         <TrashIcon />
       </Pressable>
@@ -150,7 +151,7 @@ export const CardsList = ({ deckId, cards, onCardDeleted }: CardsListProps) => {
               </CText>
             )}
           </View>
-          <CardButtons cardId={card.c_id} />
+          <CardButtons card={card} />
           {cardIdToDelete && (
             <Modal
               visible={!!cardIdToDelete}

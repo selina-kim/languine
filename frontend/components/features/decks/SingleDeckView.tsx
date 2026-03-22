@@ -8,6 +8,7 @@ import { Card, DeckDetails } from "@/types/decks";
 import { useEffect, useState } from "react";
 import { Pressable, ScrollView, View } from "react-native";
 import { CreateNewCardModal } from "./CreateNewCardModal";
+import { EditCardModal } from "./EditCardModal";
 import { PlusFilledIcon } from "@/assets/icons/PlusFilledIcon";
 import { CardsList } from "./CardsList";
 import { SingleDeckDetails } from "./SingleDeckDetails";
@@ -20,6 +21,8 @@ export const SingleDeckView = ({ deckId }: SingleDeckViewProps) => {
   const [cards, setCards] = useState<Card[]>([]);
   const [deckDetails, setDeckDetails] = useState<DeckDetails>();
   const [isCreateCardModalOpen, setIsCreateCardModalOpen] = useState(false);
+  const [isEditCardModalOpen, setIsEditCardModalOpen] = useState(false);
+  const [cardBeingEdited, setCardBeingEdited] = useState<Card | null>(null);
 
   useEffect(() => {
     const getDeck = async () => {
@@ -102,6 +105,10 @@ export const SingleDeckView = ({ deckId }: SingleDeckViewProps) => {
                 prevCards.filter((card) => card.c_id !== cardId),
               )
             }
+            onCardEdit={(card) => {
+              setCardBeingEdited(card);
+              setIsEditCardModalOpen(true);
+            }}
           />
         )}
       </ScrollView>
@@ -145,6 +152,30 @@ export const SingleDeckView = ({ deckId }: SingleDeckViewProps) => {
         }
         onClose={() => setIsCreateCardModalOpen(false)}
       />
+      {cardBeingEdited && (
+        <EditCardModal
+          deckId={deckId}
+          card={cardBeingEdited}
+          wordLanguageCode={deckDetails.word_lang}
+          translationLanguageCode={deckDetails.trans_lang}
+          isOpen={isEditCardModalOpen}
+          onUpdateSuccess={(updatedCard) => {
+            setCards((prevCards) =>
+              prevCards.map((card) =>
+                card.c_id === updatedCard.c_id ? updatedCard : card,
+              ),
+            );
+            setIsEditCardModalOpen(false);
+          }}
+          onUpdateFailed={() => {
+            setIsEditCardModalOpen(false);
+          }}
+          onClose={() => {
+            setIsEditCardModalOpen(false);
+            setCardBeingEdited(null);
+          }}
+        />
+      )}
     </View>
   );
 };
