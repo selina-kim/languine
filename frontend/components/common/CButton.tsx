@@ -77,29 +77,27 @@ export const CButton: React.FC<CButtonProps> = ({
   ...props
 }) => {
   return (
-    <>
-      <Pressable
-        style={
-          typeof style === "function"
-            ? (state) => [
-                buttonBaseStyle.base,
-                variant && buttonVariants[variant],
-                style(state),
-              ]
-            : [buttonBaseStyle.base, variant && buttonVariants[variant], style]
-        }
-        {...props}
+    <Pressable
+      style={
+        typeof style === "function"
+          ? (state) => [
+              buttonBaseStyle.base,
+              variant && buttonVariants[variant],
+              style(state),
+            ]
+          : [buttonBaseStyle.base, variant && buttonVariants[variant], style]
+      }
+      {...props}
+    >
+      {Icon && <View style={{ width: 16, height: 16 }}>{Icon}</View>}
+      <CText
+        style={{
+          textAlign: "center",
+        }}
+        {...(variant && buttonTextProps[variant])}
       >
-        {Icon && <View style={{ width: 16, height: 16 }}>{Icon}</View>}
-        <CText
-          style={{
-            textAlign: "center",
-          }}
-          {...(variant && buttonTextProps[variant])}
-        >
-          {label}
-        </CText>
-      </Pressable>
-    </>
+        {label}
+      </CText>
+    </Pressable>
   );
 };

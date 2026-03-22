@@ -1,5 +1,8 @@
 import { createCard } from "@/apis/endpoints/cards";
-import { getSupportedLanguages } from "@/apis/endpoints/translation";
+import {
+  getSupportedLanguages,
+  getTranslation,
+} from "@/apis/endpoints/translation";
 import { MagicWandIcon } from "@/assets/icons/MagicWandIcon";
 import { CButton } from "@/components/common/CButton";
 import { CText } from "@/components/common/CText";
@@ -33,6 +36,7 @@ export const CreateNewCardModal = ({
   const [targetExample, setTargetExample] = useState("");
   const [wordInputError, setWordInputError] = useState<string>();
   const [isCreatingCard, setIsCreatingCard] = useState(false);
+  const [isTranslatingWord, setIsTranslatingWord] = useState(false);
 
   const getLanguageName = (code: string) =>
     languageNameByCode[code.toUpperCase()] ?? code.toUpperCase();
@@ -82,14 +86,40 @@ export const CreateNewCardModal = ({
     }
   };
 
-  // TODO: replace with actual translation api logic
-  const handleAutoTranslate = () => {
-    console.log("auto-translate word");
+  const handleAutoTranslate = async () => {
+    if (isTranslatingWord) {
+      return;
+    }
+
+    setWordInputError(undefined);
+
     if (sourceWord.trim() === "") {
       setWordInputError("The word(s) cannot be empty");
       return;
     }
-    setTargetWord("안녕");
+
+    // DeepL expects uppercase language codes (e.g., EN, KO, JA, ZH).
+    const sourceCode = translationLanguageCode.toUpperCase();
+    const targetCode = wordLanguageCode.toUpperCase();
+
+    setIsTranslatingWord(true);
+
+    try {
+      const { data, error } = await getTranslation(
+        sourceWord.trim(),
+        targetCode,
+        sourceCode,
+      );
+
+      if (error) {
+        setWordInputError(error);
+        return;
+      }
+
+      setTargetWord(data.translatedText ?? "");
+    } finally {
+      setIsTranslatingWord(false);
+    }
   };
 
   // TODO: replace with actual example generation api logic
@@ -146,6 +176,7 @@ export const CreateNewCardModal = ({
       setTargetExample("");
       setWordInputError(undefined);
       setIsCreatingCard(false);
+      setIsTranslatingWord(false);
     }
   }, [isOpen, languageNameByCode]);
 
@@ -180,9 +211,10 @@ export const CreateNewCardModal = ({
           )}
           <CButton
             variant="primary"
-            label="Auto-translate"
+            label={isTranslatingWord ? "Translating..." : "Auto-translate"}
             Icon={<MagicWandIcon />}
-            onPress={handleAutoTranslate} // TODO
+            disabled={isTranslatingWord}
+            onPress={handleAutoTranslate}
           />
           <CTextInput
             label="Example"

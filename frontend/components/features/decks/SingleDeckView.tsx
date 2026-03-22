@@ -28,7 +28,6 @@ export const SingleDeckView = ({ deckId }: SingleDeckViewProps) => {
       setCards(data.cards);
       setDeckDetails(data.deck);
 
-      console.log(data);
       console.log("error", error);
     };
 
