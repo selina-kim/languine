@@ -1,4 +1,3 @@
-import { CButton } from "@/components/common/CButton";
 import { useState } from "react";
 import { SettingGroup } from "./SettingGroup";
 import { ResetParametersButton } from "./ResetParametersButton";

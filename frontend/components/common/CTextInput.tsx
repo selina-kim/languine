@@ -9,6 +9,7 @@ import { CText, fonts, textVariants } from "./CText";
 
 const inputBaseStyle = StyleSheet.create({
   base: {
+    marginTop: 8,
     borderRadius: 8,
     paddingVertical: 8,
     paddingHorizontal: 12,
@@ -34,6 +35,7 @@ type InputVariantType = keyof typeof inputVariants;
 
 interface TextInputProps extends RNTextInputProps {
   label?: string;
+  sublabel?: string;
   value: string;
   onChangeText: (text: string) => void;
   placeholder?: string;
@@ -42,6 +44,7 @@ interface TextInputProps extends RNTextInputProps {
 
 export const CTextInput = ({
   label,
+  sublabel,
   value,
   onChangeText,
   placeholder,
@@ -54,6 +57,7 @@ export const CTextInput = ({
   return (
     <View>
       {label && <CText variant="inputLabel">{label}</CText>}
+      {sublabel && <CText variant="inputSubLabel">{sublabel}</CText>}
       <RNTextInput
         value={value}
         onChangeText={onChangeText}

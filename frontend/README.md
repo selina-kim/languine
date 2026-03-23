@@ -48,17 +48,7 @@ npm install
 npx expo start
 ```
 
-- In the output, you'll find options to open the app in a
-  - [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-  - [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-  - [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-  - [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-### Build the Application
-
-#### Build for Android
+### Build the Application (for Android)
 
 1. Install EAS CLI (if not already installed)
 
@@ -78,13 +68,10 @@ eas login
 eas build --profile development --platform android
 ```
 
-4. Launch tha app
+### Launch App in Android Emulator
 
-```bash
-npx expo start
-# click `a` for android emulator
-```
+1. Open Android Emulator → More Actions → Virtual Device Manager → Start your device.
 
-On Android Emulator:
+2. Run the app on Expo (follow [these steps](#run-the-application-expo))
 
 - If app screen on emulator shows error on launch instead of bundling the app, might have to manually type in `<ip address>:8081` for the local server on the expo app

@@ -1,6 +1,6 @@
 import { COLORS } from "@/constants/colors";
 import { ReactNode } from "react";
-import { Modal as RNModal, View } from "react-native";
+import { ActivityIndicator, Modal as RNModal, View } from "react-native";
 import { ButtonVariantType, CButton } from "./CButton";
 import { CText } from "./CText";
 
@@ -14,6 +14,7 @@ interface ModalProps {
   submitVariant?: ButtonVariantType;
   onClose: () => void;
   closeLabel?: string;
+  isLoading?: boolean;
 }
 
 export const Modal = ({
@@ -26,6 +27,7 @@ export const Modal = ({
   submitVariant = "primary",
   onClose,
   closeLabel = "Cancel",
+  isLoading = false,
 }: ModalProps) => {
   const Buttons = (
     <View style={{ rowGap: 8 }}>
@@ -90,6 +92,29 @@ export const Modal = ({
           </View>
           <View style={{ zIndex: 10 }}>{children}</View>
           {Buttons}
+          {isLoading && (
+            <View
+              style={{
+                position: "absolute",
+                left: 0,
+                right: 0,
+                top: 0,
+                bottom: 0,
+                backgroundColor: "rgba(0, 0, 0, 0.5)",
+                borderRadius: 12,
+                zIndex: 100,
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
+              <ActivityIndicator
+                size="large"
+                color={COLORS.icon.fillPrimary}
+                style={{ marginTop: 20 }}
+              />
+            </View>
+          )}
         </View>
       </View>
     </RNModal>

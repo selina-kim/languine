@@ -28,7 +28,7 @@ export const LastReviewedDeckItem = ({
         ...SHADOWS.default,
       }}
     >
-      <CText variant="containerLabel" bold numberOfLines={1}>
+      <CText variant="containerLabel" numberOfLines={1}>
         {deckName}
       </CText>
       <CText

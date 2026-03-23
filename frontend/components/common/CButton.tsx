@@ -1,8 +1,7 @@
 import { COLORS } from "@/constants/colors";
-import { ReactNode, useState } from "react";
+import { ReactNode } from "react";
 import { Pressable, PressableProps, StyleSheet, View } from "react-native";
 import { CText, CTextProps } from "./CText";
-import { Modal } from "./Modal";
 
 const buttonBaseStyle = StyleSheet.create({
   base: {
@@ -78,29 +77,27 @@ export const CButton: React.FC<CButtonProps> = ({
   ...props
 }) => {
   return (
-    <>
-      <Pressable
-        style={
-          typeof style === "function"
-            ? (state) => [
-                buttonBaseStyle.base,
-                variant && buttonVariants[variant],
-                style(state),
-              ]
-            : [buttonBaseStyle.base, variant && buttonVariants[variant], style]
-        }
-        {...props}
+    <Pressable
+      style={
+        typeof style === "function"
+          ? (state) => [
+              buttonBaseStyle.base,
+              variant && buttonVariants[variant],
+              style(state),
+            ]
+          : [buttonBaseStyle.base, variant && buttonVariants[variant], style]
+      }
+      {...props}
+    >
+      {Icon && <View style={{ width: 16, height: 16 }}>{Icon}</View>}
+      <CText
+        style={{
+          textAlign: "center",
+        }}
+        {...(variant && buttonTextProps[variant])}
       >
-        {Icon && <View style={{ width: 16, height: 16 }}>{Icon}</View>}
-        <CText
-          style={{
-            textAlign: "center",
-          }}
-          {...(variant && buttonTextProps[variant])}
-        >
-          {label}
-        </CText>
-      </Pressable>
-    </>
+        {label}
+      </CText>
+    </Pressable>
   );
 };

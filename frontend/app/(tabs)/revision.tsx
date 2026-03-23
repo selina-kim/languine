@@ -1,5 +1,5 @@
 import { CText } from "@/components/common/CText";
-import { DeckPreviewCard } from "@/components/features/revision/DeckPreviewCard";
+import { RevisionDeckPreview } from "@/components/features/revision/RevisionDeckPreview";
 import { ScrollView } from "react-native";
 
 export default function Revision() {
@@ -13,7 +13,7 @@ export default function Revision() {
     <ScrollView
       contentContainerStyle={{
         display: "flex",
-        justifyContent: "center",
+        justifyContent: "flex-start",
         alignItems: "center",
         paddingHorizontal: 25,
         paddingVertical: 25,
@@ -22,9 +22,9 @@ export default function Revision() {
     >
       <CText variant="title">Select a deck to start your review session</CText>
       {decksList.map((deck) => (
-        <DeckPreviewCard
-          key={`deck_preview_card_${deck.title}`}
-          title={deck.title}
+        <RevisionDeckPreview
+          key={`revision_deck_preview_${deck.title}`}
+          deckName={deck.title}
           language={deck.language}
           cardsDue={deck.cardsDue}
           onReview={() =>

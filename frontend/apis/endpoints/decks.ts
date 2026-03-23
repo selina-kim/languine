@@ -1,11 +1,32 @@
-import { CreateDeckRequestPayload } from "@/types/decks";
+import {
+  CreateDeckRequestPayload,
+  Deck,
+  GetSingleDeckResponseData,
+  UpdateDeckRequestPayload,
+} from "@/types/decks";
 import client from "@/apis/client";
 
-// TODO
-export const getDecks = () => client.get("");
+export const getDecks = (): Promise<{
+  data: { decks: Deck[] };
+  error: string | null;
+}> => client.get(`/decks`);
 
-// TODO
+export const getSingleDeck = (
+  deckId: string | number,
+): Promise<{
+  data: GetSingleDeckResponseData;
+  error: string | null;
+}> => client.get(`/decks/${deckId}`);
+
 export const createDeck = (data: CreateDeckRequestPayload) =>
   client.post(`/decks/new`, JSON.stringify(data));
 
-export default { getDecks, createDeck };
+export const updateDeck = (
+  deckId: string | number,
+  data: UpdateDeckRequestPayload,
+) => client.put(`/decks/${deckId}`, JSON.stringify(data));
+
+export const deleteDeck = (deckId: string | number) =>
+  client.delete(`/decks/${deckId}`);
+
+export default { getDecks, getSingleDeck, createDeck, updateDeck, deleteDeck };

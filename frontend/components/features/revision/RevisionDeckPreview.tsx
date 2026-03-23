@@ -4,19 +4,19 @@ import { CText } from "@/components/common/CText";
 import { COLORS } from "@/constants/colors";
 import { View } from "react-native";
 
-interface DeckPreviewCardProps {
-  title: string;
+interface RevisionDeckPreviewProps {
+  deckName: string;
   language: string;
   cardsDue: number;
   onReview: () => void;
 }
 
-export const DeckPreviewCard = ({
-  title,
+export const RevisionDeckPreview = ({
+  deckName,
   language,
   cardsDue,
   onReview,
-}: DeckPreviewCardProps) => {
+}: RevisionDeckPreviewProps) => {
   return (
     <View
       style={{
@@ -28,9 +28,30 @@ export const DeckPreviewCard = ({
         backgroundColor: COLORS.background.secondary,
       }}
     >
-      <CText variant="deckPreviewTitle">{title}</CText>
-      <CText variant="deckPreviewLanguage">{language}</CText>
-      <CText variant="deckPreviewContent" style={{ marginVertical: 15 }}>
+      <CText
+        style={{
+          fontSize: 22,
+          lineHeight: 28,
+        }}
+        bold
+      >
+        {deckName}
+      </CText>
+      <CText
+        style={{ color: COLORS.text.language, fontSize: 16, lineHeight: 24 }}
+        special
+      >
+        {language.toUpperCase()}
+      </CText>
+      <CText
+        style={{
+          marginVertical: 15,
+          color: COLORS.text.secondary,
+          fontSize: 18,
+          lineHeight: 24,
+        }}
+        bold
+      >
         {cardsDue} cards due
       </CText>
       <CButton

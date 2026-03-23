@@ -1,5 +1,6 @@
 import { COLORS } from "@/constants/colors";
 import { AuthProvider, useAuth } from "@/context/AuthContext";
+import { LanguageOptionsProvider } from "@/context/LanguageOptionsContext";
 import { Arimo_400Regular, Arimo_700Bold } from "@expo-google-fonts/arimo";
 import { Commissioner_700Bold } from "@expo-google-fonts/commissioner";
 import { useFonts } from "expo-font";
@@ -42,7 +43,9 @@ export default function RootLayout() {
 
   return (
     <AuthProvider>
-      <RootLayoutNav />
+      <LanguageOptionsProvider>
+        <RootLayoutNav />
+      </LanguageOptionsProvider>
     </AuthProvider>
   );
 }
