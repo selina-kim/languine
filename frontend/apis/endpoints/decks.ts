@@ -1,6 +1,7 @@
 import {
   CreateDeckRequestPayload,
   Deck,
+  DueDeck,
   GetSingleDeckResponseData,
   UpdateDeckRequestPayload,
 } from "@/types/decks";
@@ -10,6 +11,13 @@ export const getDecks = (): Promise<{
   data: { decks: Deck[] };
   error: string | null;
 }> => client.get(`/decks`);
+
+export const getDecksWithDueCards = (
+  limit = 20,
+): Promise<{
+  data: { decks: DueDeck[] };
+  error: string | null;
+}> => client.get(`/decks/due?limit=${limit}`);
 
 export const getSingleDeck = (
   deckId: string | number,
@@ -29,4 +37,11 @@ export const updateDeck = (
 export const deleteDeck = (deckId: string | number) =>
   client.delete(`/decks/${deckId}`);
 
-export default { getDecks, getSingleDeck, createDeck, updateDeck, deleteDeck };
+export default {
+  getDecks,
+  getDecksWithDueCards,
+  getSingleDeck,
+  createDeck,
+  updateDeck,
+  deleteDeck,
+};
