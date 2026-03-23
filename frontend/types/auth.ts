@@ -8,6 +8,7 @@ export interface User {
   name: string;
   picture?: string;
   token: string; // Backend JWT token
+  refreshToken?: string; // Backend refresh JWT token
 }
 
 export interface AuthState {
