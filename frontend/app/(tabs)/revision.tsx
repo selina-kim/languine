@@ -3,9 +3,11 @@ import { CText } from "@/components/common/CText";
 import { RevisionDeckPreview } from "@/components/features/revision/RevisionDeckPreview";
 import { SingleDeckReview } from "@/components/features/revision/SingleDeckReview";
 import { useLanguageOptions } from "@/context/LanguageOptionsContext";
+import { useReviewSession } from "@/context/ReviewSessionContext";
 import { DueDeck } from "@/types/decks";
 import { useFocusEffect } from "@react-navigation/native";
-import { useCallback, useState } from "react";
+import { usePathname } from "expo-router";
+import { useCallback, useEffect, useState } from "react";
 import { ScrollView, View } from "react-native";
 
 export default function Revision() {
@@ -13,7 +15,10 @@ export default function Revision() {
   const [focusedDeck, setFocusedDeck] = useState<DueDeck>();
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string>();
+  const pathname = usePathname();
   const { getLanguageName } = useLanguageOptions();
+  const { isReviewSessionActive, setIsReviewSessionActive, exitReviewSessionSignal } =
+    useReviewSession();
 
   const getDueDecks = useCallback(async () => {
     setIsLoading(true);
@@ -39,6 +44,21 @@ export default function Revision() {
     }, [getDueDecks]),
   );
 
+  useEffect(() => {
+    setFocusedDeck(undefined);
+    setIsReviewSessionActive(false);
+    getDueDecks();
+  }, [exitReviewSessionSignal, getDueDecks, setIsReviewSessionActive]);
+
+  useEffect(() => {
+    if (pathname === "/revision" || isReviewSessionActive || !focusedDeck) {
+      return;
+    }
+
+    setFocusedDeck(undefined);
+    getDueDecks();
+  }, [pathname, isReviewSessionActive, focusedDeck, getDueDecks]);
+
   const renderDecksList = () => (
     <ScrollView
       contentContainerStyle={{
@@ -62,7 +82,10 @@ export default function Revision() {
           deckName={deck.deck_name}
           language={getLanguageName(deck.word_lang)}
           cardsDue={deck.due_count}
-          onReview={() => setFocusedDeck(deck)}
+          onReview={() => {
+            setFocusedDeck(deck);
+            setIsReviewSessionActive(true);
+          }}
         />
       ))}
     </ScrollView>
@@ -74,8 +97,11 @@ export default function Revision() {
         <SingleDeckReview
           deckId={focusedDeck.d_id}
           deckName={focusedDeck.deck_name}
+          onReviewComplete={() => setIsReviewSessionActive(false)}
+          onKeepStudying={() => setIsReviewSessionActive(true)}
           onGoHome={() => {
             setFocusedDeck(undefined);
+            setIsReviewSessionActive(false);
             getDueDecks();
           }}
         />

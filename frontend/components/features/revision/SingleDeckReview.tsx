@@ -12,12 +12,16 @@ interface SingleDeckReviewProps {
   deckId: string;
   deckName: string;
   onGoHome: () => void;
+  onReviewComplete: () => void;
+  onKeepStudying: () => void;
 }
 
 export const SingleDeckReview = ({
   deckId,
   deckName,
   onGoHome,
+  onReviewComplete,
+  onKeepStudying,
 }: SingleDeckReviewProps) => {
   const [cards, setCards] = useState<Card[]>([]);
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
@@ -77,6 +81,7 @@ export const SingleDeckReview = ({
   const handleSelectDifficulty = () => {
     if (currentCardIndex >= totalCards - 1) {
       setIsReviewComplete(true);
+      onReviewComplete();
       return;
     }
 
@@ -86,6 +91,7 @@ export const SingleDeckReview = ({
   };
 
   const handleKeepStudying = () => {
+    onKeepStudying();
     getCardsToReview();
   };
 
@@ -129,7 +135,7 @@ export const SingleDeckReview = ({
               textAlign: "center",
             }}
           >
-            Review Complete!
+            Review Complete! 🎉
           </CText>
           <CText
             style={{
