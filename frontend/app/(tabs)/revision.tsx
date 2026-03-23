@@ -1,14 +1,16 @@
 import { getDecksWithDueCards } from "@/apis/endpoints/decks";
 import { CText } from "@/components/common/CText";
 import { RevisionDeckPreview } from "@/components/features/revision/RevisionDeckPreview";
+import { SingleDeckReview } from "@/components/features/revision/SingleDeckReview";
 import { useLanguageOptions } from "@/context/LanguageOptionsContext";
 import { DueDeck } from "@/types/decks";
 import { useFocusEffect } from "@react-navigation/native";
 import { useCallback, useState } from "react";
-import { ScrollView } from "react-native";
+import { ScrollView, View } from "react-native";
 
 export default function Revision() {
   const [decksList, setDecksList] = useState<DueDeck[]>([]);
+  const [focusedDeck, setFocusedDeck] = useState<DueDeck>();
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string>();
   const { getLanguageName } = useLanguageOptions();
@@ -37,7 +39,7 @@ export default function Revision() {
     }, [getDueDecks]),
   );
 
-  return (
+  const renderDecksList = () => (
     <ScrollView
       contentContainerStyle={{
         display: "flex",
@@ -60,11 +62,26 @@ export default function Revision() {
           deckName={deck.deck_name}
           language={getLanguageName(deck.word_lang)}
           cardsDue={deck.due_count}
-          onReview={() =>
-            console.log(`review clicked for the deck ${deck.deck_name}`)
-          }
+          onReview={() => setFocusedDeck(deck)}
         />
       ))}
     </ScrollView>
+  );
+
+  return (
+    <View style={{ height: "100%" }}>
+      {focusedDeck ? (
+        <SingleDeckReview
+          deckId={focusedDeck.d_id}
+          deckName={focusedDeck.deck_name}
+          onGoHome={() => {
+            setFocusedDeck(undefined);
+            getDueDecks();
+          }}
+        />
+      ) : (
+        renderDecksList()
+      )}
+    </View>
   );
 }
