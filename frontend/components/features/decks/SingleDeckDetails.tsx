@@ -15,10 +15,7 @@ export const SingleDeckDetails = ({
   numOfCards: number;
   onEditDeck: () => void;
 }) => {
-  const { languageNameByCode } = useLanguageOptions();
-
-  const getLanguageName = (code: string) =>
-    languageNameByCode[code.toUpperCase()] ?? code.toUpperCase();
+  const { getLanguageName } = useLanguageOptions();
 
   const DeckDetailItem = ({
     label,

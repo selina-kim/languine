@@ -17,6 +17,7 @@ interface LanguageOptionsContextType {
   targetLanguages: SupportedTranslationLanguagesResponseData["target"];
   languageNameByCode: Record<string, string>;
   languageCodeByName: Record<string, string>;
+  getLanguageName: (code: string) => string;
   isLoading: boolean;
   error: string | null;
   refreshLanguages: () => Promise<void>;
@@ -27,6 +28,7 @@ const LanguageOptionsContext = createContext<LanguageOptionsContextType>({
   targetLanguages: [],
   languageNameByCode: {},
   languageCodeByName: {},
+  getLanguageName: (code: string) => code,
   isLoading: true,
   error: null,
   refreshLanguages: async () => {},
@@ -62,6 +64,20 @@ export const LanguageOptionsProvider = ({
         {} as Record<string, string>,
       ),
     [sourceLanguages],
+  );
+
+  const getLanguageName = useCallback(
+    (code: string) => {
+      const normalizedCode = code.toUpperCase();
+      const baseCode = normalizedCode.split("-")[0];
+
+      return (
+        languageNameByCode[normalizedCode] ??
+        languageNameByCode[baseCode] ??
+        normalizedCode
+      );
+    },
+    [languageNameByCode],
   );
 
   const refreshLanguages = useCallback(async () => {
@@ -129,6 +145,7 @@ export const LanguageOptionsProvider = ({
         targetLanguages,
         languageNameByCode,
         languageCodeByName,
+        getLanguageName,
         isLoading,
         error,
         refreshLanguages,

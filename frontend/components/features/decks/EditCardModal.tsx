@@ -44,14 +44,11 @@ export const EditCardModal = ({
   const [isGeneratingExample, setIsGeneratingExample] = useState(false);
   const [image, setImage] = useState<string | null>(null);
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
-  const { languageNameByCode } = useLanguageOptions();
+  const { getLanguageName } = useLanguageOptions();
 
   const [wordInputError, setWordInputError] = useState<string>();
   const [exampleError, setExampleError] = useState<string>();
   const [imageError, setImageError] = useState<string>();
-
-  const getLanguageName = (code: string) =>
-    languageNameByCode[code.toUpperCase()] ?? code.toUpperCase();
 
   const sourceLanguageName = getLanguageName(translationLanguageCode);
   const targetLanguageName = getLanguageName(wordLanguageCode);
@@ -104,22 +101,36 @@ export const EditCardModal = ({
 
     setWordInputError(undefined);
 
-    if (sourceWord.trim() === "") {
+    if (sourceWord.trim() === "" && targetWord.trim() === "") {
       setWordInputError("The word(s) cannot be empty");
       return;
     }
 
-    // DeepL expects uppercase language codes (e.g., EN, KO, JA, ZH).
-    const sourceCode = translationLanguageCode.toUpperCase();
-    const targetCode = wordLanguageCode.toUpperCase();
-
     setIsTranslatingWord(true);
 
     try {
+      const hasSourceWord = sourceWord.trim() !== "";
+
+      if (hasSourceWord) {
+        const { data, error } = await getTranslation(
+          sourceWord.trim(),
+          wordLanguageCode.toUpperCase(),
+          translationLanguageCode.toUpperCase(),
+        );
+
+        if (error) {
+          setWordInputError(error);
+          return;
+        }
+
+        setTargetWord(data.translatedText ?? "");
+        return;
+      }
+
       const { data, error } = await getTranslation(
-        sourceWord.trim(),
-        targetCode,
-        sourceCode,
+        targetWord.trim(),
+        translationLanguageCode.toUpperCase(),
+        wordLanguageCode.toUpperCase(),
       );
 
       if (error) {
@@ -127,7 +138,9 @@ export const EditCardModal = ({
         return;
       }
 
-      setTargetWord(data.translatedText ?? "");
+      setSourceWord(data.translatedText ?? "");
+    } catch {
+      setWordInputError("Failed to translate word");
     } finally {
       setIsTranslatingWord(false);
     }

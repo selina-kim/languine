@@ -17,7 +17,7 @@ _client = deepl.Translator(_auth_key)
 ALLOWED_LANGUAGE_CODES = ["EN", "KO", "JA", "ZH", "FR", "ES"]
 
 ALLOWED_LANGUAGE_NAMES = {
-    "EN": "English",
+    "EN": "English (United States)",
     "KO": "Korean",
     "JA": "Japanese",
     "ZH": "Mandarin",
@@ -30,15 +30,22 @@ def _filter_allowed_languages(languages: list) -> List[Dict[str, str]]:
     """Filter and normalize language list to the configured allowlist."""
     by_code: Dict[str, Dict[str, str]] = {}
 
+    # Map each allowlisted code by its base code (e.g., EN-US -> EN)
+    # so provider codes like "EN" can still resolve to the configured variant.
+    allowlisted_by_base: Dict[str, str] = {
+        code.split("-")[0]: code for code in ALLOWED_LANGUAGE_CODES
+    }
+
     for lang in languages:
-        # DeepL may return region variants (e.g., EN-US), normalize to base code.
+        # DeepL may return base codes (e.g., EN) or regional codes (e.g., EN-US).
         code = str(getattr(lang, "code", "")).upper()
         base_code = code.split("-")[0]
+        canonical_code = allowlisted_by_base.get(base_code)
 
-        if base_code in ALLOWED_LANGUAGE_CODES and base_code not in by_code:
-            by_code[base_code] = {
-                "code": base_code,
-                "name": ALLOWED_LANGUAGE_NAMES[base_code],
+        if canonical_code and canonical_code not in by_code:
+            by_code[canonical_code] = {
+                "code": canonical_code,
+                "name": ALLOWED_LANGUAGE_NAMES[canonical_code],
             }
 
     # Preserve product-defined order.
@@ -63,13 +70,23 @@ def translate_text(
         Exception: If translation fails
     """
     try:
+        normalized_target_lang = target_lang.upper()
+        if normalized_target_lang == "EN":
+            normalized_target_lang = "EN-US"
+
+        normalized_source_lang = (
+            source_lang.upper().split("-")[0] if source_lang else None
+        )
+
         # Translate with or without source_lang
-        if source_lang:
+        if normalized_source_lang:
             result = _client.translate_text(
-                text, source_lang=source_lang, target_lang=target_lang
+                text,
+                source_lang=normalized_source_lang,
+                target_lang=normalized_target_lang,
             )
         else:
-            result = _client.translate_text(text, target_lang=target_lang)
+            result = _client.translate_text(text, target_lang=normalized_target_lang)
 
         return {
             "detectedSourceLang": getattr(result, "detected_source_lang", None),

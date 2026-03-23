@@ -22,7 +22,7 @@ export default function Decks() {
   const [isDeletingDeck, setIsDeletingDeck] = useState(false);
   const [deleteDeckError, setDeleteDeckError] = useState<string>();
   const pathname = usePathname();
-  const { languageNameByCode } = useLanguageOptions();
+  const { getLanguageName } = useLanguageOptions();
 
   const getAllDecks = async () => {
     const { data, error } = await getDecks();
@@ -32,9 +32,6 @@ export default function Decks() {
       console.log(error);
     }
   };
-
-  const getLanguageName = (code: string) =>
-    languageNameByCode[code.toUpperCase()] ?? code.toUpperCase();
 
   useEffect(() => {
     setFocusedDeckId(undefined);
