@@ -17,7 +17,7 @@ _client = deepl.Translator(_auth_key)
 ALLOWED_LANGUAGE_CODES = ["EN", "KO", "JA", "ZH", "FR", "ES"]
 
 ALLOWED_LANGUAGE_NAMES = {
-    "EN": "English (United States)",
+    "EN": "English",
     "KO": "Korean",
     "JA": "Japanese",
     "ZH": "Mandarin",

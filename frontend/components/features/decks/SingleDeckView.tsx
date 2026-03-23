@@ -8,7 +8,6 @@ import { Card, DeckDetails } from "@/types/decks";
 import { useEffect, useState } from "react";
 import { Pressable, ScrollView, View } from "react-native";
 import { CreateNewCardModal } from "./CreateNewCardModal";
-import { EditCardModal } from "./EditCardModal";
 import { PlusFilledIcon } from "@/assets/icons/PlusFilledIcon";
 import { CardsList } from "./CardsList";
 import { SingleDeckDetails } from "./SingleDeckDetails";
@@ -176,7 +175,8 @@ export const SingleDeckView = ({ deckId }: SingleDeckViewProps) => {
         }}
       />
       {cardBeingEdited && (
-        <EditCardModal
+        <CreateNewCardModal
+          mode="edit"
           deckId={deckId}
           card={cardBeingEdited}
           wordLanguageCode={deckDetails.word_lang}

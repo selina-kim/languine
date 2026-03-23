@@ -1,4 +1,4 @@
-import { createCard } from "@/apis/endpoints/cards";
+import { createCard, updateCard } from "@/apis/endpoints/cards";
 import { getWordDefinition } from "@/apis/endpoints/example";
 import { searchImages } from "@/apis/endpoints/image";
 import { getTranslation } from "@/apis/endpoints/translation";
@@ -14,32 +14,45 @@ import { useEffect, useState } from "react";
 import { Image, ScrollView, View } from "react-native";
 import { getImageUrl } from "@/utils/imageUtils";
 
-interface CreateNewCardModalProps {
+interface BaseCardModalProps {
   deckId: string;
   wordLanguageCode: string;
   translationLanguageCode: string;
   isOpen: boolean;
+  onClose: () => void;
+}
+
+interface CreateCardModalProps extends BaseCardModalProps {
+  mode?: "create";
   onOptimisticCreate: (card: Card) => void;
   onCreateSuccess: (tempCardId: number, createdCard: Card) => void;
   onCreateFailed: (tempCardId: number) => void;
-  onClose: () => void;
 }
+
+interface EditCardModalProps extends BaseCardModalProps {
+  mode: "edit";
+  card: Card;
+  onUpdateSuccess: (updatedCard: Card) => void;
+  onUpdateFailed: () => void;
+}
+
+type CreateNewCardModalProps = CreateCardModalProps | EditCardModalProps;
 
 export const CreateNewCardModal = ({
   deckId,
   wordLanguageCode,
   translationLanguageCode,
   isOpen,
-  onOptimisticCreate,
-  onCreateSuccess,
-  onCreateFailed,
+  mode = "create",
   onClose,
+  ...modeProps
 }: CreateNewCardModalProps) => {
+  const isEditMode = mode === "edit";
   const [sourceWord, setSourceWord] = useState("");
   const [targetWord, setTargetWord] = useState("");
   const [sourceExample, setSourceExample] = useState("");
   const [targetExample, setTargetExample] = useState("");
-  const [isCreatingCard, setIsCreatingCard] = useState(false);
+  const [isSavingCard, setIsSavingCard] = useState(false);
   const [isTranslatingWord, setIsTranslatingWord] = useState(false);
   const [isGeneratingExample, setIsGeneratingExample] = useState(false);
   const [image, setImage] = useState<string | null>(null);
@@ -53,8 +66,8 @@ export const CreateNewCardModal = ({
   const sourceLanguageName = getLanguageName(translationLanguageCode);
   const targetLanguageName = getLanguageName(wordLanguageCode);
 
-  const onCreateDeck = async () => {
-    if (isCreatingCard) {
+  const onSubmitCard = async () => {
+    if (isSavingCard) {
       return;
     }
 
@@ -65,6 +78,39 @@ export const CreateNewCardModal = ({
 
     if (isEitherWordEmpty) {
       setWordInputError("The word(s) cannot be empty");
+      return;
+    }
+
+    if (isEditMode) {
+      setIsSavingCard(true);
+
+      try {
+        const { data, error } = await updateCard(
+          deckId,
+          (modeProps as EditCardModalProps).card.c_id,
+          {
+            word: targetWord,
+            translation: sourceWord,
+            word_example: targetExample,
+            trans_example: sourceExample,
+            image: image || undefined,
+          },
+        );
+
+        if (!error) {
+          (modeProps as EditCardModalProps).onUpdateSuccess(data.card);
+          onClose();
+        } else {
+          (modeProps as EditCardModalProps).onUpdateFailed();
+          setWordInputError(error);
+        }
+      } catch {
+        (modeProps as EditCardModalProps).onUpdateFailed();
+        setWordInputError("Failed to update card");
+      } finally {
+        setIsSavingCard(false);
+      }
+
       return;
     }
 
@@ -84,12 +130,10 @@ export const CreateNewCardModal = ({
       due_date: null,
     };
 
-    onOptimisticCreate(optimisticCard);
+    (modeProps as CreateCardModalProps).onOptimisticCreate(optimisticCard);
     onClose();
 
-    setIsCreatingCard(true);
-
-    // const start = performance.now();
+    setIsSavingCard(true);
 
     try {
       const { data, error } = await createCard(deckId, {
@@ -101,21 +145,16 @@ export const CreateNewCardModal = ({
       });
 
       if (!error) {
-        onCreateSuccess(tempCardId, data.card);
+        (modeProps as CreateCardModalProps).onCreateSuccess(tempCardId, data.card);
       } else {
-        onCreateFailed(tempCardId);
+        (modeProps as CreateCardModalProps).onCreateFailed(tempCardId);
         setWordInputError(error);
       }
     } catch {
-      onCreateFailed(tempCardId);
+      (modeProps as CreateCardModalProps).onCreateFailed(tempCardId);
       setWordInputError("Failed to create card");
     } finally {
-      // const end = performance.now();
-      // const elapsedMs = end - start;
-      // const elapsedSec = elapsedMs / 1000;
-      // console.log(`took ${elapsedSec.toFixed(3)}s (${elapsedMs.toFixed(1)}ms)`);
-
-      setIsCreatingCard(false);
+      setIsSavingCard(false);
     }
   };
 
@@ -302,6 +341,24 @@ export const CreateNewCardModal = ({
   };
 
   useEffect(() => {
+    if (isOpen && isEditMode) {
+      const editCard = (modeProps as EditCardModalProps).card;
+
+      setSourceWord(editCard.translation || "");
+      setTargetWord(editCard.word || "");
+      setSourceExample(editCard.trans_example || "");
+      setTargetExample(editCard.word_example || "");
+      setImage(editCard.image || null);
+      setWordInputError(undefined);
+      setExampleError(undefined);
+      setImageError(undefined);
+      setIsSavingCard(false);
+      setIsTranslatingWord(false);
+      setIsGeneratingExample(false);
+      setIsGeneratingImage(false);
+      return;
+    }
+
     if (!isOpen) {
       setSourceWord("");
       setTargetWord("");
@@ -311,23 +368,27 @@ export const CreateNewCardModal = ({
       setWordInputError(undefined);
       setExampleError(undefined);
       setImageError(undefined);
-      setIsCreatingCard(false);
+      setIsSavingCard(false);
       setIsTranslatingWord(false);
       setIsGeneratingExample(false);
       setIsGeneratingImage(false);
     }
-  }, [isOpen]);
+  }, [isOpen, isEditMode, modeProps]);
 
   return (
     <Modal
       visible={isOpen}
-      header="Add New Card"
-      subheader="Create a new flashcard for this deck"
-      onSubmit={onCreateDeck}
-      submitLabel="Add Card"
+      header={isEditMode ? "Edit Card" : "Add New Card"}
+      subheader={
+        isEditMode
+          ? "Update this flashcard"
+          : "Create a new flashcard for this deck"
+      }
+      onSubmit={onSubmitCard}
+      submitLabel={isEditMode ? "Save Changes" : "Add Card"}
       onClose={onClose}
       closeLabel="Cancel"
-      isLoading={isCreatingCard}
+      isLoading={isSavingCard}
     >
       <View style={{ height: 600 }}>
         <ScrollView contentContainerStyle={{ gap: 14, paddingBottom: 50 }}>
@@ -390,13 +451,14 @@ export const CreateNewCardModal = ({
           >
             {image ? (
               <Image
+                key={image}
                 source={{ uri: getImageUrl(image) ?? image }}
                 style={{ width: "100%", height: "100%" }}
                 resizeMode="cover"
               />
             ) : (
               <CText bold style={{ color: COLORS.text.tertiary }}>
-                No image generated
+                No image
               </CText>
             )}
           </View>
