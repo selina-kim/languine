@@ -56,6 +56,7 @@ export const exchangeGoogleToken = async (
       email: data.user.email,
       name: data.user.display_name,
       token: data.tokens.access_token,
+      refreshToken: data.tokens.refresh_token,
     },
   };
 };

@@ -10,6 +10,16 @@ export interface Deck {
   word_lang: string;
 }
 
+export interface DueDeck {
+  d_id: string;
+  deck_name: string;
+  word_lang: string;
+  trans_lang: string;
+  last_reviewed: string | null;
+  due_count: number;
+  total_cards: number;
+}
+
 export interface Card {
   c_id: number;
   word: string;

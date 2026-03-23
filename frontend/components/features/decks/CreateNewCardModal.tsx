@@ -148,7 +148,10 @@ export const CreateNewCardModal = ({
       });
 
       if (!error) {
-        (modeProps as CreateCardModalProps).onCreateSuccess(tempCardId, data.card);
+        (modeProps as CreateCardModalProps).onCreateSuccess(
+          tempCardId,
+          data.card,
+        );
       } else {
         (modeProps as CreateCardModalProps).onCreateFailed(tempCardId);
         setWordInputError(error);

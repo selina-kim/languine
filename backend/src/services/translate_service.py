@@ -14,7 +14,7 @@ if not _auth_key:
 _client = deepl.Translator(_auth_key)
 
 # TODO: temporary fix, only returns few language options to frontend
-ALLOWED_LANGUAGE_CODES = ["EN", "KO", "JA", "ZH", "FR", "ES"]
+ALLOWED_LANGUAGE_CODES = ["EN", "KO", "JA", "ZH", "FR"]
 
 ALLOWED_LANGUAGE_NAMES = {
     "EN": "English",
@@ -22,7 +22,6 @@ ALLOWED_LANGUAGE_NAMES = {
     "JA": "Japanese",
     "ZH": "Mandarin",
     "FR": "French",
-    "ES": "Spanish",
 }
 
 

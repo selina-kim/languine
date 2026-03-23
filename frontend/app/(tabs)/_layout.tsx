@@ -4,32 +4,128 @@ import { HelpIcon } from "@/assets/icons/HelpIcon";
 import { HomeIcon } from "@/assets/icons/HomeIcon";
 import { OpenBookIcon } from "@/assets/icons/OpenBookIcon";
 import { ProfileIcon } from "@/assets/icons/ProfileIcon";
+import { Modal } from "@/components/common/Modal";
 import { CText } from "@/components/common/CText";
 import { COLORS } from "@/constants/colors";
 import { SHADOWS } from "@/constants/shadows";
 import { useAuth } from "@/context/AuthContext";
+import {
+  ReviewSessionProvider,
+  useReviewSession,
+} from "@/context/ReviewSessionContext";
 import { router, Tabs, usePathname } from "expo-router";
 import { useState } from "react";
-import { Modal, Pressable, View } from "react-native";
+import { Modal as RNModal, Pressable, View } from "react-native";
+
+type PendingExitAction =
+  | { type: "tab"; path: "/(tabs)" | "/(tabs)/decks" | "/(tabs)/help" }
+  | { type: "settings" }
+  | { type: "logout" };
 
 export default function TabLayout() {
+  return (
+    <ReviewSessionProvider>
+      <TabLayoutContent />
+    </ReviewSessionProvider>
+  );
+}
+
+function TabLayoutContent() {
   const { signOut, user } = useAuth();
+  const {
+    isReviewSessionActive,
+    setIsReviewSessionActive,
+    requestExitReviewSession,
+  } = useReviewSession();
+  const pathname = usePathname();
+  const isOnRevisionTab = pathname === "/revision";
 
   const [menuVisible, setMenuVisible] = useState(false);
+  const [isExitReviewModalVisible, setIsExitReviewModalVisible] =
+    useState(false);
+  const [pendingExitAction, setPendingExitAction] = useState<
+    PendingExitAction | undefined
+  >();
+
+  const doNavigateToSettings = () => {
+    router.push("/(tabs)/settings");
+  };
+
+  const doLogout = () => {
+    signOut();
+    router.push("/(auth)");
+  };
+
+  const promptExitReviewAndQueueAction = (action: PendingExitAction) => {
+    setMenuVisible(false);
+    setPendingExitAction(action);
+    setIsExitReviewModalVisible(true);
+  };
 
   const handleSettings = () => {
-    router.push("/(tabs)/settings");
+    if (isReviewSessionActive && isOnRevisionTab) {
+      promptExitReviewAndQueueAction({ type: "settings" });
+      return;
+    }
+
+    doNavigateToSettings();
     setMenuVisible(false);
   };
 
   const handleLogout = () => {
-    signOut();
+    if (isReviewSessionActive && isOnRevisionTab) {
+      promptExitReviewAndQueueAction({ type: "logout" });
+      return;
+    }
+
+    doLogout();
     setMenuVisible(false);
-    router.push("/(auth)");
   };
 
   const handleProfilePress = () => {
     setMenuVisible(!menuVisible);
+  };
+
+  const handleTabPress = (
+    targetPath: "/(tabs)" | "/(tabs)/decks" | "/(tabs)/help",
+    event: { preventDefault: () => void },
+  ) => {
+    if (!isReviewSessionActive || !isOnRevisionTab) {
+      return;
+    }
+
+    event.preventDefault();
+    promptExitReviewAndQueueAction({ type: "tab", path: targetPath });
+  };
+
+  const handleConfirmExitReview = () => {
+    setIsExitReviewModalVisible(false);
+
+    if (!pendingExitAction) {
+      return;
+    }
+
+    requestExitReviewSession();
+    setIsReviewSessionActive(false);
+
+    if (pendingExitAction.type === "tab") {
+      router.push(pendingExitAction.path);
+    }
+
+    if (pendingExitAction.type === "settings") {
+      doNavigateToSettings();
+    }
+
+    if (pendingExitAction.type === "logout") {
+      doLogout();
+    }
+
+    setPendingExitAction(undefined);
+  };
+
+  const handleCancelExitReview = () => {
+    setIsExitReviewModalVisible(false);
+    setPendingExitAction(undefined);
   };
 
   const HeaderRight = () => {
@@ -46,10 +142,9 @@ export default function TabLayout() {
   };
 
   const UserDropdownMenu = () => {
-    const pathname = usePathname();
     const showSettingsOption = pathname !== "/settings";
     return (
-      <Modal
+      <RNModal
         visible={menuVisible}
         transparent
         onRequestClose={() => setMenuVisible(false)}
@@ -98,7 +193,7 @@ export default function TabLayout() {
             <CText bold>Sign out</CText>
           </Pressable>
         </View>
-      </Modal>
+      </RNModal>
     );
   };
 
@@ -136,6 +231,9 @@ export default function TabLayout() {
           options={{
             tabBarIcon: ({ color }) => <HomeIcon stroke={color} />,
           }}
+          listeners={{
+            tabPress: (event) => handleTabPress("/(tabs)", event),
+          }}
         />
         <Tabs.Screen
           name="revision"
@@ -148,16 +246,31 @@ export default function TabLayout() {
           options={{
             tabBarIcon: ({ color }) => <DecksIcon stroke={color} />,
           }}
+          listeners={{
+            tabPress: (event) => handleTabPress("/(tabs)/decks", event),
+          }}
         />
         <Tabs.Screen
           name="help"
           options={{
             tabBarIcon: ({ color }) => <HelpIcon stroke={color} />,
           }}
+          listeners={{
+            tabPress: (event) => handleTabPress("/(tabs)/help", event),
+          }}
         />
         <Tabs.Screen name="settings" options={{ href: null }} />
       </Tabs>
       {menuVisible && <UserDropdownMenu />}
+      <Modal
+        visible={isExitReviewModalVisible}
+        header="Are you sure?"
+        subheader="You will be exiting your review session"
+        submitLabel="Exit Session"
+        onSubmit={handleConfirmExitReview}
+        closeLabel="Stay"
+        onClose={handleCancelExitReview}
+      />
     </>
   );
 }

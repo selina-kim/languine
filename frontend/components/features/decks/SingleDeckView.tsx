@@ -1,6 +1,7 @@
 import { getSingleDeck } from "@/apis/endpoints/decks";
 import { PlusIcon } from "@/assets/icons/PlusIcon";
 import { CButton } from "@/components/common/CButton";
+import { Modal } from "@/components/common/Modal";
 import { CText } from "@/components/common/CText";
 import { COLORS } from "@/constants/colors";
 import { SHADOWS } from "@/constants/shadows";
@@ -12,14 +13,19 @@ import { PlusFilledIcon } from "@/assets/icons/PlusFilledIcon";
 import { CardsList } from "./CardsList";
 import { SingleDeckDetails } from "./SingleDeckDetails";
 import { CreateNewDeckModal } from "./CreateNewDeckModal";
+import { OpenBookIcon } from "@/assets/icons/OpenBookIcon";
+import { useRouter } from "expo-router";
 
 interface SingleDeckViewProps {
   deckId: string;
 }
 
 export const SingleDeckView = ({ deckId }: SingleDeckViewProps) => {
+  const router = useRouter();
   const [cards, setCards] = useState<Card[]>([]);
   const [deckDetails, setDeckDetails] = useState<DeckDetails>();
+  const [isStartReviewModalVisible, setIsStartReviewModalVisible] =
+    useState(false);
   const [isCreateCardModalOpen, setIsCreateCardModalOpen] = useState(false);
   const [isEditDeckModalOpen, setIsEditDeckModalOpen] = useState(false);
   const [isEditCardModalOpen, setIsEditCardModalOpen] = useState(false);
@@ -115,11 +121,25 @@ export const SingleDeckView = ({ deckId }: SingleDeckViewProps) => {
         )}
       </ScrollView>
       {cards.length !== 0 && (
-        <Pressable
-          style={{
-            right: 20,
+        <View style={{right: 20,
             bottom: 20,
             position: "absolute",
+            display: "flex", rowGap: 10}}>
+          <Pressable
+          style={{
+            width: 60,
+            height: 60,
+            padding: 15,
+            backgroundColor: COLORS.button.fillPrimary,
+            borderRadius: 10,
+            ...SHADOWS.smallButton,
+          }}
+            onPress={() => setIsStartReviewModalVisible(true)}
+        >
+          <OpenBookIcon strokeWidth={3}/>
+        </Pressable>
+        <Pressable
+          style={{
             width: 60,
             height: 60,
             padding: 15,
@@ -128,9 +148,10 @@ export const SingleDeckView = ({ deckId }: SingleDeckViewProps) => {
             ...SHADOWS.smallButton,
           }}
           onPress={() => setIsCreateCardModalOpen(true)}
-        >
+          >
           <PlusFilledIcon />
         </Pressable>
+          </View>
       )}
       <CreateNewCardModal
         deckId={deckId}
@@ -199,6 +220,24 @@ export const SingleDeckView = ({ deckId }: SingleDeckViewProps) => {
           }}
         />
       )}
+      <Modal
+        visible={isStartReviewModalVisible}
+        header="Are you sure?"
+        subheader="This will start the review session for this deck"
+        submitLabel="Start Review"
+        closeLabel="Cancel"
+        onSubmit={() => {
+          setIsStartReviewModalVisible(false);
+          router.push({
+            pathname: "/(tabs)/revision",
+            params: {
+              deckId,
+              deckName: deckDetails.deck_name,
+            },
+          });
+        }}
+        onClose={() => setIsStartReviewModalVisible(false)}
+      />
     </View>
   );
 };

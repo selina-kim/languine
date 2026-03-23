@@ -1,7 +1,14 @@
 import { User } from "@/types/auth";
 import { useRouter, useSegments } from "expo-router";
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 import { storage } from "@/utils/storage";
+import { setUnauthorizedHandler } from "@/apis/client";
 
 interface AuthContextType {
   user: User | null;
@@ -27,6 +34,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const segments = useSegments();
 
+  const clearStoredAuth = useCallback(async () => {
+    setUser(null);
+    try {
+      await storage.deleteItem("user");
+    } catch (error) {
+      console.error("Error clearing auth:", error);
+    }
+  }, []);
+
   useEffect(() => {
     // Check if user is already logged in from stored token
     const checkAuth = async () => {
@@ -45,6 +61,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
     checkAuth();
   }, []);
+
+  useEffect(() => {
+    setUnauthorizedHandler(async () => {
+      await clearStoredAuth();
+      router.replace("/(auth)");
+    });
+
+    return () => {
+      setUnauthorizedHandler(null);
+    };
+  }, [clearStoredAuth, router]);
 
   useEffect(() => {
     if (isLoading) return;
@@ -72,13 +99,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signOut = async () => {
-    setUser(null);
-    // Clear stored token
-    try {
-      await storage.deleteItem("user");
-    } catch (error) {
-      console.error("Error clearing auth:", error);
-    }
+    await clearStoredAuth();
     router.replace("/(auth)");
   };
 
