@@ -317,15 +317,17 @@ export const CreateNewCardModal = ({
 
     setImageError(undefined);
 
-    if (targetWord.trim() === "") {
-      setImageError("The word cannot be empty");
+    const imageQuery = targetWord.trim() || sourceWord.trim();
+
+    if (imageQuery === "") {
+      setImageError("The word(s) cannot be empty");
       return;
     }
 
     setIsGeneratingImage(true);
 
     try {
-      const { data, error } = await searchImages(targetWord.trim());
+      const { data, error } = await searchImages(imageQuery);
 
       if (error) {
         setImageError(error);
