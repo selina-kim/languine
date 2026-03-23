@@ -273,26 +273,32 @@ class TestFsrsServiceUnit:
         """Test reviewing a card."""
         mock_cursor = MagicMock()
         mock_get_db_cursor.return_value.__enter__.return_value = mock_cursor
-        
-        # Mock DB return
-        mock_cursor.fetchone.return_value = {
-            "learning_state": LearningState.Learning,
-            "step": 0,
-            "difficulty": 5.0,
-            "stability": 2.0,
-            "due_date": datetime.now(timezone.utc),
-            "last_review": datetime.now(timezone.utc),
-            "desired_retention": 0.9,
-            "fsrs_parameters": DEFAULT_PARAMETERS
-        }
+
+        # first fetchone: card + user info; second fetchone: introduced_today count
+        # due_date is in the future so the UPDATE Users decrement is not triggered
+        mock_cursor.fetchone.side_effect = [
+            {
+                "learning_state": LearningState.Learning,
+                "step": 0,
+                "difficulty": 5.0,
+                "stability": 2.0,
+                "due_date": datetime(2030, 1, 1, tzinfo=timezone.utc),
+                "last_review": datetime.now(timezone.utc),
+                "desired_retention": 0.9,
+                "fsrs_parameters": DEFAULT_PARAMETERS,
+                "first_reviewed": datetime(2025, 1, 1, tzinfo=timezone.utc),
+                "new_cards_per_day": 10,
+            },
+            {"introduced_today": 0},
+        ]
 
         # Mock objects
         mock_card_instance = MagicMock()
         mock_card_cls.return_value = mock_card_instance
-        
+
         mock_scheduler_instance = MagicMock()
         mock_scheduler_cls.return_value = mock_scheduler_instance
-        
+
         updated_card_mock = MagicMock()
         updated_card_mock.learning_state = LearningState.Review
         updated_card_mock.step = 1
@@ -300,15 +306,15 @@ class TestFsrsServiceUnit:
         updated_card_mock.stability = 3.0
         updated_card_mock.due = datetime.now(timezone.utc)
         updated_card_mock.last_review = datetime.now(timezone.utc)
-        
+
         mock_scheduler_instance.review_card.return_value = (updated_card_mock, None)
 
         # Execute
         updated_fields = FsrsService.review_card(123, Grade.Good)
 
-        # Assert
-        mock_cursor.execute.call_count == 2 # Select + Update
-        assert "UPDATE Cards" in mock_cursor.execute.call_args_list[1][0][0]
+        # Assert: SELECT card info, SELECT introduced_today, UPDATE Cards (no UPDATE Users since due_date is future)
+        assert mock_cursor.execute.call_count == 3
+        assert "UPDATE Cards" in mock_cursor.execute.call_args_list[2][0][0]
         assert updated_fields["learning_state"] == int(updated_card_mock.learning_state)
         assert updated_fields["step"] == updated_card_mock.step
         assert updated_fields["difficulty"] == float(updated_card_mock.difficulty)
@@ -663,32 +669,66 @@ class TestFsrsServiceUnit:
     # --- get_due_cards tests ---
     @patch('services.fsrs_service.get_db_cursor')
     def test_get_due_cards_success(self, mock_get_db_cursor):
-        """Test that get_due_cards returns a list of due card dicts for the user."""
-        mock_cursor = MagicMock()
-        mock_get_db_cursor.return_value.__enter__.return_value = mock_cursor
-
+        """Test that get_due_cards returns (num_due, cards) with card_id, due_date, and deck_id."""
         due_date = datetime.now(timezone.utc)
-        mock_cursor.fetchall.return_value = [
-            {"c_id": 1, "due_date": due_date},
-            {"c_id": 2, "due_date": due_date},
+
+        mock_cursor_1 = MagicMock()
+        mock_cursor_1.fetchone.return_value = {"new_cards_per_day": 10}
+
+        mock_cursor_2 = MagicMock()
+        mock_cursor_2.fetchall.return_value = [
+            {"c_id": 1, "due_date": due_date, "d_id": 5},
+            {"c_id": 2, "due_date": due_date, "d_id": 5},
         ]
 
-        result = FsrsService.get_due_cards("user1")
+        mock_cursor_3 = MagicMock()
 
-        assert len(result) == 2
-        assert result[0] == {"card_id": 1, "due_date": due_date}
-        assert result[1] == {"card_id": 2, "due_date": due_date}
+        def make_ctx(cursor):
+            ctx = MagicMock()
+            ctx.__enter__ = MagicMock(return_value=cursor)
+            ctx.__exit__ = MagicMock(return_value=False)
+            return ctx
+
+        mock_get_db_cursor.side_effect = [
+            make_ctx(mock_cursor_1),
+            make_ctx(mock_cursor_2),
+            make_ctx(mock_cursor_3),
+        ]
+
+        num_due, cards = FsrsService.get_due_cards("user1")
+
+        assert num_due == 2
+        assert len(cards) == 2
+        assert cards[0] == {"card_id": 1, "due_date": due_date, "deck_id": 5}
+        assert cards[1] == {"card_id": 2, "due_date": due_date, "deck_id": 5}
 
     @patch('services.fsrs_service.get_db_cursor')
     def test_get_due_cards_empty(self, mock_get_db_cursor):
-        """Test that get_due_cards returns an empty list when no cards are due."""
-        mock_cursor = MagicMock()
-        mock_get_db_cursor.return_value.__enter__.return_value = mock_cursor
-        mock_cursor.fetchall.return_value = []
+        """Test that get_due_cards returns (0, []) when no cards are due."""
+        mock_cursor_1 = MagicMock()
+        mock_cursor_1.fetchone.return_value = {"new_cards_per_day": 10}
 
-        result = FsrsService.get_due_cards("user1")
+        mock_cursor_2 = MagicMock()
+        mock_cursor_2.fetchall.return_value = []
 
-        assert result == []
+        mock_cursor_3 = MagicMock()
+
+        def make_ctx(cursor):
+            ctx = MagicMock()
+            ctx.__enter__ = MagicMock(return_value=cursor)
+            ctx.__exit__ = MagicMock(return_value=False)
+            return ctx
+
+        mock_get_db_cursor.side_effect = [
+            make_ctx(mock_cursor_1),
+            make_ctx(mock_cursor_2),
+            make_ctx(mock_cursor_3),
+        ]
+
+        num_due, cards = FsrsService.get_due_cards("user1")
+
+        assert num_due == 0
+        assert cards == []
 
     @patch('services.fsrs_service.get_db_cursor')
     def test_get_due_cards_db_error(self, mock_get_db_cursor):
@@ -699,3 +739,28 @@ class TestFsrsServiceUnit:
 
         with pytest.raises(DatabaseError):
             FsrsService.get_due_cards("user1")
+
+    # --- get_num_due_cards tests ---
+    @patch('services.fsrs_service.get_db_cursor')
+    def test_get_num_due_cards_success(self, mock_get_db_cursor):
+        """Test that get_num_due_cards returns the stored total_cards_due count."""
+        mock_cursor = MagicMock()
+        mock_get_db_cursor.return_value.__enter__.return_value = mock_cursor
+        mock_cursor.fetchone.return_value = {"total_cards_due": 7}
+
+        result = FsrsService.get_num_due_cards("user1")
+
+        assert result == 7
+        args, _ = mock_cursor.execute.call_args
+        assert "total_cards_due" in args[0]
+        assert args[1] == ("user1",)
+
+    @patch('services.fsrs_service.get_db_cursor')
+    def test_get_num_due_cards_db_error(self, mock_get_db_cursor):
+        """Test that get_num_due_cards wraps psycopg2 errors in DatabaseError."""
+        mock_cursor = MagicMock()
+        mock_get_db_cursor.return_value.__enter__.return_value = mock_cursor
+        mock_cursor.execute.side_effect = psycopg2.Error("db fail")
+
+        with pytest.raises(DatabaseError):
+            FsrsService.get_num_due_cards("user1")

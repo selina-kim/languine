@@ -7,6 +7,7 @@ create table Users (
     display_name varchar(30) not null,
     timezone text not null,
     new_cards_per_day integer default 10, 
+    total_cards_due integer default 0 not null,
     -- fsrs fields
     desired_retention double precision default 0.9,
     fsrs_parameters double precision[] default null, 
@@ -21,6 +22,8 @@ create table Users (
 -- display_name: user's chosen name to use in app
 -- timezone: user's timezone, stored as text (e.g., 'America/New_York')
 -- new_cards_per_day: number of new cards user wants to learn per day, default is 10
+-- total_cards_due: total number of cards currently due for review across all decks, default is 0
+    -- Note: for new cards, it will consider a max of new_cards_per_day due per deck. 
 -- desired_retention: user's desired card retention rate, default is 0.9 (90%)
 -- fsrs_parameters: array to store user's personalized FSRS parameters, default is null (will use default parameters until optimized)
 -- auto_optimize: whether to automatically optimize FSRS parameters based on review history, default is true
@@ -76,6 +79,7 @@ create table Cards (
     trans_audio text,
     word_roman text,
     trans_roman text,
+    first_reviewed timestamp with time zone default NULL,
     -- FSRS fields: 
     learning_state integer, 
     step integer,
@@ -101,6 +105,8 @@ create table Cards (
 -- trans_audio: path to audio for the translation stored from API call
 -- word_roman: pronunciation or romanization of the word
 -- trans_roman: pronunciation or romanization of the translation
+-- first_reviewed: timestamp of the first time the card was reviewed, default is null until the card is reviewed for the first time
+    -- this is added to keep track of how many NEW cards have been reviewed today (to calculate how many cards are due)
 
 -- FSRS column definitions:
 -- learning_state: current learning state of the card

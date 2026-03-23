@@ -140,15 +140,31 @@ def get_due_cards():
     """
     Retrieve all cards currently due for review for the authenticated user.
 
-    Returns 200 with a list of due cards.
+    Returns 200 with a list of due cards and the total number of due cards.
 
     Cards are returned as a list of dictionaries with the following fields:
         - card_id 
         - due_date 
+        - deck_id
     """
     user_id = get_jwt_identity()
     try:
-        due_cards = fsrs_service.get_due_cards(user_id)
-        return json_response({"due_cards": due_cards}, status=200)
+        num_due_cards, due_cards = fsrs_service.get_due_cards(user_id)
+        return json_response({"num_due_cards": num_due_cards, "due_cards": due_cards}, status=200)
+    except DatabaseError as e:
+        return error_response(f"Database error: {str(e)}", status=500)
+
+@fsrs_bp.route("/num-due-cards", methods=["GET"])
+@jwt_required()
+def get_num_due_cards():
+    """
+    Retrieve the total number of cards currently due for review for the authenticated user.
+
+    Returns 200 with the number of due cards.
+    """
+    user_id = get_jwt_identity()
+    try:
+        num_due_cards = fsrs_service.get_num_due_cards(user_id)
+        return json_response({"num_due_cards": num_due_cards}, status=200)
     except DatabaseError as e:
         return error_response(f"Database error: {str(e)}", status=500)
