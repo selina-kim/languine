@@ -358,3 +358,153 @@ def test_get_decks_due_endpoint_returns_due_count_field(client, auth_headers):
         assert "due_count" in deck
         assert isinstance(deck["due_count"], int)
         assert deck["due_count"] > 0
+def test_update_deck_success(client, auth_headers):
+    """Test successful deck update with all fields"""
+    update_data = {
+        "deck_name": "Updated Deck Name",
+        "word_lang": "French",
+        "trans_lang": "English",
+        "description": "Updated description",
+        "is_public": True,
+        "link": "https://example.com"
+    }
+    
+    response = client.put(
+        "/decks/1",
+        data=json.dumps(update_data),
+        content_type="application/json",
+        headers=auth_headers
+    )
+    
+    assert response.status_code == 200
+    result = json.loads(response.data)
+    assert result["message"] == "Deck updated successfully"
+    assert "deck" in result
+    assert result["deck"]["deck_name"] == "Updated Deck Name"
+
+
+def test_update_deck_partial(client, auth_headers):
+    """Test partial deck update (only description)"""
+    update_data = {
+        "description": "Just updating the description"
+    }
+    
+    response = client.put(
+        "/decks/1",
+        data=json.dumps(update_data),
+        content_type="application/json",
+        headers=auth_headers
+    )
+    
+    assert response.status_code == 200
+    result = json.loads(response.data)
+    assert "deck" in result
+
+
+def test_update_deck_empty_name(client, auth_headers):
+    """Test update with empty deck name fails"""
+    update_data = {
+        "deck_name": "   "
+    }
+    
+    response = client.put(
+        "/decks/1",
+        data=json.dumps(update_data),
+        content_type="application/json",
+        headers=auth_headers
+    )
+    
+    assert response.status_code == 400
+    result = json.loads(response.data)
+    assert "error" in result
+    assert "cannot be empty" in result["error"]
+
+
+def test_update_deck_not_found(client, auth_headers):
+    """Test update of non-existent deck"""
+    update_data = {
+        "deck_name": "New Name"
+    }
+    
+    response = client.put(
+        "/decks/99999",
+        data=json.dumps(update_data),
+        content_type="application/json",
+        headers=auth_headers
+    )
+    
+    assert response.status_code == 404
+    result = json.loads(response.data)
+    assert "error" in result
+
+
+def test_update_deck_no_data(client, auth_headers):
+    """Test update with no data provided"""
+    response = client.put(
+        "/decks/1",
+        data="",
+        content_type="application/json",
+        headers=auth_headers
+    )
+    
+    assert response.status_code == 400
+    result = json.loads(response.data)
+    assert "No data provided" in result["error"]
+
+
+def test_update_deck_unauthorized(client, auth_headers):
+    """Test update without authentication"""
+    update_data = {
+        "deck_name": "New Name"
+    }
+    
+    response = client.put(
+        "/decks/1",
+        data=json.dumps(update_data),
+        content_type="application/json"
+    )
+    
+    assert response.status_code == 401
+
+
+def test_delete_deck_success(client, auth_headers):
+    """Test successful deck deletion"""
+    response = client.delete("/decks/1", headers=auth_headers)
+    
+    assert response.status_code == 200
+    result = json.loads(response.data)
+    assert result["message"] == "Deck deleted successfully"
+
+
+def test_delete_deck_not_found(client, auth_headers):
+    """Test deletion of non-existent deck"""
+    response = client.delete("/decks/99999", headers=auth_headers)
+    
+    assert response.status_code == 404
+    result = json.loads(response.data)
+    assert "error" in result
+
+
+def test_delete_deck_unauthorized(client):
+    """Test deletion without authentication"""
+    response = client.delete("/decks/1")
+    
+    assert response.status_code == 401
+
+
+def test_get_decks_with_due_cards(client, auth_headers):
+    """Test getting decks with due cards"""
+    response = client.get("/decks/due?limit=5", headers=auth_headers)
+    
+    assert response.status_code == 200
+    result = json.loads(response.data)
+    assert "decks" in result
+
+
+def test_get_recent_decks(client, auth_headers):
+    """Test getting recently reviewed decks"""
+    response = client.get("/decks/recent?limit=5", headers=auth_headers)
+    
+    assert response.status_code == 200
+    result = json.loads(response.data)
+    assert "decks" in result

@@ -1,33 +1,31 @@
+import { getDecks } from "@/apis/endpoints/decks";
 import { CText } from "@/components/common/CText";
 import { RouteButton } from "@/components/common/RouteButton";
 import { CardsDueBanner } from "@/components/features/index/CardsDueBanner";
 import { LastReviewedDeckItem } from "@/components/features/index/LastReviewedDeckItem";
+import { Deck } from "@/types/decks";
+import { useEffect, useState } from "react";
 import { ScrollView, View } from "react-native";
 
-// TODO: placeholder until we have real data
-const sampleDecksList = [
-  { name: "Korean Vocab", lastReviewed: new Date("2026-02-27") },
-  { name: "French Vocab", lastReviewed: new Date("2026-02-22") },
-  { name: "Japanese Vocab", lastReviewed: new Date("2026-02-24") },
-  {
-    name: "Really long title long long long long",
-    lastReviewed: new Date("2026-02-24"),
-  },
-  {
-    name: "Title 1",
-    lastReviewed: new Date("2026-02-24"),
-  },
-  {
-    name: "Title 2",
-    lastReviewed: new Date("2026-02-24"),
-  },
-  {
-    name: "Title 3",
-    lastReviewed: new Date("2026-02-24"),
-  },
-];
-
 export default function Index() {
+  const [decks, setDecks] = useState<Deck[]>([]);
+
+  useEffect(() => {
+    const getHomeDecks = async () => {
+      const { data, error } = await getDecks();
+
+      if (error) {
+        console.log(error);
+        return;
+      }
+
+      // TODO: replace this with a dedicated "recent decks" endpoint when exposed in frontend API.
+      setDecks(data.decks.slice(0, 3));
+    };
+
+    getHomeDecks();
+  }, []);
+
   const label = (
     <CText
       variant="title"
@@ -58,11 +56,15 @@ export default function Index() {
           rowGap: 20,
         }}
       >
-        {sampleDecksList.map((deck) => (
+        {decks.map((deck) => (
           <LastReviewedDeckItem
-            key={`last_reviewed_deck_card_${deck.name}`}
-            deckName={deck.name}
-            lastReviewed={deck.lastReviewed.toLocaleDateString()}
+            key={`last_reviewed_deck_card_${deck.d_id}`}
+            deckName={deck.deck_name}
+            lastReviewed={
+              deck.last_reviewed
+                ? new Date(deck.last_reviewed).toLocaleDateString()
+                : "Never"
+            }
           />
         ))}
       </View>

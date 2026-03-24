@@ -26,8 +26,8 @@ Installation will vary depending on Windows/WSL/MacOS.
 On WSL:
 
 ```bash
-sudo service --status-all
-sudo service docker start
+sudo service --status-all    # check if docker service is running
+sudo service docker start    # if it isn't, manually start
 ```
 
 #### 2. Start the docker image of the backend service

@@ -17,7 +17,7 @@ Run with coverage:
 
 import pytest
 import psycopg2
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, patch, call
 from services.fsrs_service import FsrsService, CardNotFoundError, InvalidGradeError, DatabaseError
 from services.fsrs.grade import Grade
 from services.fsrs.learning_state import LearningState
