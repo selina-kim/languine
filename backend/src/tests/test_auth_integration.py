@@ -277,4 +277,46 @@ class TestAuthFlowIntegration:
             headers={"Authorization": f"Bearer {new_access_token}"}
         )
         assert logout_response.status_code == 200
+
+
+class TestUpdateDeckDueCardsOnLogin:
+    """Integration tests verifying that due_cards is refreshed on every login."""
+
+    def test_login_updates_due_cards_for_user_decks(self, client, skip_if_no_google_config, skip_if_no_google_token):
+        """Test that logging in causes every deck to have a valid due_cards value."""
+        response = client.post("/auth/google", json={"id_token": REAL_TOKEN})
+        assert response.status_code == 200
+        access_token = response.get_json()["tokens"]["access_token"]
+
+        decks_response = client.get(
+            "/decks",
+            headers={"Authorization": f"Bearer {access_token}"}
+        )
+        assert decks_response.status_code == 200
+        decks = decks_response.get_json()["decks"]
+
+        for deck in decks:
+            assert "due_cards" in deck, f"Deck {deck.get('deck_name')} missing due_cards field"
+            assert isinstance(deck["due_cards"], int)
+            assert deck["due_cards"] >= 0
+
+    def test_repeated_login_does_not_break_due_cards(self, client, skip_if_no_google_config, skip_if_no_google_token):
+        """Test that logging in twice in a row keeps due_cards consistent."""
+        def login():
+            resp = client.post("/auth/google", json={"id_token": REAL_TOKEN})
+            assert resp.status_code == 200
+            return resp.get_json()["tokens"]["access_token"]
+
+        token1 = login()
+        token2 = login()
+
+        decks1 = client.get("/decks", headers={"Authorization": f"Bearer {token1}"}).get_json()["decks"]
+        decks2 = client.get("/decks", headers={"Authorization": f"Bearer {token2}"}).get_json()["decks"]
+
+        assert len(decks1) == len(decks2)
+        for d1, d2 in zip(
+            sorted(decks1, key=lambda d: d["d_id"]),
+            sorted(decks2, key=lambda d: d["d_id"])
+        ):
+            assert d1["due_cards"] == d2["due_cards"]
         

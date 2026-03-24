@@ -1,6 +1,7 @@
 from datetime import timedelta
 from flask_jwt_extended import create_access_token, create_refresh_token
 from db import get_db_cursor
+from services.fsrs_service import FsrsService
 
 class AuthService:
     @staticmethod
@@ -25,7 +26,8 @@ class AuthService:
                 user = cursor.fetchone()
                 
                 if user:
-                    # User exists, return their data
+                    # User exists, return their data and update their deck due cards
+                    FsrsService.update_deck_due_cards(google_id)
                     return dict(user)
                 
                 # User doesn't exist, create new one
@@ -40,7 +42,9 @@ class AuthService:
                 """, (google_id, email, display_name, timezone))
                 
                 new_user = cursor.fetchone()
-                return dict(new_user)
+            
+            FsrsService.update_deck_due_cards(google_id)
+            return dict(new_user)
                 
         except Exception as e:
             raise Exception(f"Failed to get or create user: {str(e)}")

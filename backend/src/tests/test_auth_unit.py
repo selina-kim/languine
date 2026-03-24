@@ -16,7 +16,7 @@ Test coverage:
 - Logout without authentication
 """
 import json
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
 
 
 # ----------------------------
@@ -27,6 +27,7 @@ def fake_google_token_valid(*args, **kwargs):
     return {
         'sub': 'google-id-123',
         'email': 'test@example.com',
+        'name': 'Test User',
         'iss': 'accounts.google.com'
     }
 
@@ -232,6 +233,59 @@ class TestGoogleOAuthUnit:
         
         assert response.status_code == 401
         assert "Token expired" in data["error"] or "Invalid token" in data["error"]
+
+    def test_update_deck_due_cards_called_for_existing_user(self):
+        """Test that update_deck_due_cards is called when an existing user logs in."""
+        existing_user = {
+            "u_id": "google-id-123",
+            "email": "test@example.com",
+            "display_name": "Test User",
+            "timezone": "UTC",
+            "new_cards_per_day": 10,
+            "desired_retention": 0.9,
+            "fsrs_parameters": None,
+            "auto_optimize": True,
+            "num_reviews_per_optimize": 256,
+            "total_reviews": 0,
+            "reviews_since_last_optimize": 0,
+        }
+        mock_cursor = MagicMock()
+        mock_cursor.fetchone.return_value = existing_user
+
+        with patch("services.auth_service.get_db_cursor") as mock_db, \
+             patch("services.auth_service.FsrsService.update_deck_due_cards") as mock_update:
+            mock_db.return_value.__enter__.return_value = mock_cursor
+            from services.auth_service import AuthService
+            AuthService.get_or_create_oauth_user("google-id-123", "test@example.com", "Test User")
+
+        mock_update.assert_called_once_with("google-id-123")
+
+    def test_update_deck_due_cards_called_for_new_user(self):
+        """Test that update_deck_due_cards is called when a brand-new user is created."""
+        new_user = {
+            "u_id": "google-id-456",
+            "email": "new@example.com",
+            "display_name": "New User",
+            "timezone": "UTC",
+            "new_cards_per_day": 10,
+            "desired_retention": 0.9,
+            "fsrs_parameters": None,
+            "auto_optimize": True,
+            "num_reviews_per_optimize": 256,
+            "total_reviews": 0,
+            "reviews_since_last_optimize": 0,
+        }
+        mock_cursor = MagicMock()
+        # First fetchone → None (user does not exist yet); second → new user row from INSERT RETURNING
+        mock_cursor.fetchone.side_effect = [None, new_user]
+
+        with patch("services.auth_service.get_db_cursor") as mock_db, \
+             patch("services.auth_service.FsrsService.update_deck_due_cards") as mock_update:
+            mock_db.return_value.__enter__.return_value = mock_cursor
+            from services.auth_service import AuthService
+            AuthService.get_or_create_oauth_user("google-id-456", "new@example.com", "New User")
+
+        mock_update.assert_called_once_with("google-id-456")
 
 
 class TestRefreshTokenUnit:
