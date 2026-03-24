@@ -34,7 +34,7 @@ class UserService:
                            new_cards_per_day, desired_retention,
                            fsrs_parameters, auto_optimize, 
                            num_reviews_per_optimize, total_reviews, 
-                           reviews_since_last_optimize, total_cards_due
+                           reviews_since_last_optimize, total_due_cards_count
                     FROM Users
                     WHERE u_id = %s
                 """, (user_id,))

@@ -621,7 +621,7 @@ class FsrsService:
         Args:
             user_id: The ID of the user whose deck due cards to update.
         """
-        total_cards_due = 0
+        total_due_cards_count = 0
         try:
             # fetch all the user's decks
             decks = DeckService.list_user_decks(user_id)
@@ -667,24 +667,24 @@ class FsrsService:
                     )
                     deck_due_count = cursor.fetchone()["total_due"]
 
-                    # update the deck's due_cards field to reflect the total number of cards that are currently due for review in that deck (due cards + new cards that should be introduced today)
+                    # update the deck's due_cards_count field to reflect the total number of cards that are currently due for review in that deck (due cards + new cards that should be introduced today)
                     cursor.execute(
                         """
                         UPDATE Decks
-                        SET due_cards = %s
+                        SET due_cards_count = %s
                         WHERE d_id = %s
                         """,
                         (deck_due_count, deck["d_id"]),
                     )
-                    total_cards_due += deck_due_count
+                    total_due_cards_count += deck_due_count
 
                 cursor.execute(
                     """
                     UPDATE Users
-                    SET total_cards_due = %s
+                    SET total_due_cards_count = %s
                     WHERE u_id = %s
                     """,
-                    (total_cards_due, user_id),
+                    (total_due_cards_count, user_id),
                 )
         except psycopg2.Error as e:
             raise DatabaseError(str(e))

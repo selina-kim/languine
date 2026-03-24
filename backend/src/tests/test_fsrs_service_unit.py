@@ -688,7 +688,7 @@ class TestFsrsServiceUnit:
         # Confirm the final UPDATE Users uses the correct total (3 + 2 = 5)
         last_args, _ = mock_cursor.execute.call_args_list[4]
         assert "UPDATE Users" in last_args[0]
-        assert "total_cards_due = %s" in last_args[0]
+        assert "total_due_cards_count = %s" in last_args[0]
         assert last_args[1] == (5, "user1")
 
     @patch('services.fsrs_service.DeckService.list_user_decks')
@@ -705,13 +705,13 @@ class TestFsrsServiceUnit:
         # SELECT count + UPDATE Decks + UPDATE Users = 3 calls
         assert mock_cursor.execute.call_count == 3
 
-        # Second call should update the deck's due_cards to 4
+        # Second call should update the deck's due_cards_count to 4
         deck_update_args, _ = mock_cursor.execute.call_args_list[1]
         assert "UPDATE Decks" in deck_update_args[0]
-        assert "due_cards = %s" in deck_update_args[0]
+        assert "due_cards_count = %s" in deck_update_args[0]
         assert deck_update_args[1] == (4, 7)
 
-        # Third call should update the user's total_cards_due to 4
+        # Third call should update the user's total_due_cards_count to 4
         user_update_args, _ = mock_cursor.execute.call_args_list[2]
         assert "UPDATE Users" in user_update_args[0]
         assert user_update_args[1] == (4, "user1")
@@ -719,7 +719,7 @@ class TestFsrsServiceUnit:
     @patch('services.fsrs_service.DeckService.list_user_decks')
     @patch('services.fsrs_service.get_db_cursor')
     def test_update_deck_due_cards_no_decks(self, mock_get_db_cursor, mock_list_user_decks):
-        """Test update_deck_due_cards sets total_cards_due to 0 when the user has no decks."""
+        """Test update_deck_due_cards sets total_due_cards_count to 0 when the user has no decks."""
         mock_list_user_decks.return_value = []
         mock_cursor = MagicMock()
         mock_get_db_cursor.return_value.__enter__.return_value = mock_cursor

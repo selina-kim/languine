@@ -7,7 +7,7 @@ create table Users (
     display_name varchar(30) not null,
     timezone text not null,
     new_cards_per_day integer default 10, 
-    total_cards_due integer default 0 not null,
+    total_due_cards_count integer default 0 not null,
     -- fsrs fields
     desired_retention double precision default 0.9,
     fsrs_parameters double precision[] default null, 
@@ -22,7 +22,7 @@ create table Users (
 -- display_name: user's chosen name to use in app
 -- timezone: user's timezone, stored as text (e.g., 'America/New_York')
 -- new_cards_per_day: number of new cards user wants to learn per day, default is 10
--- total_cards_due: total number of cards currently due for review across all decks, default is 0
+-- total_due_cards_count: total number of cards currently due for review across all decks, default is 0
     -- Note: for new cards, it will consider a max of new_cards_per_day due per deck. 
 -- desired_retention: user's desired card retention rate, default is 0.9 (90%)
 -- fsrs_parameters: array to store user's personalized FSRS parameters, default is null (will use default parameters until optimized)
@@ -45,7 +45,7 @@ create table Decks (
     description text,
     is_public boolean default false not null,
     link varchar(1024),
-    due_cards integer default 0 not null,
+    due_cards_count integer default 0 not null,
     UNIQUE (u_id, deck_name) -- ensure unique deck names per user
 );
 -- column definitions:
@@ -59,7 +59,7 @@ create table Decks (
 -- description: optional description of the deck
 -- is_public: whether the deck is public or private, private by default
 -- link: link to the deck (if applicable)
--- due_cards: number of cards currently due for review in the deck, default is 0
+-- due_cards_count: number of cards currently due for review in the deck, default is 0
 -- index: all decks by user
 create index idx_decks_user on Decks(u_id);
 

@@ -692,20 +692,20 @@ _USER_ID = "test-user-id"
 
 def _get_deck_due_cards(deck_id: int) -> int:
     with get_db_cursor() as cursor:
-        cursor.execute("SELECT due_cards FROM Decks WHERE d_id = %s", (deck_id,))
-        return cursor.fetchone()["due_cards"]
+        cursor.execute("SELECT due_cards_count FROM Decks WHERE d_id = %s", (deck_id,))
+        return cursor.fetchone()["due_cards_count"]
 
 
-def _get_user_total_cards_due() -> int:
+def _get_user_total_due_cards_count() -> int:
     with get_db_cursor() as cursor:
         cursor.execute(
-            "SELECT total_cards_due FROM Users WHERE u_id = %s", (_USER_ID,)
+            "SELECT total_due_cards_count FROM Users WHERE u_id = %s", (_USER_ID,)
         )
-        return cursor.fetchone()["total_cards_due"]
+        return cursor.fetchone()["total_due_cards_count"]
 
 
 def test_update_deck_due_cards_overdue_review_cards(db_setup):
-    """Overdue review cards increment due_cards and total_cards_due."""
+    """Overdue review cards increment due_cards_count and total_due_cards_count."""
     deck_id = db_setup
     set_all_test_user_cards_not_due()
 
@@ -716,18 +716,18 @@ def test_update_deck_due_cards_overdue_review_cards(db_setup):
     FsrsService.update_deck_due_cards(_USER_ID)
 
     assert _get_deck_due_cards(deck_id) >= 1
-    assert _get_user_total_cards_due() >= 1
+    assert _get_user_total_due_cards_count() >= 1
 
 
 def test_update_deck_due_cards_no_due_cards(db_setup):
-    """When no cards are due, due_cards and total_cards_due are both set to 0."""
+    """When no cards are due, due_cards_count and total_due_cards_count are both set to 0."""
     deck_id = db_setup
     set_all_test_user_cards_not_due()
 
     FsrsService.update_deck_due_cards(_USER_ID)
 
     assert _get_deck_due_cards(deck_id) == 0
-    assert _get_user_total_cards_due() == 0
+    assert _get_user_total_due_cards_count() == 0
 
 
 def test_update_deck_due_cards_new_cards_capped_at_limit(db_setup):
@@ -749,9 +749,9 @@ def test_update_deck_due_cards_new_cards_capped_at_limit(db_setup):
 
         deck_due = _get_deck_due_cards(deck_id)
         assert deck_due <= NEW_LIMIT, (
-            f"Expected due_cards to be capped at {NEW_LIMIT}, got {deck_due}"
+            f"Expected due_cards_count to be capped at {NEW_LIMIT}, got {deck_due}"
         )
-        assert _get_user_total_cards_due() == deck_due
+        assert _get_user_total_due_cards_count() == deck_due
     finally:
         with get_db_cursor(commit=True) as cursor:
             cursor.execute(
@@ -760,7 +760,7 @@ def test_update_deck_due_cards_new_cards_capped_at_limit(db_setup):
 
 
 def test_update_deck_due_cards_total_is_sum_across_decks(db_setup):
-    """total_cards_due equals the sum of due_cards across all of the user's decks."""
+    """total_due_cards_count equals the sum of due_cards_count across all of the user's decks."""
     deck1_id = db_setup
     set_all_test_user_cards_not_due()
 
@@ -788,11 +788,11 @@ def test_update_deck_due_cards_total_is_sum_across_decks(db_setup):
 
         deck1_due = _get_deck_due_cards(deck1_id)
         deck2_due = _get_deck_due_cards(deck2_id)
-        total = _get_user_total_cards_due()
+        total = _get_user_total_due_cards_count()
 
         assert deck2_due >= 1, "Overdue card in deck 2 should be counted"
         assert total == deck1_due + deck2_due, (
-            f"total_cards_due ({total}) should equal deck1 ({deck1_due}) + deck2 ({deck2_due})"
+            f"total_due_cards_count ({total}) should equal deck1 ({deck1_due}) + deck2 ({deck2_due})"
         )
     finally:
         with get_db_cursor(commit=True) as cursor:
@@ -800,18 +800,18 @@ def test_update_deck_due_cards_total_is_sum_across_decks(db_setup):
 
 
 def test_update_deck_due_cards_updates_are_persisted(db_setup):
-    """Verify that the due_cards and total_cards_due writes are committed to the database."""
+    """Verify that the due_cards_count and total_due_cards_count writes are committed to the database."""
     deck_id = db_setup
     set_all_test_user_cards_not_due()
 
     # Seed sentinel values so we can confirm they are overwritten
     with get_db_cursor(commit=True) as cursor:
-        cursor.execute("UPDATE Decks SET due_cards = 999 WHERE d_id = %s", (deck_id,))
-        cursor.execute("UPDATE Users SET total_cards_due = 999 WHERE u_id = %s", (_USER_ID,))
+        cursor.execute("UPDATE Decks SET due_cards_count = 999 WHERE d_id = %s", (deck_id,))
+        cursor.execute("UPDATE Users SET total_due_cards_count = 999 WHERE u_id = %s", (_USER_ID,))
 
     FsrsService.update_deck_due_cards(_USER_ID)
 
     assert _get_deck_due_cards(deck_id) != 999
-    assert _get_user_total_cards_due() != 999
+    assert _get_user_total_due_cards_count() != 999
 
 

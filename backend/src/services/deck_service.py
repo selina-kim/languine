@@ -138,7 +138,7 @@ class DeckService:
             cursor.execute(
                 """
                 SELECT d_id, deck_name, word_lang, trans_lang, description,
-                       creation_date, last_reviewed, is_public, due_cards
+                       creation_date, last_reviewed, is_public, due_cards_count
                 FROM Decks
                 WHERE d_id = %s AND u_id = %s
                 """,
@@ -248,7 +248,7 @@ class DeckService:
                 """
                 SELECT d.d_id, d.deck_name, d.word_lang, d.trans_lang,
                        d.description, d.creation_date, d.last_reviewed,
-                       d.is_public, d.due_cards, COUNT(c.c_id) as card_count
+                       d.is_public, d.due_cards_count, COUNT(c.c_id) as card_count
                 FROM Decks d
                 LEFT JOIN Cards c ON d.d_id = c.d_id
                 WHERE d.u_id = %s
@@ -365,14 +365,14 @@ class DeckService:
     
     @staticmethod
     def get_decks_with_due_cards(user_id: str, limit: int = 3) -> List[Dict[str, Any]]:
-        """Get decks that have cards needing review, using the due_cards field maintained by FsrsService.update_deck_due_cards."""
+        """Get decks that have cards needing review, using the due_cards_count field maintained by FsrsService.update_deck_due_cards."""
         with get_db_cursor() as cursor:
             cursor.execute(
                 """
-                SELECT d_id, deck_name, word_lang, trans_lang, last_reviewed, due_cards as due_count
+                SELECT d_id, deck_name, word_lang, trans_lang, last_reviewed, due_cards_count
                 FROM Decks
-                WHERE u_id = %s AND due_cards > 0
-                ORDER BY due_cards DESC
+                WHERE u_id = %s AND due_cards_count > 0
+                ORDER BY due_cards_count DESC
                 LIMIT %s
                 """,
                 (user_id, limit)
@@ -387,13 +387,13 @@ class DeckService:
             cursor.execute(
                 """
                 SELECT d.d_id, d.deck_name, d.word_lang, d.trans_lang,
-                       d.description, d.last_reviewed, d.due_cards,
+                       d.description, d.last_reviewed, d.due_cards_count,
                        COUNT(c.c_id) as card_count
                 FROM Decks d
                 LEFT JOIN Cards c ON d.d_id = c.d_id
                 WHERE d.u_id = %s AND d.last_reviewed IS NOT NULL
                 GROUP BY d.d_id, d.deck_name, d.word_lang, d.trans_lang,
-                         d.description, d.last_reviewed, d.due_cards
+                         d.description, d.last_reviewed, d.due_cards_count
                 ORDER BY d.last_reviewed DESC
                 LIMIT %s
                 """,

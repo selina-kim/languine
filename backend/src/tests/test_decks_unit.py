@@ -54,7 +54,7 @@ def sample_deck_response():
         "creation_date": datetime(2026, 1, 15),
         "last_reviewed": None,
         "is_public": False,
-        "due_cards": 0,
+        "due_cards_count": 0,
     }
 
 
@@ -93,7 +93,7 @@ class TestGetDeckWithCards:
         
         assert result is not None
         assert result["deck"]["deck_name"] == "Spanish Basics"
-        assert "due_cards" in result["deck"]
+        assert "due_cards_count" in result["deck"]
         assert len(result["cards"]) == 1
         assert result["cards"][0]["word"] == "hola"
     
@@ -168,7 +168,7 @@ class TestListUserDecks:
         assert len(result) == 1
         assert result[0]["deck_name"] == "Spanish Basics"
         assert result[0]["card_count"] == 10
-        assert "due_cards" in result[0]
+        assert "due_cards_count" in result[0]
     
     def test_list_user_decks_empty(self, deck_service):
         """Test listing when user has no decks."""
@@ -323,7 +323,7 @@ class TestGetDecksWithDueCards:
         """Test retrieval of decks with due cards."""
         mock_cursor = MagicMock()
         mock_cursor.fetchall.return_value = [
-            {"d_id": 1, "deck_name": "Spanish", "due_count": 5}
+            {"d_id": 1, "deck_name": "Spanish", "due_cards_count": 5}
         ]
 
         with patch('services.deck_service.get_db_cursor') as mock_db:
@@ -331,10 +331,10 @@ class TestGetDecksWithDueCards:
             result = DeckService.get_decks_with_due_cards("user-123")
 
         assert len(result) == 1
-        assert result[0]["due_count"] == 5
+        assert result[0]["due_cards_count"] == 5
 
     def test_get_decks_with_due_cards_excludes_zero(self, deck_service):
-        """Test that decks with due_cards=0 are not returned (filtered by the query)."""
+        """Test that decks with due_cards_count=0 are not returned (filtered by the query)."""
         mock_cursor = MagicMock()
         mock_cursor.fetchall.return_value = []
 
@@ -352,7 +352,7 @@ class TestGetRecentDecks:
         """Test retrieval of recently reviewed decks."""
         mock_cursor = MagicMock()
         mock_cursor.fetchall.return_value = [
-            {"d_id": 1, "deck_name": "Spanish", "card_count": 10, "due_cards": 3}
+            {"d_id": 1, "deck_name": "Spanish", "card_count": 10, "due_cards_count": 3}
         ]
 
         with patch('services.deck_service.get_db_cursor') as mock_db:
@@ -360,7 +360,7 @@ class TestGetRecentDecks:
             result = DeckService.get_recent_decks("user-123")
 
         assert len(result) == 1
-        assert "due_cards" in result[0]
+        assert "due_cards_count" in result[0]
     
     def test_get_recent_decks_with_limit(self, deck_service):
         """Test limit parameter for recent decks."""

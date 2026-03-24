@@ -43,7 +43,7 @@ def test_get_current_user_success(client, auth_headers):
     assert result["fsrs_parameters"] == list(DEFAULT_PARAMETERS)
     assert "new_cards_per_day" in result
     assert "desired_retention" in result
-    assert "total_cards_due"  in result
+    assert "total_due_cards_count"  in result
 
 
 def test_get_current_user_no_auth(client):

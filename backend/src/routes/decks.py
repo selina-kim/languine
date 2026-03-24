@@ -281,7 +281,7 @@ def get_decks_with_due_cards():
     Query params:
     - limit: Number of decks to return (default: 3)
     
-    Returns: JSON with list of decks containing due_count and total_cards
+    Returns: JSON with list of decks containing due_cards_count and total_cards
     """
     user_id = get_jwt_identity()
     limit = request.args.get("limit", 3, type=int)

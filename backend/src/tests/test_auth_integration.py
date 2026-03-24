@@ -280,10 +280,10 @@ class TestAuthFlowIntegration:
 
 
 class TestUpdateDeckDueCardsOnLogin:
-    """Integration tests verifying that due_cards is refreshed on every login."""
+    """Integration tests verifying that due_cards_count is refreshed on every login."""
 
     def test_login_updates_due_cards_for_user_decks(self, client, skip_if_no_google_config, skip_if_no_google_token):
-        """Test that logging in causes every deck to have a valid due_cards value."""
+        """Test that logging in causes every deck to have a valid due_cards_count value."""
         response = client.post("/auth/google", json={"id_token": REAL_TOKEN})
         assert response.status_code == 200
         access_token = response.get_json()["tokens"]["access_token"]
@@ -296,12 +296,12 @@ class TestUpdateDeckDueCardsOnLogin:
         decks = decks_response.get_json()["decks"]
 
         for deck in decks:
-            assert "due_cards" in deck, f"Deck {deck.get('deck_name')} missing due_cards field"
-            assert isinstance(deck["due_cards"], int)
-            assert deck["due_cards"] >= 0
+            assert "due_cards_count" in deck, f"Deck {deck.get('deck_name')} missing due_cards_count field"
+            assert isinstance(deck["due_cards_count"], int)
+            assert deck["due_cards_count"] >= 0
 
     def test_repeated_login_does_not_break_due_cards(self, client, skip_if_no_google_config, skip_if_no_google_token):
-        """Test that logging in twice in a row keeps due_cards consistent."""
+        """Test that logging in twice in a row keeps due_cards_count consistent."""
         def login():
             resp = client.post("/auth/google", json={"id_token": REAL_TOKEN})
             assert resp.status_code == 200
@@ -318,5 +318,5 @@ class TestUpdateDeckDueCardsOnLogin:
             sorted(decks1, key=lambda d: d["d_id"]),
             sorted(decks2, key=lambda d: d["d_id"])
         ):
-            assert d1["due_cards"] == d2["due_cards"]
+            assert d1["due_cards_count"] == d2["due_cards_count"]
         
