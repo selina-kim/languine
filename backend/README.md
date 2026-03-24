@@ -13,7 +13,7 @@ backend/
 
 # Development
 
-## Setup & Installation
+## Local Setup & Installation
 
 ### Install Docker
 
@@ -43,11 +43,13 @@ docker compose up -d              # start docker containers in background (can c
 ```
 
 Check if tables exist:
+
 ```bash
 docker compose exec db psql -U postgres -d languine -c "\dt"
 ```
 
 Check if test user exists:
+
 ```bash
 docker compose exec db psql -U postgres -d languine -c "SELECT * FROM Users WHERE u_id = 'test-user-id';"
 ```
@@ -71,4 +73,37 @@ Should get this output:
 ```bash
 cd backend
 py -3.12 -m pytest
+```
+
+## Remote Access Home Server
+
+### 1. Remote SSH into server
+
+Ask team member for steps.
+
+### 2. View Backend Docker Container Logs
+
+```bash
+cd ~/projects/capstone-project
+docker compose logs -f
+```
+
+### 3. View Status and Metrics
+
+Server main dashboard:
+
+```bash
+source ~/admin-dashboard/dashboard.sh
+```
+
+Monitor docker container metrics:
+
+```bash
+ctop
+```
+
+Monitor server resource usage:
+
+```bash
+btop
 ```
