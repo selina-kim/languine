@@ -750,6 +750,7 @@ class TestGetCardsForReview:
     def test_get_cards_for_review_success(self, card_service, sample_card_response):
         """Test successful retrieval of due cards."""
         mock_cursor = MagicMock()
+        mock_cursor.fetchone.return_value = {"new_cards_per_day": 10}
         mock_cursor.fetchall.return_value = [sample_card_response]
         
         with patch.object(card_service, '_verify_deck_ownership', return_value=True):
@@ -758,3 +759,47 @@ class TestGetCardsForReview:
                 result = card_service.get_cards_for_review("user-123", 1)
         
         assert len(result) == 1
+
+    def test_get_cards_for_review_includes_new_cards(self, card_service):
+        """Test that cards with first_reviewed=None (new cards) are returned."""
+        new_card = {
+            "c_id": 2, "d_id": 1, "word": "adios", "translation": "goodbye",
+            "definition": None, "word_example": None, "trans_example": None,
+            "word_roman": None, "trans_roman": None, "image": None,
+            "word_audio": None, "trans_audio": None,
+            "first_reviewed": None, "due_date": None,
+            "learning_state": None, "step": None,
+            "difficulty": None, "stability": None,
+            "last_review": None, "successful_reps": 0, "fail_count": 0,
+        }
+        mock_cursor = MagicMock()
+        mock_cursor.fetchone.return_value = {"new_cards_per_day": 10}
+        mock_cursor.fetchall.return_value = [new_card]
+
+        with patch.object(card_service, '_verify_deck_ownership', return_value=True):
+            with patch('services.card_service.get_db_cursor') as mock_db:
+                mock_db.return_value.__enter__.return_value = mock_cursor
+                result = card_service.get_cards_for_review("user-123", 1)
+
+        assert len(result) == 1
+        assert result[0]["first_reviewed"] is None
+
+    def test_get_cards_for_review_respects_new_cards_per_day(self, card_service):
+        """Test that new_cards_per_day is fetched from Users and forwarded to the query."""
+        mock_cursor = MagicMock()
+        mock_cursor.fetchone.return_value = {"new_cards_per_day": 5}
+        mock_cursor.fetchall.return_value = []
+
+        with patch.object(card_service, '_verify_deck_ownership', return_value=True):
+            with patch('services.card_service.get_db_cursor') as mock_db:
+                mock_db.return_value.__enter__.return_value = mock_cursor
+                card_service.get_cards_for_review("user-123", 1)
+
+        # Collect every parameter tuple passed to cursor.execute across both queries
+        all_params = [
+            p
+            for call in mock_cursor.execute.call_args_list
+            if len(call.args) > 1
+            for p in call.args[1]
+        ]
+        assert 5 in all_params, "new_cards_per_day should be passed as a SQL parameter"

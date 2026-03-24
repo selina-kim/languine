@@ -9,7 +9,6 @@ Manages deck database operations:
 """
 
 from typing import Dict, Any, List, Optional
-from datetime import datetime, timezone
 from db import get_db_cursor
 import psycopg2
 
@@ -46,7 +45,7 @@ class DeckService:
             cursor.execute(
                 """
                 SELECT d_id, deck_name, word_lang, trans_lang, description,
-                       creation_date, last_reviewed, is_public
+                       creation_date, last_reviewed, is_public, due_cards
                 FROM Decks
                 WHERE d_id = %s AND u_id = %s
                 """,
@@ -156,7 +155,7 @@ class DeckService:
                 """
                 SELECT d.d_id, d.deck_name, d.word_lang, d.trans_lang,
                        d.description, d.creation_date, d.last_reviewed,
-                       d.is_public, COUNT(c.c_id) as card_count
+                       d.is_public, d.due_cards, COUNT(c.c_id) as card_count
                 FROM Decks d
                 LEFT JOIN Cards c ON d.d_id = c.d_id
                 WHERE d.u_id = %s
@@ -273,25 +272,17 @@ class DeckService:
     
     @staticmethod
     def get_decks_with_due_cards(user_id: str, limit: int = 3) -> List[Dict[str, Any]]:
-        """Get decks that have cards needing review."""
-        now = datetime.now(timezone.utc)
-        
+        """Get decks that have cards needing review, using the due_cards field maintained by FsrsService.update_deck_due_cards."""
         with get_db_cursor() as cursor:
             cursor.execute(
                 """
-                SELECT d.d_id, d.deck_name, d.word_lang, d.trans_lang,
-                       d.last_reviewed,
-                       COUNT(CASE WHEN c.due_date <= %s THEN 1 END) as due_count,
-                       COUNT(c.c_id) as total_cards
-                FROM Decks d
-                LEFT JOIN Cards c ON d.d_id = c.d_id
-                WHERE d.u_id = %s
-                GROUP BY d.d_id, d.deck_name, d.word_lang, d.trans_lang, d.last_reviewed
-                HAVING COUNT(CASE WHEN c.due_date <= %s THEN 1 END) > 0
-                ORDER BY due_count DESC
+                SELECT d_id, deck_name, word_lang, trans_lang, last_reviewed, due_cards as due_count
+                FROM Decks
+                WHERE u_id = %s AND due_cards > 0
+                ORDER BY due_cards DESC
                 LIMIT %s
                 """,
-                (now, user_id, now, limit)
+                (user_id, limit)
             )
             decks = cursor.fetchall()
             return [dict(deck) for deck in decks]
@@ -303,13 +294,13 @@ class DeckService:
             cursor.execute(
                 """
                 SELECT d.d_id, d.deck_name, d.word_lang, d.trans_lang,
-                       d.description, d.last_reviewed,
+                       d.description, d.last_reviewed, d.due_cards,
                        COUNT(c.c_id) as card_count
                 FROM Decks d
                 LEFT JOIN Cards c ON d.d_id = c.d_id
                 WHERE d.u_id = %s AND d.last_reviewed IS NOT NULL
                 GROUP BY d.d_id, d.deck_name, d.word_lang, d.trans_lang,
-                         d.description, d.last_reviewed
+                         d.description, d.last_reviewed, d.due_cards
                 ORDER BY d.last_reviewed DESC
                 LIMIT %s
                 """,

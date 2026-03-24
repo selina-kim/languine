@@ -309,3 +309,52 @@ def test_list_decks_success(client, auth_headers):
     assert response.status_code == 200
     result = json.loads(response.data)
     assert "decks" in result
+
+
+# ==================== due_cards Field Tests ====================
+
+
+def test_get_deck_includes_due_cards(client, auth_headers):
+    """Test that GET /decks/:id returns due_cards for the deck."""
+    response = client.get("/decks/1", headers=auth_headers)
+
+    assert response.status_code == 200
+    result = json.loads(response.data)
+    deck = result["deck"]
+    assert "due_cards" in deck
+    assert isinstance(deck["due_cards"], int)
+    assert deck["due_cards"] >= 0
+
+
+def test_list_decks_includes_due_cards(client, auth_headers):
+    """Test that GET /decks returns due_cards for every deck."""
+    response = client.get("/decks", headers=auth_headers)
+
+    assert response.status_code == 200
+    decks = json.loads(response.data)["decks"]
+    assert len(decks) > 0
+    for deck in decks:
+        assert "due_cards" in deck, f"Deck {deck.get('deck_name')} missing due_cards"
+        assert isinstance(deck["due_cards"], int)
+        assert deck["due_cards"] >= 0
+
+
+def test_get_decks_due_endpoint_returns_due_count_field(client, auth_headers):
+    """Test that GET /decks/due returns the due_count field on each deck."""
+    from db import get_db_cursor
+
+    # due_cards defaults to 0 and is only updated by update_deck_due_cards (called on login).
+    # Seed it directly so the deck appears in the results.
+    with get_db_cursor(commit=True) as cursor:
+        cursor.execute("UPDATE Decks SET due_cards = 5 WHERE d_id = 1")
+
+    response = client.get("/decks/due", headers=auth_headers)
+
+    assert response.status_code == 200
+    result = json.loads(response.data)
+    assert "decks" in result
+    assert len(result["decks"]) > 0
+    for deck in result["decks"]:
+        assert "due_count" in deck
+        assert isinstance(deck["due_count"], int)
+        assert deck["due_count"] > 0

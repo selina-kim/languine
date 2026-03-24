@@ -687,6 +687,16 @@ def test_get_cards_for_review_empty_deck(client, auth_headers):
     assert isinstance(result["cards"], list)
 
 
+def test_get_cards_for_review_includes_new_cards(client, auth_headers):
+    """Test that cards with no review history (first_reviewed IS NULL) appear in the review queue."""
+    response = client.get("/decks/1/review", headers=auth_headers)
+
+    assert response.status_code == 200
+    result = json.loads(response.data)
+    assert len(result["cards"]) > 0
+    assert any(c["first_reviewed"] is None for c in result["cards"])
+
+
 # ==================== Pagination Edge Cases ====================
 
 
