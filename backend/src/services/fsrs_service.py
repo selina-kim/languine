@@ -7,6 +7,7 @@ from services.fsrs.learning_state import LearningState
 from services.fsrs.optimizer import Optimizer
 from services.fsrs.review_log import ReviewLog
 from services.fsrs.scheduler import Scheduler
+from services.deck_service import DeckService
 import psycopg2
 
 
@@ -246,8 +247,9 @@ class FsrsService:
                 cursor.execute(
                     """
                     SELECT c.learning_state, c.step, c.difficulty, c.stability,
-                           c.due_date, c.last_review, c.first_reviewed, 
-                           u.desired_retention, u.fsrs_parameters, u.new_cards_per_day
+                           c.due_date, c.last_review, c.first_reviewed,
+                           u.desired_retention, u.fsrs_parameters, u.new_cards_per_day,
+                           d.u_id
                     FROM Cards c
                     JOIN Decks d ON c.d_id = d.d_id
                     JOIN Users u ON d.u_id = u.u_id
@@ -258,45 +260,6 @@ class FsrsService:
                 user_card_info = cursor.fetchone()
                 if user_card_info is None:
                     raise CardNotFoundError(f"Card with id {card_id} does not exist.")
-                
-                # check to see if this was a card that was counted towards the user's total_cards_due
-                # first check how many cards have been introduced today for the cards deck
-                cursor.execute(
-                    """
-                    SELECT COUNT(*) AS introduced_today
-                    FROM Cards c
-                    WHERE c.d_id = (
-                        SELECT d_id
-                        FROM Cards
-                        WHERE c_id = %s
-                    )
-                    AND DATE(c.first_reviewed) = CURRENT_DATE;
-                    """,
-                    (card_id,),
-                )
-                introduced_today = cursor.fetchone()["introduced_today"]
-
-                # now that we have the number of cards introduced today for this card's deck, we can determine if this card was counted in total_cards_due by checking if either:
-                # - it is a new card that has never been reviewed before (first_reviewed is null) and the number of cards introduced today is less than the user's new_cards_per_day
-                # - it is a card that was due for review (due_date <= now()) and has been reviewed before (first_reviewed is not null)
-                # if either of those conditions is true, it means this card was counted in total_cards_due, and since the user just reviewed it, we need to decrement total_cards_due by 1.
-                if (user_card_info["first_reviewed"] is None and introduced_today < user_card_info["new_cards_per_day"]) or (user_card_info["due_date"] is not None and user_card_info["due_date"] <= datetime.now(timezone.utc) and user_card_info["first_reviewed"] is not None):
-                    cursor.execute(
-                        """
-                        UPDATE Users
-                        SET total_cards_due = GREATEST(total_cards_due - 1, 0)
-                        WHERE u_id = (
-                            SELECT u_id
-                            FROM Decks
-                            WHERE d_id = (
-                                SELECT d_id
-                                FROM Cards
-                                WHERE c_id = %s
-                            )
-                        )
-                        """,
-                        (card_id,),
-                    )
 
                 # Build a Card object from the stored state
                 # Unreviewed cards may have NULL learning_state/due_date in the DB
@@ -355,6 +318,10 @@ class FsrsService:
                         updated_fields["card_id"],
                     ),
                 )
+
+                # update the due cards count for the deck and user
+                FsrsService.update_deck_due_cards(user_card_info["u_id"])
+
                 return updated_fields
 
         except psycopg2.Error as e:
@@ -763,3 +730,79 @@ class FsrsService:
             raise DatabaseError(str(e))
 
         return total_cards_due
+    
+    @staticmethod
+    def update_deck_due_cards(user_id:str):
+        """
+        Update the cards_due field for all decks of the user based on the number of cards that are currently due for review in each deck.
+        
+        Args:
+            user_id: The ID of the user whose deck due cards to update.
+        """
+        total_cards_due = 0
+        try:
+            # fetch all the user's decks
+            decks = DeckService.list_user_decks(user_id)
+
+            # for each deck, count how many:
+            # - new cards that should be introduced today (first_reviewed is null and the numberof cards introduced today for the deck is less than new_cards_per_day)
+            # - cards are currently due for review (due_date <= now() and first_reviewed is not null)
+            with get_db_cursor(commit=True) as cursor:
+                for deck in decks:
+                    cursor.execute(
+                        """
+                        WITH introduced_today AS (
+                            SELECT COUNT(*) AS cnt
+                            FROM Cards
+                            WHERE d_id = %s
+                            AND DATE(first_reviewed) = CURRENT_DATE
+                        ),
+                        new_count AS (
+                            SELECT LEAST(
+                                COUNT(*),
+                                GREATEST(
+                                    (SELECT new_cards_per_day FROM Users WHERE u_id = %s)
+                                    - (SELECT cnt FROM introduced_today),
+                                    0
+                                )
+                            ) AS cnt
+                            FROM Cards
+                            WHERE d_id = %s
+                            AND first_reviewed IS NULL
+                        ),
+                        review_count AS (
+                            SELECT COUNT(*) AS cnt
+                            FROM Cards
+                            WHERE d_id = %s
+                            AND first_reviewed IS NOT NULL
+                            AND due_date <= NOW()
+                        )
+                        SELECT
+                            (SELECT cnt FROM new_count) +
+                            (SELECT cnt FROM review_count) AS total_due
+                        """,
+                        (deck["d_id"], user_id, deck["d_id"], deck["d_id"]),
+                    )
+                    deck_due_count = cursor.fetchone()["total_due"]
+
+                    # update the deck's due_cards field to reflect the total number of cards that are currently due for review in that deck (due cards + new cards that should be introduced today)
+                    cursor.execute(
+                        """
+                        UPDATE Decks
+                        SET due_cards = %s
+                        WHERE d_id = %s
+                        """,
+                        (deck_due_count, deck["d_id"]),
+                    )
+                    total_cards_due += deck_due_count
+
+                cursor.execute(
+                    """
+                    UPDATE Users
+                    SET total_cards_due = %s
+                    WHERE u_id = %s
+                    """,
+                    (total_cards_due, user_id),
+                )
+        except psycopg2.Error as e:
+            raise DatabaseError(str(e))

@@ -17,7 +17,7 @@ Run with coverage:
 
 import pytest
 import psycopg2
-from unittest.mock import MagicMock, patch, call
+from unittest.mock import MagicMock, patch
 from services.fsrs_service import FsrsService, CardNotFoundError, InvalidGradeError, DatabaseError
 from services.fsrs.grade import Grade
 from services.fsrs.learning_state import LearningState
@@ -266,16 +266,15 @@ class TestFsrsServiceUnit:
             FsrsService.update_card_fail_success_count(1, Grade.Good)
 
     # --- review_card tests ---
+    @patch('services.fsrs_service.FsrsService.update_deck_due_cards')
     @patch('services.fsrs_service.get_db_cursor')
     @patch('services.fsrs_service.Scheduler')
     @patch('services.fsrs_service.Card')
-    def test_review_card(self, mock_card_cls, mock_scheduler_cls, mock_get_db_cursor):
+    def test_review_card(self, mock_card_cls, mock_scheduler_cls, mock_get_db_cursor, mock_update_deck):
         """Test reviewing a card."""
         mock_cursor = MagicMock()
         mock_get_db_cursor.return_value.__enter__.return_value = mock_cursor
 
-        # first fetchone: card + user info; second fetchone: introduced_today count
-        # due_date is in the future so the UPDATE Users decrement is not triggered
         mock_cursor.fetchone.side_effect = [
             {
                 "learning_state": LearningState.Learning,
@@ -288,8 +287,8 @@ class TestFsrsServiceUnit:
                 "fsrs_parameters": DEFAULT_PARAMETERS,
                 "first_reviewed": datetime(2025, 1, 1, tzinfo=timezone.utc),
                 "new_cards_per_day": 10,
+                "u_id": "test-user-id",
             },
-            {"introduced_today": 0},
         ]
 
         # Mock objects
@@ -312,9 +311,10 @@ class TestFsrsServiceUnit:
         # Execute
         updated_fields = FsrsService.review_card(123, Grade.Good)
 
-        # Assert: SELECT card info, SELECT introduced_today, UPDATE Cards (no UPDATE Users since due_date is future)
-        assert mock_cursor.execute.call_count == 3
-        assert "UPDATE Cards" in mock_cursor.execute.call_args_list[2][0][0]
+        # Assert: SELECT card info, UPDATE Cards
+        assert mock_cursor.execute.call_count == 2
+        assert "UPDATE Cards" in mock_cursor.execute.call_args_list[1][0][0]
+        mock_update_deck.assert_called_once_with("test-user-id")
         assert updated_fields["learning_state"] == int(updated_card_mock.learning_state)
         assert updated_fields["step"] == updated_card_mock.step
         assert updated_fields["difficulty"] == float(updated_card_mock.difficulty)
@@ -764,3 +764,83 @@ class TestFsrsServiceUnit:
 
         with pytest.raises(DatabaseError):
             FsrsService.get_num_due_cards("user1")
+
+    # --- update_deck_due_cards tests ---
+
+    @patch('services.fsrs_service.DeckService.list_user_decks')
+    @patch('services.fsrs_service.get_db_cursor')
+    def test_update_deck_due_cards_success(self, mock_get_db_cursor, mock_list_user_decks):
+        """Test that update_deck_due_cards runs the correct queries and sums due counts across decks."""
+        mock_list_user_decks.return_value = [
+            {"d_id": 1, "new_cards_per_day": 10},
+            {"d_id": 2, "new_cards_per_day": 5},
+        ]
+        mock_cursor = MagicMock()
+        mock_get_db_cursor.return_value.__enter__.return_value = mock_cursor
+        mock_cursor.fetchone.side_effect = [
+            {"total_due": 3},
+            {"total_due": 2},
+        ]
+
+        FsrsService.update_deck_due_cards("user1")
+
+        # 2 SELECT (count per deck) + 2 UPDATE Decks + 1 UPDATE Users = 5 execute calls
+        assert mock_cursor.execute.call_count == 5
+        # Confirm the final UPDATE Users uses the correct total (3 + 2 = 5)
+        last_args, _ = mock_cursor.execute.call_args_list[4]
+        assert "UPDATE Users" in last_args[0]
+        assert "total_cards_due = %s" in last_args[0]
+        assert last_args[1] == (5, "user1")
+
+    @patch('services.fsrs_service.DeckService.list_user_decks')
+    @patch('services.fsrs_service.get_db_cursor')
+    def test_update_deck_due_cards_single_deck(self, mock_get_db_cursor, mock_list_user_decks):
+        """Test update_deck_due_cards with a single deck produces the correct UPDATE calls."""
+        mock_list_user_decks.return_value = [{"d_id": 7, "new_cards_per_day": 10}]
+        mock_cursor = MagicMock()
+        mock_get_db_cursor.return_value.__enter__.return_value = mock_cursor
+        mock_cursor.fetchone.return_value = {"total_due": 4}
+
+        FsrsService.update_deck_due_cards("user1")
+
+        # SELECT count + UPDATE Decks + UPDATE Users = 3 calls
+        assert mock_cursor.execute.call_count == 3
+
+        # Second call should update the deck's due_cards to 4
+        deck_update_args, _ = mock_cursor.execute.call_args_list[1]
+        assert "UPDATE Decks" in deck_update_args[0]
+        assert "due_cards = %s" in deck_update_args[0]
+        assert deck_update_args[1] == (4, 7)
+
+        # Third call should update the user's total_cards_due to 4
+        user_update_args, _ = mock_cursor.execute.call_args_list[2]
+        assert "UPDATE Users" in user_update_args[0]
+        assert user_update_args[1] == (4, "user1")
+
+    @patch('services.fsrs_service.DeckService.list_user_decks')
+    @patch('services.fsrs_service.get_db_cursor')
+    def test_update_deck_due_cards_no_decks(self, mock_get_db_cursor, mock_list_user_decks):
+        """Test update_deck_due_cards sets total_cards_due to 0 when the user has no decks."""
+        mock_list_user_decks.return_value = []
+        mock_cursor = MagicMock()
+        mock_get_db_cursor.return_value.__enter__.return_value = mock_cursor
+
+        FsrsService.update_deck_due_cards("user1")
+
+        # Only the UPDATE Users call (no decks to iterate over)
+        assert mock_cursor.execute.call_count == 1
+        args, _ = mock_cursor.execute.call_args
+        assert "UPDATE Users" in args[0]
+        assert args[1] == (0, "user1")
+
+    @patch('services.fsrs_service.DeckService.list_user_decks')
+    @patch('services.fsrs_service.get_db_cursor')
+    def test_update_deck_due_cards_db_error(self, mock_get_db_cursor, mock_list_user_decks):
+        """Test that a psycopg2.Error inside update_deck_due_cards is wrapped in DatabaseError."""
+        mock_list_user_decks.return_value = [{"d_id": 1, "new_cards_per_day": 10}]
+        mock_cursor = MagicMock()
+        mock_get_db_cursor.return_value.__enter__.return_value = mock_cursor
+        mock_cursor.execute.side_effect = psycopg2.Error("db fail")
+
+        with pytest.raises(DatabaseError):
+            FsrsService.update_deck_due_cards("user1")

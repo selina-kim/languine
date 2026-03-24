@@ -22,6 +22,7 @@ import pytest
 import json
 from db import get_db_cursor
 from services.fsrs.grade import Grade
+from services.fsrs_service import FsrsService
 
 pytestmark = pytest.mark.integration
 
@@ -832,3 +833,136 @@ def test_get_num_due_cards_database_error(client, auth_headers, monkeypatch):
     assert response.status_code == 500
     result = json.loads(response.data)
     assert "Database error" in result["error"]
+
+# ==================== Update Deck Due Cards Service Tests ====================
+# update_deck_due_cards is an internal service method (not a dedicated HTTP
+# route) so these tests call it directly against the real database.
+
+_USER_ID = "test-user-id"
+
+
+def _get_deck_due_cards(deck_id: int) -> int:
+    with get_db_cursor() as cursor:
+        cursor.execute("SELECT due_cards FROM Decks WHERE d_id = %s", (deck_id,))
+        return cursor.fetchone()["due_cards"]
+
+
+def _get_user_total_cards_due() -> int:
+    with get_db_cursor() as cursor:
+        cursor.execute(
+            "SELECT total_cards_due FROM Users WHERE u_id = %s", (_USER_ID,)
+        )
+        return cursor.fetchone()["total_cards_due"]
+
+
+def test_update_deck_due_cards_overdue_review_cards(db_setup):
+    """Overdue review cards increment due_cards and total_cards_due."""
+    deck_id = db_setup
+    set_all_test_user_cards_not_due()
+
+    card_id = get_card_id_for_test_user()
+    assert card_id is not None
+    set_card_due_in_past(card_id)
+
+    FsrsService.update_deck_due_cards(_USER_ID)
+
+    assert _get_deck_due_cards(deck_id) >= 1
+    assert _get_user_total_cards_due() >= 1
+
+
+def test_update_deck_due_cards_no_due_cards(db_setup):
+    """When no cards are due, due_cards and total_cards_due are both set to 0."""
+    deck_id = db_setup
+    set_all_test_user_cards_not_due()
+
+    FsrsService.update_deck_due_cards(_USER_ID)
+
+    assert _get_deck_due_cards(deck_id) == 0
+    assert _get_user_total_cards_due() == 0
+
+
+def test_update_deck_due_cards_new_cards_capped_at_limit(db_setup):
+    """New cards (first_reviewed IS NULL) are counted but capped at new_cards_per_day."""
+    deck_id = db_setup
+    NEW_LIMIT = 2
+
+    with get_db_cursor(commit=True) as cursor:
+        cursor.execute(
+            "UPDATE Users SET new_cards_per_day = %s WHERE u_id = %s",
+            (NEW_LIMIT, _USER_ID),
+        )
+        cursor.execute(
+            "UPDATE Cards SET first_reviewed = NULL WHERE d_id = %s", (deck_id,)
+        )
+
+    try:
+        FsrsService.update_deck_due_cards(_USER_ID)
+
+        deck_due = _get_deck_due_cards(deck_id)
+        assert deck_due <= NEW_LIMIT, (
+            f"Expected due_cards to be capped at {NEW_LIMIT}, got {deck_due}"
+        )
+        assert _get_user_total_cards_due() == deck_due
+    finally:
+        with get_db_cursor(commit=True) as cursor:
+            cursor.execute(
+                "UPDATE Users SET new_cards_per_day = 10 WHERE u_id = %s", (_USER_ID,)
+            )
+
+
+def test_update_deck_due_cards_total_is_sum_across_decks(db_setup):
+    """total_cards_due equals the sum of due_cards across all of the user's decks."""
+    deck1_id = db_setup
+    set_all_test_user_cards_not_due()
+
+    with get_db_cursor(commit=True) as cursor:
+        cursor.execute(
+            """
+            INSERT INTO Decks (u_id, deck_name, word_lang, trans_lang)
+            VALUES (%s, 'Test Deck 2', 'fr', 'en')
+            RETURNING d_id
+            """,
+            (_USER_ID,),
+        )
+        deck2_id = cursor.fetchone()["d_id"]
+        cursor.execute(
+            """
+            INSERT INTO Cards (d_id, word, translation, first_reviewed, due_date)
+            VALUES (%s, 'bonjour', 'hello',
+                    NOW() - INTERVAL '7 days', NOW() - INTERVAL '1 day')
+            """,
+            (deck2_id,),
+        )
+
+    try:
+        FsrsService.update_deck_due_cards(_USER_ID)
+
+        deck1_due = _get_deck_due_cards(deck1_id)
+        deck2_due = _get_deck_due_cards(deck2_id)
+        total = _get_user_total_cards_due()
+
+        assert deck2_due >= 1, "Overdue card in deck 2 should be counted"
+        assert total == deck1_due + deck2_due, (
+            f"total_cards_due ({total}) should equal deck1 ({deck1_due}) + deck2 ({deck2_due})"
+        )
+    finally:
+        with get_db_cursor(commit=True) as cursor:
+            cursor.execute("DELETE FROM Decks WHERE d_id = %s", (deck2_id,))
+
+
+def test_update_deck_due_cards_updates_are_persisted(db_setup):
+    """Verify that the due_cards and total_cards_due writes are committed to the database."""
+    deck_id = db_setup
+    set_all_test_user_cards_not_due()
+
+    # Seed sentinel values so we can confirm they are overwritten
+    with get_db_cursor(commit=True) as cursor:
+        cursor.execute("UPDATE Decks SET due_cards = 999 WHERE d_id = %s", (deck_id,))
+        cursor.execute("UPDATE Users SET total_cards_due = 999 WHERE u_id = %s", (_USER_ID,))
+
+    FsrsService.update_deck_due_cards(_USER_ID)
+
+    assert _get_deck_due_cards(deck_id) != 999
+    assert _get_user_total_cards_due() != 999
+
+

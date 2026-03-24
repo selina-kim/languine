@@ -45,6 +45,7 @@ create table Decks (
     description text,
     is_public boolean default false not null,
     link varchar(1024),
+    due_cards integer default 0 not null,
     UNIQUE (u_id, deck_name) -- ensure unique deck names per user
 );
 -- column definitions:
@@ -58,7 +59,7 @@ create table Decks (
 -- description: optional description of the deck
 -- is_public: whether the deck is public or private, private by default
 -- link: link to the deck (if applicable)
-
+-- due_cards: number of cards currently due for review in the deck, default is 0
 -- index: all decks by user
 create index idx_decks_user on Decks(u_id);
 
