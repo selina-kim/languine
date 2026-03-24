@@ -8,8 +8,10 @@ import requests
 from typing import Dict, Any, List, Optional
 from datetime import datetime, timezone
 from db import get_db_cursor
+from services.fsrs_service import FsrsService
 import psycopg2
 
+fsrs_service = FsrsService()
 
 class CardNotFoundError(Exception):
     pass
@@ -337,6 +339,8 @@ class CardService:
             except psycopg2.Error as e:
                 print(f"Warning: Media storage update failed: {e}")
 
+        # update the due_cards_count and total_due_cards_count
+        fsrs_service.update_deck_due_cards(user_id)
         return card
 
     def get_card(

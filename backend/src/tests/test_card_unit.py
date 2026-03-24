@@ -355,7 +355,14 @@ class TestGetDeckInfo:
 
 class TestCreateCard:
     """Tests for create_card method."""
-    
+
+    @pytest.fixture(autouse=True)
+    def mock_fsrs_update(self):
+        """Mock fsrs_service.update_deck_due_cards to avoid real DB calls in unit tests."""
+        with patch('services.card_service.fsrs_service.update_deck_due_cards') as mock:
+            self._mock_fsrs_update = mock
+            yield mock
+
     def test_create_card_deck_not_found(self, card_service, sample_card_data):
         """Test card creation fails when deck doesn't exist."""
         with patch.object(card_service, '_verify_deck_ownership', return_value=False):
@@ -375,6 +382,7 @@ class TestCreateCard:
         
         assert result["word"] == "hola"
         assert result["translation"] == "hello"
+        self._mock_fsrs_update.assert_called_once_with("user-123")
     
     def test_create_card_strips_whitespace(self, card_service, sample_card_response):
         """Test that card creation strips whitespace from fields."""
