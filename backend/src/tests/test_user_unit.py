@@ -42,7 +42,8 @@ def sample_user_data():
         "auto_optimize": True,
         "num_reviews_per_optimize": 256,
         "total_reviews": 0,
-        "reviews_since_last_optimize": 0
+        "reviews_since_last_optimize": 0, 
+        "total_cards_due": 0
     }
 
 
