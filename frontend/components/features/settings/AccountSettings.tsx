@@ -3,8 +3,8 @@ import { SettingGroup } from "./SettingGroup";
 
 export const AccountSettings = () => {
   const [newCardsPerDay, setNewCardsPerDay] = useState("10");
-  const [retrievability, setRetrievability] = useState("90");
-  const [retrievabilityInputError, setRetrievabilityInputError] =
+  const [desiredRetention, setDesiredRetention] = useState("90");
+  const [desiredRetentionInputError, setDesiredRetentionInputError] =
     useState<string>();
 
   const onSaveNewCardsPerDay = (value: string) => {
@@ -12,15 +12,15 @@ export const AccountSettings = () => {
     setNewCardsPerDay(value);
     return true;
   };
-  const onSaveRetrievability = (value: string) => {
-    setRetrievabilityInputError(undefined);
+  const onSaveDesiredRetention = (value: string) => {
+    setDesiredRetentionInputError(undefined);
 
     if (Number(value) < 75 || Number(value) > 95) {
-      setRetrievabilityInputError("Value not within range");
+      setDesiredRetentionInputError("Value not within range");
       return false;
     }
     // TODO
-    setRetrievability(value);
+    setDesiredRetention(value);
     return true;
   };
 
@@ -34,11 +34,11 @@ export const AccountSettings = () => {
         onSave={onSaveNewCardsPerDay}
       />
       <SettingGroup.Item
-        label="Retrievability %"
+        label="Desired Retention (%)"
         description="Target success rate for reviews (minimum: 75, maximum: 95)"
-        value={retrievability}
-        onSave={onSaveRetrievability}
-        inputError={retrievabilityInputError}
+        value={desiredRetention}
+        onSave={onSaveDesiredRetention}
+        inputError={desiredRetentionInputError}
         isLast
       />
     </SettingGroup>
