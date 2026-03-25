@@ -1,0 +1,802 @@
+﻿word,translation,word_example,trans_example
+你好,hello,你好！很高兴见到你。,Hello! I’m happy to see you.
+您好,hello (polite),您好，请问这里是图书馆吗？,"Hello, may I ask if this is the library?"
+早上好,good morning,早上好！你今天睡得好吗？,Good morning! Did you sleep well today?
+下午好,good afternoon,下午好，我们开始上课吧。,"Good afternoon, let’s start class."
+晚上好,good evening,晚上好！今晚的电影很好看。,Good evening! The movie tonight was great.
+不好意思,excuse me/sorry,不好意思，我迟到了。,"Sorry, I’m late."
+请问,may I ask…,请问洗手间在哪里？,May I ask where the restroom is?
+明天见,see you tomorrow,明天见！别忘了带书。,See you tomorrow! Don’t forget to bring your book.
+你好吗？,how are you?,你好吗？最近忙不忙？,How are you? Have you been busy lately?
+我很好,I'm very well,谢谢你关心，我很好。,"Thanks for caring, I’m very well."
+谢谢,thank you,谢谢你帮我拿东西。,Thank you for helping me hold things.
+不客气,you’re welcome,谢谢你！—不客气！,Thank you! — You’re welcome!
+对不起,sorry,对不起，我不小心踩到你的脚了。,"Sorry, I accidentally stepped on your foot."
+没关系,It’s OK,没关系，下次注意就好。,"It’s okay, just be careful next time."
+请,please,请等一下，我马上回来。,"Please wait a moment, I’ll be right back."
+他,he/him,他是我的同学。,He is my classmate.
+她,she/her,她今天不在学校。,She is not at school today.
+我,I/me,我想学中文。,I want to learn Chinese.
+你,you,你喜欢吃中国菜吗？,Do you like eating Chinese food?
+我们,we/us,我们一起去吃饭吧。,Let’s go eat together.
+他们,they (males/mixed),他们今天去运动了。,They went to exercise today.
+你们,you (plural),你们准备好了吗？,Are you all ready?
+您,you (formal),您好！请问需要帮助吗？,Hello! Do you need help?
+加油,keep going,加油！你一定可以的！,Keep going! You can definitely do it!
+再见,goodbye,好了，我们先走了，再见！,"Okay, we’re off now, goodbye!"
+拜拜,bye bye,我先走了，拜拜！,I’m going first — bye bye!
+一会儿见,see you later,我去买东西，一会儿见。,"I’m going to buy something, see you later."
+晚安,good night,睡觉前跟妈妈说晚安。,Say good night to mom before going to bed.
+保重,take care,你出差别忘了保重身体。,You’re on a business trip — don’t forget to take care.
+欢迎,welcome,欢迎来到我们的学校。,Welcome to our school.
+兴趣,hobby,我的兴趣是画画。,My hobby is drawing.
+学习,study,他每天学习中文两个小时。,He studies Chinese two hours every day.
+留学,study abroad,我打算明年去中国留学。,I plan to study abroad in China next year.
+大学,university,她在大学学经济学。,She studies economics at the university.
+高中,high school,我在高中交了很多朋友。,I made many friends in high school.
+名字,name,我可以知道你的名字吗？,May I know your name?
+姓,surname,我姓王。,My surname is Wang.
+现在,present/currently,我现在住在北京。,I currently live in Beijing.
+英文名字,English name,他的英文名字叫 Tom。,His English name is Tom.
+年龄,age,你今年多大年龄？,How old are you this year?
+出生,to be born,我出生在上海。,I was born in Shanghai.
+出生地,place of birth,你的出生地在哪里？,Where is your place of birth?
+来自,to come from,我来自加拿大。,I come from Canada.
+国家,country,我最想去的国家是日本。,The country I want to visit most is Japan.
+性别,gender,请写下你的性别。,Please write down your gender.
+电话号码,phone number,我可以留你的电话号码吗？,Can I have your phone number?
+城市,city,这个城市很漂亮。,This city is very beautiful.
+住在,to live in,我住在一个安静的社区。,I live in a quiet neighborhood.
+老师,teacher,老师正在讲课，大家认真听。,The teacher is giving a lesson; everyone is listening carefully.
+学生,student,学生们在图书馆学习。,The students are studying in the library.
+上课,attend class,我们每天八点上课。,We have class at 8 every day.
+下课,class ends,下课后我们去操场玩。,"After class, we go play on the playground."
+写,write,请用中文写一篇日记。,Please write a diary entry in Chinese.
+读,read,他喜欢晚上读书。,He likes to read books at night.
+听,listen,上课时请认真听老师讲解。,Please listen carefully to the teacher during class.
+说,speak,请用中文说一句话。,Please say a sentence in Chinese.
+问,ask,我想问老师一个问题。,I want to ask the teacher a question.
+答,answer,学生们积极回答问题。,The students answer questions actively.
+懂,understand,我不懂这道题的意思。,I don’t understand the meaning of this question.
+学,learn,我想学做中国菜。,I want to learn how to cook Chinese food.
+教,teach,老师教我们汉字的写法。,The teacher teaches us how to write Chinese characters.
+写作,writing,他每天练习中文写作。,He practices Chinese writing every day.
+练习,practice,我练习听力提高中文水平。,I practice listening to improve my Chinese.
+复习,review,考试前我要复习所有单词。,I need to review all the vocabulary before the exam.
+考试,exam,下周有一个汉语考试。,There is a Chinese exam next week.
+成绩,grade,她的考试成绩非常好。,Her exam grades are very good.
+书,book,我在书店买了一本新书。,I bought a new book at the bookstore.
+字,character,这个汉字很难写。,This Chinese character is hard to write.
+词,word,老师教了我们很多新词。,The teacher taught us many new words.
+句,sentence,请用这个词造一个句子。,Please make a sentence using this word.
+课本,textbook,我忘记带课本了。,I forgot to bring my textbook.
+练习册,exercise book,练习册里有很多练习题。,The exercise book has many exercises.
+老师办公室,teacher’s office,我去老师办公室问问题。,I went to the teacher’s office to ask a question.
+学校,school,我们每天早上八点去学校。,We go to school at 8 every morning.
+教室,classroom,教室里坐满了学生。,The classroom is full of students.
+图书馆,library,图书馆里很安静。,The library is very quiet.
+操场,playground,下午我们在操场踢足球。,In the afternoon we play soccer on the playground.
+午餐,lunch,中午大家一起吃午餐。,Everyone eats lunch together at noon.
+晚餐,dinner,今晚的晚餐有很多菜。,There are many dishes for dinner tonight.
+早餐,breakfast,我每天早上吃早餐。,I eat breakfast every morning.
+老师助教,teaching assistant,老师助教帮助学生解答问题。,The teaching assistant helps students answer questions.
+课外活动,extracurricular activity,我参加了学校的课外活动。,I joined the school’s extracurricular activity.
+运动,sports,我们喜欢参加运动。,We like participating in sports.
+跑步,run,每天早上我在公园跑步。,I run in the park every morning.
+游泳,swim,夏天我去游泳。,I go swimming in the summer.
+球,ball,孩子们在操场上踢球。,Children play ball on the playground.
+比赛,competition,学校举办了篮球比赛。,The school held a basketball competition.
+赢,win,我们的队赢了比赛。,Our team won the match.
+输,lose,他们队输掉了比赛。,Their team lost the game.
+休息,rest,午饭后我们休息半小时。,"After lunch, we rest for half an hour."
+朋友,friend,我和朋友一起去逛街。,I go shopping with my friend.
+同学,classmate,我的同学都很友好。,My classmates are very friendly.
+老师好,hello teacher,上课前学生说：“老师好！”,Before class students say: 'Hello teacher!'
+请回答,please answer,老师说：“请回答问题。”,The teacher said: 'Please answer the question.'
+请看,please look,老师说：“请看黑板。”,The teacher said: 'Please look at the blackboard.'
+请听,please listen,老师说：“请听我讲。”,The teacher said: 'Please listen to me.'
+家,home,我周末常常回家。,I often go home on weekends.
+爸爸,father,我的爸爸喜欢早上喝咖啡。,My father likes to drink coffee in the morning.
+妈妈,mother,妈妈每天做晚饭。,Mom cooks dinner every day.
+哥哥,older brother,我哥哥比我大三岁。,My older brother is three years older than me.
+姐姐,older sister,姐姐正在学习钢琴。,My older sister is learning piano.
+弟弟,younger brother,弟弟很喜欢踢足球。,My younger brother likes playing soccer.
+妹妹,younger sister,妹妹正在画画。,My younger sister is painting.
+家人,family,我和家人一起庆祝节日。,I celebrate holidays with my family.
+父母,parents,我的父母都很关心我。,My parents both care about me a lot.
+爷爷,grandfather,我爷爷教我下棋。,My grandfather teaches me to play chess.
+奶奶,grandmother,奶奶做的饺子很好吃。,The dumplings my grandmother makes are delicious.
+房子,house,我们搬进了一栋新房子。,We moved into a new house.
+房间,room,我的房间很整洁。,My room is very tidy.
+客厅,living room,客厅里有一张大沙发。,There is a big sofa in the living room.
+厨房,kitchen,妈妈在厨房做饭。,Mom is cooking in the kitchen.
+卧室,bedroom,卧室里有一张大床。,There is a big bed in the bedroom.
+浴室,bathroom,浴室很干净。,The bathroom is very clean.
+门,door,请把门关上。,Please close the door.
+窗户,window,窗户打开了，空气很新鲜。,The window is open; the air is fresh.
+沙发,sofa,我坐在沙发上看电视。,I sit on the sofa to watch TV.
+桌子,table,我们在桌子上吃晚饭。,We eat dinner at the table.
+椅子,chair,请坐在椅子上。,Please sit on the chair.
+床,bed,我晚上十点上床睡觉。,I go to bed at 10 PM.
+毯子,blanket,晚上我盖上毯子睡觉。,"At night, I cover myself with a blanket."
+枕头,pillow,我的枕头很舒服。,My pillow is very comfortable.
+灯,light/lamp,请把灯关掉。,Please turn off the light.
+电视,television,晚上我们一起看电视。,In the evening we watch television together.
+电话,telephone,我给朋友打电话。,I called my friend.
+手机,cell phone,我每天用手机查信息。,I use my phone to check messages every day.
+电脑,computer,我用电脑写作业。,I use the computer to do homework.
+笔,pen,请用笔写下你的名字。,Please write your name with a pen.
+纸,paper,老师给我们发了练习纸。,The teacher handed out exercise sheets.
+衣服,clothes,今天我穿了一件蓝色的衣服。,Today I wore a blue shirt.
+鞋,shoes,我买了一双新鞋。,I bought a new pair of shoes.
+帽子,hat,太阳很大，请戴上帽子。,The sun is strong; please wear a hat.
+包,bag,我把书放进包里。,I put the books into my bag.
+钥匙,key,我忘记带钥匙了。,I forgot to bring my key.
+钱,money,我存了一些钱在银行。,I saved some money in the bank.
+钱包,wallet,请把钱包放在桌子上。,Please put your wallet on the table.
+汽车,car,我爸爸开汽车去上班。,My dad drives a car to work.
+自行车,bicycle,我骑自行车去学校。,I ride a bicycle to school.
+公交车,bus,每天早上我坐公交车上班。,I take the bus to work every morning.
+地铁,subway,我每天坐地铁去公司。,I take the subway to the office every day.
+火车,train,我坐火车去上海。,I take the train to Shanghai.
+飞机,plane,我们坐飞机去度假。,We take a plane to go on vacation.
+船,boat,我们坐船去小岛玩。,We take a boat to go to the small island.
+超市,supermarket,我去超市买水果。,I go to the supermarket to buy fruit.
+市场,market,周末我们去市场买菜。,"On the weekend, we go to the market to buy vegetables."
+吃,eat,我早上吃了一个三明治。,I ate a sandwich in the morning.
+喝,drink,我喜欢喝热茶。,I like to drink hot tea.
+饭,rice,我们今天吃了炒饭。,We ate fried rice today.
+面条,noodles,我最喜欢吃炒面条。,My favorite food is stir-fried noodles.
+饺子,dumplings,妈妈做的饺子很好吃。,The dumplings my mom makes are delicious.
+包子,steamed bun,我早餐吃了两个包子。,I ate two steamed buns for breakfast.
+米饭,steamed rice,晚餐我吃了米饭和菜。,"For dinner, I ate rice and vegetables."
+水果,fruit,我喜欢吃苹果和香蕉。,I like to eat apples and bananas.
+苹果,apple,我每天吃一个苹果。,I eat an apple every day.
+香蕉,banana,她喜欢吃香蕉。,She likes to eat bananas.
+橙子,orange,我喜欢喝橙汁。,I like to drink orange juice.
+西瓜,watermelon,夏天我喜欢吃西瓜。,I like to eat watermelon in the summer.
+葡萄,grapes,他给我买了一些葡萄。,He bought me some grapes.
+蔬菜,vegetables,我每天都吃很多蔬菜。,I eat a lot of vegetables every day.
+土豆,potato,我们吃土豆炖牛肉。,We ate stewed beef with potatoes.
+鸡肉,chicken,今天中午我吃了鸡肉。,I ate chicken for lunch today.
+牛肉,beef,我最喜欢吃牛肉火锅。,My favorite food is beef hotpot.
+猪肉,pork,这道菜是用猪肉做的。,This dish is made with pork.
+鱼,fish,我喜欢吃鱼和米饭。,I like to eat fish and rice.
+海鲜,seafood,我喜欢吃海鲜，尤其是螃蟹。,"I like to eat seafood, especially crabs."
+蛋,egg,我早餐通常吃鸡蛋。,I usually eat eggs for breakfast.
+牛奶,milk,我每天喝一杯牛奶。,I drink a glass of milk every day.
+果汁,juice,他喜欢喝橙汁和苹果汁。,He likes to drink orange juice and apple juice.
+茶,tea,我每天喝几杯茶。,I drink several cups of tea every day.
+咖啡,coffee,我早上喝咖啡提神。,I drink coffee in the morning to wake up.
+水,water,每天喝足够的水对身体很好。,It’s good for your body to drink enough water every day.
+甜点,dessert,晚饭后我们吃了巧克力甜点。,We had chocolate dessert after dinner.
+蛋糕,cake,生日聚会上有一个大蛋糕。,There was a big cake at the birthday party.
+巧克力,chocolate,我喜欢吃黑巧克力。,I like to eat dark chocolate.
+糖,candy,我吃了很多糖，牙齿有点疼。,"I ate a lot of candy, and my teeth hurt a little."
+饼干,cookie,我下午茶的时候吃了饼干。,I ate cookies during my afternoon tea.
+面包,bread,早餐我吃了面包和果酱。,I ate bread and jam for breakfast.
+沙拉,salad,我午餐吃了一个蔬菜沙拉。,I ate a vegetable salad for lunch.
+汉堡包,burger,我最喜欢吃汉堡包。,My favorite food is a hamburger.
+比萨,pizza,今天晚上我们订了比萨。,We ordered pizza for dinner tonight.
+饮料,drink,你喜欢喝什么饮料？,What drink do you like to have?
+餐厅,restaurant,我们周末去餐厅吃晚餐。,We go to a restaurant for dinner on weekends.
+菜单,menu,请给我菜单。,Please give me the menu.
+点菜,order food,我们已经点菜了。,We have already ordered the food.
+买,buy,我去超市买菜。,I’m going to the supermarket to buy vegetables.
+卖,sell,这家店卖新鲜水果。,This shop sells fresh fruit.
+购物,shopping,今天下午我和朋友一起去购物。,This afternoon I went shopping with my friend.
+付钱,pay,我已经付了钱。,I’ve already paid.
+收据,receipt,请给我收据。,Please give me the receipt.
+便宜,cheap,这个包包很便宜。,This bag is very cheap.
+贵,expensive,那件衣服太贵了。,That piece of clothing is too expensive.
+打折,discount,这双鞋现在打折。,These shoes are on sale now.
+高兴, happy,今天我很高兴，因为我通过了考试。,I’m very happy today because I passed the exam.
+生气,angry,他生气了，因为有人打扰了他。,He got angry because someone interrupted him.
+难过,sad,她听到坏消息后很难过。,She was very sad after hearing the bad news.
+紧张,nervous,我在考试前很紧张。,I was nervous before the exam.
+害怕,afraid,小孩子害怕黑暗。,The child is afraid of the dark.
+担心,worried,我担心明天会下雨。,I’m worried that it will rain tomorrow.
+激动,excited,我非常激动，因为我将去旅行。,I’m very excited because I’m going to travel.
+惊讶,surprised,我看到他时感到非常惊讶。,I was very surprised when I saw him.
+高, tall,他个子很高。,He is very tall.
+矮, short,我比他矮。,I am shorter than him.
+胖, fat,那只狗很胖。,That dog is very fat.
+瘦, thin,她非常瘦，像个模特。,"She is very thin, like a model."
+美丽, beautiful,这个花园非常美丽。,This garden is very beautiful.
+漂亮, pretty,她是一个很漂亮的女孩。,She is a very pretty girl.
+帅, handsome,他是一个帅气的男孩。,He is a handsome boy.
+好看, good-looking,那部电影很好看。,That movie is very good-looking.
+聪明, smart,他是一个聪明的学生。,He is a smart student.
+有趣, interesting,这本书很有趣。,This book is very interesting.
+无聊, boring,这部电影很无聊。,This movie is boring.
+重要, important,今天的会议非常重要。,Today’s meeting is very important.
+容易, easy,这道题很容易。,This question is very easy.
+困难, difficult,学习汉语有点困难。,Learning Chinese is a bit difficult.
+慢, slow,他的跑步速度很慢。,His running speed is very slow.
+快, fast,他跑得非常快。,He runs very fast.
+开心, happy,她很开心，收到了一份生日礼物。,She is very happy to receive a birthday gift.
+忙, busy,我今天很忙，没时间休息。,I’m very busy today and don’t have time to rest.
+累, tired,我跑了十公里，所以现在很累。,"I ran 10 kilometers, so now I’m very tired."
+饿, hungry,我饿了，想吃点东西。,I’m hungry and want to eat something.
+渴, thirsty,我渴了，能给我一杯水吗？,I’m thirsty. Can you give me a glass of water?
+困, sleepy,今天晚上我很困，想早点睡。,I’m very sleepy tonight and want to go to bed early.
+健康, healthy,每天运动可以保持身体健康。,Exercising every day can keep you healthy.
+生病, sick,我生病了，不能去上班。,I’m sick and can’t go to work.
+乐观, optimistic,她是个很乐观的人，总是笑。,She is an optimistic person and always smiles.
+悲伤, sad,他听到这个消息后很悲伤。,He was very sad after hearing the news.
+感动, touched,她的故事让我非常感动。,Her story really touched me.
+自信, confident,他很自信，讲话总是很有说服力。,He is very confident and his speeches are always persuasive.
+理解, understand,我能理解你的感受。,I can understand your feelings.
+冷静, calm,遇到困难时，我要保持冷静。,I need to stay calm when facing difficulties.
+温暖, warm,这条毯子非常温暖。,This blanket is very warm.
+有用, useful,这个词典非常有用。,This dictionary is very useful.
+热, hot,今天的天气非常热。,Today the weather is very hot.
+冷, cold,冬天的时候，外面很冷。,It’s very cold outside in winter.
+清楚, clear,我不太清楚这个问题的答案。,I’m not clear about the answer to this question.
+复杂, complicated,这个问题很复杂，需要仔细思考。,This problem is complicated and needs careful thought.
+简单, simple,这道题很简单，我马上就能解答。,"This question is very simple, I can solve it right away."
+有意思, interesting,他的讲解非常有意思。,His explanation was very interesting.
+美味, delicious,这道菜非常美味。,This dish is very delicious.
+不好, bad,他的行为不好，我们应该改正。,"His behavior is bad, we should correct it."
+走,walk,我每天早上走路去上班。,I walk to work every morning.
+跑,run,我们每天都在公园跑步。,We run in the park every day.
+跳, jump,孩子们喜欢在操场上跳。,The children like to jump on the playground.
+骑,ride,我骑自行车去学校。,I ride a bicycle to school.
+开, drive,他每天开车去公司。,He drives to the office every day.
+坐,take (transportation),我坐公交车去学校。,I take the bus to school.
+坐飞机,take a plane,我打算明年坐飞机去美国。,I plan to take a plane to the U.S. next year.
+飞,fly,飞机很快，两个小时就能飞到北京。,"The plane is fast, it takes only two hours to fly to Beijing."
+到,arrive,我早上七点到公司。,I arrive at the office at 7 a.m.
+离开,leave,我明天早上八点离开家。,I will leave home at 8 a.m. tomorrow.
+进入,enter,请进入教室开始上课。,Please enter the classroom and start the lesson.
+出去,go out,今天下午我和朋友一起出去。,This afternoon I’m going out with my friends.
+进来,come in,老师请我们进来上课。,The teacher asked us to come in and start the lesson.
+停,stop,车停在红绿灯前。,The car stopped at the traffic light.
+开车,drive a car,他开车去参加会议。,He drove to the meeting.
+走路,walk on foot,我喜欢走路去超市。,I like walking to the supermarket.
+跨越,cross,我跨越了很多山丘。,I crossed many hills.
+旅行,travel,我每年都去不同的地方旅行。,I travel to different places every year.
+到达,arrive,我们下午三点到达目的地。,We will arrive at the destination at 3 p.m.
+前往,go to,我明天前往上海出差。,I’m going to Shanghai on a business trip tomorrow.
+通过,pass,我们通过了一个很长的隧道。,We passed through a long tunnel.
+回去,go back,我今天不回家，明天再回去。,"I won’t go home today, I’ll go back tomorrow."
+停留,stay,我们在北京停留了三天。,We stayed in Beijing for three days.
+穿过,cross,我穿过马路去买东西。,I cross the street to buy things.
+拜访,visit,我去拜访我的朋友。,I’m going to visit my friend.
+来,come,他今天来我的办公室了。,He came to my office today.
+去,go,我们去公园散步。,We go for a walk in the park.
+上车,get on the vehicle,我们赶紧上车，否则会迟到。,Let’s get on the vehicle quickly or we’ll be late.
+下车,get off the vehicle,我们在下一站下车。,We get off at the next station.
+走到,walk to,我走到超市买东西。,I walk to the supermarket to buy things.
+路,road,我们走了很长的路。,We walked a long road.
+街,street,这条街很热闹。,This street is very lively.
+桥,bridge,我们走过了这座桥。,We walked across this bridge.
+山,mountain,我喜欢爬山。,I like hiking in the mountains.
+海,sea,夏天我常常去海边游泳。,I often swim at the beach in the summer.
+湖,lake,湖边的景色非常美。,The scenery by the lake is very beautiful.
+岛,island,我计划去一个热带岛屿度假。,I plan to go to a tropical island for vacation.
+公园,park,我们在公园散步。,We are walking in the park.
+广场,square,市中心有一个大广场。,There is a big square in the city center.
+博物馆,museum,我喜欢去博物馆看展览。,I like going to museums to see exhibitions.
+商店,store,我们去商店买东西。,We go to the store to buy things.
+医院,hospital,我去医院看医生。,I went to the hospital to see a doctor.
+银行,bank,我去银行取钱。,I went to the bank to withdraw money.
+邮局,post office,我去邮局寄信。,I went to the post office to send a letter.
+饭店,restaurant,我们在饭店里吃晚餐。,We ate dinner at the restaurant.
+咖啡馆,cafe,我喜欢在咖啡馆喝咖啡。,I like drinking coffee at the cafe.
+今天,today,今天是我的生日。,Today is my birthday.
+明天,tomorrow,明天我们要去爬山。,Tomorrow we are going hiking.
+昨天,yesterday,昨天我去了电影院。,Yesterday I went to the cinema.
+早上,morning,我每天早上六点起床。,I wake up at 6 AM every morning.
+中午,noon,我们中午一起吃饭。,We have lunch together at noon.
+晚上,evening,晚上我喜欢去散步。,I like to go for a walk in the evening.
+早,early,我今天早上起得很早。,I woke up very early this morning.
+晚,late,他今天上班迟到了。,He was late for work today.
+小时, hour,我们工作了八小时。,We worked for eight hours.
+分钟,minute,我会在十分钟内到达。,I will arrive in ten minutes.
+秒,second,他跑步的速度非常快，每秒都在加速。,"His running speed is very fast, and he is accelerating every second."
+一月,January,一月是冬天的第一月。,January is the first month of winter.
+二月,February,二月是最冷的月份之一。,February is one of the coldest months.
+三月,March,三月春天来了，花儿开了。,"In March, spring comes, and the flowers bloom."
+四月,April,四月是春天的好时光。,April is a great time for spring.
+五月,May,五月是劳动节的月份。,May is the month of Labor Day.
+六月,June,六月我们去度假。,We are going on vacation in June.
+七月,July,七月天气很热。,It’s very hot in July.
+八月,August,八月我们会去海边。,We will go to the beach in August.
+九月,September,九月是秋天的开始。,September is the beginning of autumn.
+十月,October,十月有很多节日。,There are many holidays in October.
+十一月,November,十一月天气逐渐变冷。,The weather gets colder in November.
+十二月,December,十二月是冬天最冷的时节。,December is the coldest time of winter.
+星期一,Monday,星期一我有一整天的会议。,I have meetings all day on Monday.
+星期二,Tuesday,星期二我们去看电影。,We are going to watch a movie on Tuesday.
+星期三,Wednesday,星期三我和朋友一起去爬山。,I’m going hiking with my friends on Wednesday.
+星期四,Thursday,星期四我要开会。,I have a meeting on Thursday.
+星期五,Friday,星期五晚上我和家人一起吃晚餐。,"On Friday evening, I have dinner with my family."
+星期六,Saturday,星期六我们去购物。,On Saturday we go shopping.
+星期天,Sunday,星期天我常常去公园散步。,On Sunday I often go for a walk in the park.
+春天,spring,春天是最喜欢的季节。,Spring is my favorite season.
+夏天,summer,夏天我们去海边度假。,In summer we go to the beach for vacation.
+秋天,autumn,秋天是收获的季节。,Autumn is the season of harvest.
+冬天,winter,冬天我喜欢滑雪。,I like skiing in winter.
+晴天,sunny day,今天是一个晴天。,Today is a sunny day.
+阴天,cloudy day,今天是阴天，我们可能会下雨。,"Today is a cloudy day, it might rain."
+雨天,rainy day,下雨天我们待在家里。,"On rainy days, we stay at home."
+雪,snow,冬天下雪了，我们去玩雪。,"It’s snowing in the winter, and we go play in the snow."
+风,wind,今天有点风，适合去放风筝。,"It’s a bit windy today, perfect for flying kites."
+湿,humid,今天很湿，空气中有很多水分。,Today is very humid; there is a lot of moisture in the air.
+凉爽,cool,秋天的天气很凉爽。,The weather in autumn is cool.
+干燥,dry,这里的天气非常干燥。,The weather here is very dry.
+潮湿,moist,这个地方潮湿，适合种植物。,This place is moist and suitable for planting.
+雷阵雨,thunderstorm,明天下雨，还有雷阵雨。,Tomorrow it will rain with thunderstorms.
+雾,fog,早上有雾，开车要小心。,"There is fog in the morning, be careful when driving."
+身体,body,保持身体健康很重要。,It’s important to keep your body healthy.
+头,head,我今天早上头痛。,I have a headache this morning.
+眼睛,eyes,我眼睛有点疲劳。,My eyes are a bit tired.
+耳朵,ears,我耳朵听不太清楚。,I can’t hear very clearly with my ears.
+鼻子,nose,我的鼻子很通畅。,My nose is very clear.
+嘴巴,mouth,他张开嘴巴笑了。,He smiled with his mouth open.
+牙齿,teeth,我每天刷牙两次。,I brush my teeth twice a day.
+脖子,neck,我的脖子有点酸。,My neck is a little sore.
+肩膀,shoulder,我肩膀很累，可能是昨天搬东西。,"My shoulder is tired, maybe from lifting things yesterday."
+手,hand,我右手受伤了。,My right hand is injured.
+脚,foot,我的脚痛，走不了太远。,"My foot hurts, I can't walk too far."
+背部,back,我的背部很紧张，需要放松。,My back is very tense and needs to relax.
+心脏,heart,保持心脏健康非常重要。,It’s very important to keep your heart healthy.
+胃,stomach,我胃不舒服，可能是吃了不干净的东西。,"My stomach feels uncomfortable, maybe I ate something unclean."
+肚子,belly,我肚子饿了。,I’m hungry.
+腿,leg,我跑步时扭伤了腿。,I sprained my leg while running.
+手指,finger,我把手指划伤了。,I cut my finger.
+脚趾,toe,我的脚趾被东西压伤了。,My toe was injured by something.
+膝盖,knee,我膝盖不太好，走路很慢。,"My knee isn’t very good, so I walk slowly."
+胃痛,stomachache,我昨天吃坏了肚子，今天胃痛。,"I ate something bad yesterday, and my stomach hurts today."
+头痛,headache,我有点头痛，需要休息。,I have a bit of a headache and need to rest.
+咳嗽,cough,我最近一直在咳嗽。,I’ve been coughing a lot recently.
+感冒,catch a cold,我感冒了，今天不能去上班。,I caught a cold and can’t go to work today.
+发烧,fever,他发烧了，需要看医生。,He has a fever and needs to see a doctor.
+流感,flu,我得了流感，正在休息。,I have the flu and I’m resting.
+过敏,allergy,我对花粉过敏。,I’m allergic to pollen.
+疼,pain,我的背疼得很厉害。,My back hurts a lot.
+吃药,take medicine,医生说我需要吃药。,The doctor said I need to take medicine.
+药,medicine,我买了些药来治感冒。,I bought some medicine to treat my cold.
+医生,doctor,我明天去看医生。,I’m going to see the doctor tomorrow.
+护士,nurse,护士帮我量了体温。,The nurse took my temperature.
+病人,patient,病人在医院里等待治疗。,The patient is waiting for treatment in the hospital.
+治疗,treatment,他正在接受治疗。,He is receiving treatment.
+手术,surgery,他需要做手术来治疗膝盖。,He needs surgery to treat his knee.
+恢复,recover,他生病后正在恢复中。,He is recovering after being sick.
+打针,get an injection,我不喜欢打针。,I don’t like getting injections.
+检查,check-up,我去做了身体检查。,I went for a health check-up.
+健康检查,health checkup,每年我都会做一次健康检查。,I have a health checkup once a year.
+营养,nutrition,保持营养均衡很重要。,It’s important to maintain balanced nutrition.
+饮食,diet,保持良好的饮食习惯能保持健康。,Maintaining a good diet can keep you healthy.
+体重,weight,我在控制我的体重。,I’m controlling my weight.
+卡路里,calories,这个食物的卡路里很高。,This food is very high in calories.
+健身,fitness,我每周去健身房三次。,I go to the gym three times a week.
+人民币,renminbi,在中国我们使用人民币。,"In China, we use renminbi."
+美元,dollar,这件衣服的价格是五十美元。,The price of this dress is fifty dollars.
+欧元,euro,我去欧洲旅游时，换了很多欧元。,"When I traveled to Europe, I exchanged a lot of euros."
+零钱,change,我只带了现金，需要找零钱。,I only brought cash and need change.
+现金,cash,我们不接受现金支付。,We don’t accept cash payments.
+信用卡,credit card,我用信用卡买了这件衣服。,I bought this shirt with my credit card.
+借记卡,debit card,我可以用借记卡付款吗？,Can I pay with a debit card?
+支付,pay,我已经支付了账单。,I have already paid the bill.
+账单,bill,服务员给我们带来了账单。,The waiter brought us the bill.
+价格,price,这家店的价格很合理。,The prices in this shop are very reasonable.
+折扣,discount,今天的衣服有20%的折扣。,The clothes are 20% off today.
+促销,promotion,这家店正在做促销活动。,This store is having a promotion.
+退货,return,这件衣服不合适，我要退货。,"This shirt doesn’t fit, I want to return it."
+换货,exchange,我想把这个换成另一个颜色。,I want to exchange this for another color.
+发票,invoice,我需要一张发票。,I need an invoice.
+购物车,shopping cart,我把所有东西都放进了购物车。,I put everything into the shopping cart.
+购物袋,shopping bag,你需要购物袋吗？,Do you need a shopping bag?
+打包,pack,请帮我把这些衣服打包。,Please help me pack these clothes.
+现金支付,paid in cash,我选择现金支付。,I choose to pay in cash.
+刷卡,swipe the card,我用卡刷了账单。,I swiped the card for the bill.
+收银员, cashier,收银员帮我扫描了商品。,The cashier scanned the items for me.
+买单, pay the bill,我们准备好买单了。,We’re ready to pay the bill.
+现金券,cash voucher,商店给我发了一张现金券。,The store gave me a cash voucher.
+优惠券,coupon,我有一张五元的优惠券。,I have a five yuan coupon.
+消费,consume,今天的消费总额是五百元。,The total consumption today is 500 yuan.
+价格标签, price tag,我没看到这件衣服的价格标签。,I didn’t see the price tag on this shirt.
+付款, payment,我已经完成付款。,I have completed the payment.
+刷卡机,card machine,请把卡插进刷卡机。,Please insert your card into the card machine.
+旅行团,tour group,我们加入了一个旅行团，去了很多地方。,We joined a tour group and visited many places.
+机票,plane ticket,我已经买了去北京的机票。,I have already bought a plane ticket to Beijing.
+火车票,train ticket,请给我两张到上海的火车票。,Please give me two train tickets to Shanghai.
+汽车票,bus ticket,我们需要买去机场的汽车票。,We need to buy bus tickets to the airport.
+护照,passport,在机场，我必须出示护照。,"At the airport, I must show my passport."
+签证,visa,我申请了去美国的签证。,I applied for a visa to the U.S.
+海关,customs,过海关时，我们需要检查行李。,We need to check our luggage when we go through customs.
+机场,airport,我们的航班是从这个机场出发的。,Our flight departs from this airport.
+登机,boarding,登机时间是下午两点。,The boarding time is at 2 p.m.
+登机口,boarding gate,登机口在A区。,The boarding gate is in Zone A.
+飞机场,airport,飞机场的安检很严格。,The security check at the airport is very strict.
+行李,luggage,我有两件行李。,I have two pieces of luggage.
+行李箱,suitcase,我把衣服放进了行李箱。,I put my clothes into the suitcase.
+旅馆,hotel,我们住在一家五星级旅馆。,We are staying in a five-star hotel.
+宾馆,guesthouse,这家宾馆很便宜。,This guesthouse is very cheap.
+预订,book (reservation),我已经预订了酒店房间。,I have already booked the hotel room.
+入住,check in,我们下午三点可以入住。,We can check in at 3 p.m.
+退房,check out,我们明天中午退房。,We check out tomorrow afternoon.
+单人间,single room,我需要一个单人间。,I need a single room.
+双人间,double room,我们预订了一个双人间。,We booked a double room.
+套房,suite,我喜欢住套房，因为很宽敞。,I like staying in a suite because it’s very spacious.
+客房,guest room,我的客房有一个大床。,My guest room has a big bed.
+床单,sheet,我需要换床单。,I need to change the sheets.
+毛巾,towel,我需要一条干净的毛巾。,I need a clean towel.
+洗澡,shower,我想去洗澡。,I want to take a shower.
+房卡,room key,请给我房卡。,Please give me the room key.
+小费,tip,我们给了服务员小费。,We gave the waiter a tip.
+出租车,taxi,我坐出租车去机场。,I took a taxi to the airport.
+租车,rent a car,我计划在旅行中租车。,I plan to rent a car during the trip.
+旅游景点,attraction,这个城市有许多著名的旅游景点。,This city has many famous tourist attractions.
+风景,scenery,这里的风景非常美丽。,The scenery here is very beautiful.
+导游,guide,我们的导游讲解了很多历史。,Our tour guide explained a lot of history.
+地图,map,请给我一张城市地图。,Please give me a city map.
+方向,direction,我迷路了，能给我指路吗？,I’m lost. Can you give me directions?
+路线,route,我们计划走这条路线，去博物馆。,We plan to take this route to the museum.
+预定,reservation,我们已经为晚餐做了预定。,We have made a reservation for dinner.
+起床,wake up,我每天早上六点起床。,I wake up at 6 a.m. every day.
+洗脸,wash face,早上我洗脸后吃早餐。,I wash my face and then have breakfast in the morning.
+刷牙,brush teeth,我早上和晚上都刷牙。,I brush my teeth both in the morning and at night.
+吃饭,eat,我在家里吃饭。,I eat at home.
+做饭,cook,我的妈妈每天都做饭。,My mom cooks every day.
+喝水,drink water,你应该多喝水。,You should drink more water.
+上班,go to work,我每天八点上班。,I go to work at 8 a.m. every day.
+上学,go to school,我七点半去上学。,I go to school at 7:30 a.m.
+工作,work,今天我需要工作很长时间。,I need to work for a long time today.
+看书,read books,我喜欢在晚上看书。,I like reading books at night.
+看电视,watch TV,晚上我喜欢看电视。,I like watching TV at night.
+听音乐,listen to music,我每天听音乐放松。,I listen to music every day to relax.
+做瑜伽,do yoga,做瑜伽对身体很有好处。,Doing yoga is very good for your body.
+打球,play ball,我们周末一起打篮球。,We play basketball together on weekends.
+逛街,shop,我周末喜欢去逛街。,I like to go shopping on weekends.
+洗衣服,wash clothes,我每周洗一次衣服。,I wash clothes once a week.
+打扫,clean,我每周都会打扫房间。,I clean the room every week.
+做家务,do chores,我每天做一些家务。,I do some chores every day.
+睡觉,sleep,我晚上十点睡觉。,I sleep at 10 p.m. every night.
+喝咖啡,drink coffee,我早上喝一杯咖啡。,I drink a cup of coffee in the morning.
+打电话,make a call,我每天给妈妈打电话。,I call my mom every day.
+发邮件,send an email,我刚给老板发了一封邮件。,I just sent an email to my boss.
+发短信,send a text,我发短信给她确认时间。,I texted her to confirm the time.
+回复,reply,我还没有回复她的邮件。,I haven’t replied to her email yet.
+聊天,chat,我们下午一起聊天。,We chat together in the afternoon.
+喝茶,drink tea,我喜欢和朋友一起喝茶。,I like drinking tea with my friends.
+看电影,watch a movie,周末我和朋友一起看电影。,I watch movies with my friends on weekends.
+看比赛,watch a game,我们今晚要看足球比赛。,We are going to watch the soccer match tonight.
+放松,relax,今天我很累，想好好放松。,I’m very tired today and want to relax.
+参观,visit,我们参观了一个博物馆。,We visited a museum.
+开会,have a meeting,我下午有一个会议。,I have a meeting in the afternoon.
+做作业,do homework,我每天做两个小时的作业。,I do two hours of homework every day.
+聚会,have a party,我们星期六晚上有个聚会。,We have a party on Saturday night.
+接电话,take a call,我在开会时接了电话。,I took a call during the meeting.
+春节,Spring Festival,春节是中国最重要的节日。,The Spring Festival is the most important holiday in China.
+元旦,New Year’s Day,元旦是全球庆祝新的一年的节日。,New Year's Day is the global celebration of the new year.
+中秋节,Mid-Autumn Festival,中秋节我们全家一起吃月饼。,We eat mooncakes together as a family during the Mid-Autumn Festival.
+国庆节,National Day,国庆节是中国的国庆日。,National Day is China’s national holiday.
+端午节,Dragon Boat Festival,我们在端午节赛龙舟。,We race dragon boats during the Dragon Boat Festival.
+圣诞节,Christmas,圣诞节我和朋友一起聚会。,I celebrate Christmas with my friends.
+复活节,Easter,复活节我们会参加教堂的活动。,We attend church activities during Easter.
+母亲节,Mother's Day,母亲节我给妈妈买了一束花。,I bought flowers for my mom on Mother’s Day.
+父亲节,Father's Day,父亲节我们为爸爸做了一顿大餐。,We made a big meal for my dad on Father’s Day.
+情人节,Valentine's Day,情人节我和我的男朋友一起庆祝。,I celebrate Valentine’s Day with my boyfriend.
+劳动节,Labour Day,劳动节假期我去旅行了。,I traveled during the Labour Day holiday.
+感恩节,Thanksgiving,感恩节我们一家人一起吃火鸡。,We eat turkey together as a family on Thanksgiving.
+新年,New Year,新年时我和家人一起度过。,I spend New Year’s with my family.
+婚礼,wedding,他们的婚礼很美丽。,Their wedding was beautiful.
+生日,birthday,今天是我朋友的生日。,Today is my friend’s birthday.
+派对,party,我们周末举行了一个派对。,We had a party on the weekend.
+庆祝,celebrate,我庆祝了我的生日。,I celebrated my birthday.
+祝贺,congratulate,我祝贺他获得了第一名。,I congratulate him for winning first place.
+家庭, family,我的家庭有四个人。,My family has four members.
+外公,maternal grandfather,外公总是给我买礼物。,My maternal grandfather always buys me gifts.
+外婆,maternal grandmother,外婆喜欢种花。,My maternal grandmother likes to plant flowers.
+儿子,son,我的儿子今年五岁。,My son is five years old this year.
+女儿,daughter,我女儿刚学会走路。,My daughter just learned how to walk.
+丈夫,husband,我的丈夫是医生。,My husband is a doctor.
+妻子,wife,我的妻子是老师。,My wife is a teacher.
+亲戚,relative,春节时我们会去看亲戚。,We visit our relatives during the Spring Festival.
+叔叔,uncle,叔叔给了我一台新手机。,My uncle gave me a new phone.
+阿姨,aunt,阿姨做的蛋糕非常好吃。,The cake my aunt made is very delicious.
+邻居,neighbor,我们的邻居很友好。,Our neighbors are very friendly.
+同事,colleague,我和同事一起吃午餐。,I have lunch with my colleague.
+合适,suitable,这件衣服很合适。,This piece of clothing is very suitable.
+家庭聚会,family gathering,我们每年都举行一次家庭聚会。,We have a family gathering once a year.
+课,class,我今天有三节课。,I have three classes today.
+作业,homework,我今晚有很多作业。,I have a lot of homework tonight.
+笔记,notes,我上课时做了很多笔记。,I took a lot of notes during class.
+背诵,recite,他背诵了整本书。,He recited the entire book.
+回答,answer,请回答这个问题。,Please answer this question.
+提问,ask,我有一个问题要提问。,I have a question to ask.
+讨论,discuss,我们正在讨论一个重要的问题。,We are discussing an important issue.
+专心,focus,上课时我们要专心听讲。,We need to focus during class.
+记得,remember,我记得今天有一个考试。,I remember that there is an exam today.
+优秀,excellent,她的成绩非常优秀。,Her grades are excellent.
+及格,pass,我通过了这次考试。,I passed this exam.
+不及格,fail,他考试不及格。,He failed the exam.
+班级,class,我们班级有二十个学生。,There are 20 students in our class.
+学期,semester,今年我有两个学期。,I have two semesters this year.
+学年,school year,新学年开始了。,The new school year has begun.
+学费,tuition fee,他的学费已经交了。,His tuition fees have been paid.
+校长,principal,我们的校长很有智慧。,Our principal is very wise.
+校友,alumni,我们学校有很多优秀的校友。,Our school has many excellent alumni.
+社团,club,我加入了学校的篮球社团。,I joined the school basketball club.
+运动会,sports day,运动会是每年一度的活动。,Sports day is an annual event.
+学科,subject,我最喜欢的学科是数学。,My favorite subject is mathematics.
+语文,Chinese language,语文是我最喜欢的科目。,Chinese language is my favorite subject.
+数学,mathematics,我喜欢数学，因为它很有趣。,I like mathematics because it’s interesting.
+英语,English,我每天都学习英语。,I study English every day.
+科学,science,科学是我最喜欢的学科之一。,Science is one of my favorite subjects.
+历史,history,我们今天学习了中国历史。,Today we learned Chinese history.
+地理,geography,我觉得地理很难。,I find geography difficult.
+化学,chemistry,化学实验非常有趣。,Chemistry experiments are very fun.
+物理,physics,物理课上的实验很有挑战性。,The experiments in physics class are very challenging.
+艺术,art,我很喜欢艺术课。,I really enjoy art class.
+音乐,music,我学钢琴已经五年了。,I have been learning piano for five years.
+体育,physical education,我们今天的体育课是跑步。,Today’s PE class is running.
+编程,programming,我正在学习编程。,I’m learning programming.
+阅读,reading,我每天都阅读中文书籍。,I read Chinese books every day.
+平板,tablet,我在平板上看书。,I read books on my tablet.
+互联网,internet,互联网改变了我们的生活。,The internet has changed our lives.
+网站,website,这个网站非常有用。,This website is very useful.
+浏览器,web browser,我用Chrome浏览器上网。,I use Chrome to browse the internet.
+社交媒体,social media,我每天在社交媒体上查看更新。,I check updates on social media every day.
+应用程序,app,我在手机上下载了一个新的应用程序。,I downloaded a new app on my phone.
+下载,download,我正在下载一个电影。,I am downloading a movie.
+上传,upload,请上传你的作业。,Please upload your homework.
+电子邮件,email,我收到了很多电子邮件。,I received a lot of emails.
+短信,text message,我给你发了一条短信。,I sent you a text message.
+视频,video,我们昨天录了一个视频。,We filmed a video yesterday.
+照片,photo,我在网上分享了我的照片。,I shared my photos online.
+搜索,search,我在网上搜索这家餐厅的评价。,I searched online for reviews of this restaurant.
+网址,URL,你能给我这个网站的网址吗？,Can you give me the URL of this website?
+链接,link,我发给你一个链接。,I will send you a link.
+密码,password,请设置一个强密码保护账户。,Please set a strong password to protect your account.
+账户,account,我忘记了我的账户密码。,I forgot my account password.
+注册,register,你可以在这个网站上注册。,You can register on this website.
+登录,login,我已经登录了我的账户。,I’ve logged into my account.
+登出,log out,你需要登出账户吗？,Do you need to log out of your account?
+通知,notification,我收到了一个新通知。,I received a new notification.
+提醒,reminder,我设置了一个提醒，记得做作业。,I set a reminder to remember to do my homework.
+更新,update,手机系统需要更新。,The phone system needs to be updated.
+备份,backup,我把所有文件备份到云端。,I backed up all the files to the cloud.
+文件,document,我在电脑里找到了那个文件。,I found the document on my computer.
+文件夹,folder,我把文件放进了文件夹里。,I put the document in the folder.
+照片库,photo library,我把所有的照片都保存在照片库里。,I saved all my photos in the photo library.
+硬盘,hard drive,我的硬盘存满了数据。,My hard drive is full of data.
+内存,memory,我的电脑内存不够用了。,My computer’s memory is running low.
+处理器,processor,这个电脑的处理器很快。,The processor of this computer is very fast.
+操作系统,operating system,我的电脑操作系统是Windows。,My computer’s operating system is Windows.
+软件,software,我正在安装新的软件。,I am installing new software.
+硬件,hardware,这款电脑的硬件配置非常高。,The hardware configuration of this computer is very high.
+代码,code,我在写一段代码。,I am writing some code.
+开发者,developer,他是一个网站开发者。,He is a website developer.
+网站设计,web design,我对网站设计非常感兴趣。,I am very interested in web design.
+网络安全,cybersecurity,网络安全是一个非常重要的问题。,Cybersecurity is a very important issue.
+病毒,virus,我的电脑中了病毒。,My computer got a virus.
+防火墙,firewall,我已经在电脑上安装了防火墙。,I’ve installed a firewall on my computer.
+破解,crack,他破解了这个软件的密码。,He cracked the password of this software.
+加密,encryption,这个文件已经被加密了。,This file has been encrypted.
+网络,network,我们的网络连接很慢。,Our network connection is very slow.
+Wi-Fi,Wi-Fi,我在咖啡馆里使用Wi-Fi。,I use Wi-Fi at the coffee shop.
+蓝牙,Bluetooth,我用蓝牙耳机听音乐。,I use Bluetooth headphones to listen to music.
+电池,battery,我的手机电池快没电了。,My phone's battery is almost dead.
+充电,charge,我需要给我的手机充电。,I need to charge my phone.
+电源,power supply,请检查电源是否插好。,Please check if the power supply is connected properly.
+食物,food,我喜欢吃各种各样的食物。,I like eating all kinds of food.
+馒头,steamed bread,我喜欢吃馒头配豆腐。,I like eating steamed bread with tofu.
+菜,vegetables,今天的晚餐有很多菜。,There are many vegetables for dinner today.
+肉,meat,我不吃红肉。,I don’t eat red meat.
+草莓,strawberry,草莓是我最喜欢的水果。,Strawberries are my favorite fruit.
+西红柿,tomato,西红柿是做沙拉的好材料。,Tomatoes are a great ingredient for salads.
+黄瓜,cucumber,我做了一个黄瓜沙拉。,I made a cucumber salad.
+胡萝卜,carrot,胡萝卜对眼睛有好处。,Carrots are good for your eyes.
+洋葱,onion,炒菜时我喜欢加入洋葱。,I like adding onions when cooking.
+大蒜,garlic,大蒜可以增加菜肴的风味。,Garlic can enhance the flavor of dishes.
+辣椒,chili pepper,这道菜非常辣，因为放了很多辣椒。,This dish is very spicy because it has a lot of chili peppers.
+酱油,soy sauce,我用酱油调味。,I season it with soy sauce.
+盐,salt,菜里加了一些盐。,Some salt was added to the dish.
+醋,vinegar,我喜欢在沙拉里加一些醋。,I like adding some vinegar to my salad.
+油,oil,炒菜时需要一些食用油。,You need some cooking oil when stir-frying.
+冰淇淋,ice cream,我喜欢吃巧克力味的冰淇淋。,I love eating chocolate-flavored ice cream.
+啤酒,beer,我们聚会时喝了啤酒。,We drank beer at the party.
+葡萄酒,wine,我喜欢喝红葡萄酒。,I like drinking red wine.
+鸡尾酒,cocktail,她点了一杯鸡尾酒。,She ordered a cocktail.
+零食,snack,我喜欢吃零食看电影。,I like eating snacks while watching movies.
+外卖,takeout,今天我们订了外卖。,We ordered takeout today.
+餐馆,restaurant,这家餐馆的菜很好吃。,The food at this restaurant is very delicious.
+服务员,waiter,服务员给我们推荐了几道菜。,The waiter recommended several dishes for us.
+天气,weather,今天的天气非常好。,The weather is very good today.
+暴风雨,storm,明天可能会有暴风雨。,There might be a storm tomorrow.
+温度,temperature,今天的温度是25度。,The temperature today is 25 degrees Celsius.
+气温,temperature,气温正在下降。,The temperature is dropping.
+湿度,humidity,这里的湿度很高。,The humidity here is very high.
+寒冷,cold,今天非常寒冷。,It’s very cold today.
+季节,season,四个季节都很美。,All four seasons are beautiful.
+大气,atmosphere,大气污染是全球面临的问题。,Air pollution is a global issue.
+环境,environment,我们应该保护环境。,We should protect the environment.
+污染,pollution,城市的污染越来越严重。,The pollution in the city is getting worse.
+空气,air,这里的空气很清新。,The air here is very fresh.
+清洁,clean,我们应该保持街道清洁。,We should keep the streets clean.
+河,river,这条河非常宽。,This river is very wide.
+森林,forest,森林是许多动物的家。,The forest is home to many animals.
+沙漠,desert,沙漠里非常干燥。,It’s very dry in the desert.
+草原,grassland,草原上有很多野生动物。,There are many wild animals on the grassland.
+火山,volcano,这个火山已经沉睡了几百年。,This volcano has been dormant for hundreds of years.
+地震,earthquake,昨天发生了强烈的地震。,There was a strong earthquake yesterday.
+海洋,ocean,海洋覆盖了地球的大部分。,The ocean covers most of the Earth.
+气候,climate,这个地区的气候温和。,The climate in this area is mild.
+风暴,storm,风暴可能会影响明天的航班。,The storm may affect tomorrow’s flights.
+干旱,drought,这个地区经常发生干旱。,This area often experiences droughts.
+洪水,flood,大雨导致了严重的洪水。,The heavy rain caused severe flooding.
+泥土,soil,农民需要肥沃的泥土来种植作物。,Farmers need fertile soil to grow crops.
+太阳,Sun,太阳从东方升起。,The sun rises in the east.
+月亮,moon,今晚的月亮很亮。,The moon is very bright tonight.
+星星,star,今晚可以看到很多星星。,You can see a lot of stars tonight.
+宇宙,universe,宇宙是无穷无尽的。,The universe is endless.
+地球,Earth,地球是我们唯一的家园。,Earth is our only home.
+生态,ecosystem,生态平衡对环境非常重要。,Ecological balance is very important for the environment.
+自然,nature,我们要保护自然环境。,We need to protect the natural environment.
+自然灾害,natural disaster,地震和洪水是常见的自然灾害。,Earthquakes and floods are common natural disasters.
+公司,company,我在一家科技公司工作。,I work at a tech company.
+员工,employee,公司有500名员工。,The company has 500 employees.
+老板,boss,我的老板很严格。,My boss is very strict.
+经理,manager,我的经理非常支持我。,My manager is very supportive.
+合作,cooperate,我们和外国公司有很多合作。,We have a lot of cooperation with foreign companies.
+会议,meeting,我们今天下午有一个重要的会议。,We have an important meeting this afternoon.
+客户,client,我们公司服务了很多客户。,Our company serves many clients.
+销售,sales,销售业绩比去年增长了20%。,Sales performance has increased by 20% compared to last year.
+利润,profit,我们的公司今年的利润增长了。,Our company’s profits have grown this year.
+成本,cost,我们需要减少生产成本。,We need to reduce production costs.
+收入,income,他的收入很高。,His income is very high.
+支出,expenses,公司减少了不必要的支出。,The company reduced unnecessary expenses.
+预算,budget,我们需要制定一个年度预算。,We need to make an annual budget.
+投资,investment,他对股票市场进行了大量投资。,He made a large investment in the stock market.
+风险,risk,投资股票市场有一定的风险。,There is a certain risk in investing in the stock market.
+贷款,loan,我向银行申请了个人贷款。,I applied for a personal loan at the bank.
+债务,debt,公司的债务需要偿还。,The company’s debts need to be paid off.
+股市,stock market,股市的波动影响了我们的投资。,The fluctuations in the stock market affected our investments.
+股票,stock,我投资了几只科技公司的股票。,I invested in stocks of several tech companies.
+支票,check,我用支票支付了房租。,I paid the rent with a check.
+储蓄,savings,我每个月存一些钱作为储蓄。,I save some money every month as savings.
+理财,wealth management,我在银行开设了理财账户。,I opened a wealth management account at the bank.
+保险,insurance,我为我的车买了保险。,I bought insurance for my car.
+工资,wages,他的工资每月都按时发放。,His wages are paid on time every month.
+奖金,bonus,我今年拿到了一个大奖金。,I received a big bonus this year.
+合同,contract,我们已经签署了合同。,We have signed the contract.
+协议,agreement,我们与客户达成了协议。,We reached an agreement with the client.
+条款,terms,合同的条款非常复杂。,The terms of the contract are very complicated.
+项目,project,我们在进行一个重要的项目。,We are working on an important project.
+进度,progress,项目的进度有些滞后。,The progress of the project is a bit behind.
+计划,plan,我们计划明年扩展市场。,We plan to expand the market next year.
+目标,goal,我们的目标是提升销售额。,Our goal is to increase sales.
+战略,strategy,我们需要重新制定营销战略。,We need to rework our marketing strategy.
+部门,department,我在市场部门工作。,I work in the marketing department.
+人力资源,human resources,人力资源部负责招聘新员工。,The human resources department is responsible for recruiting new employees.
+招聘,recruitment,公司正在招聘销售人员。,The company is recruiting sales staff.
+面试,interview,我明天有一个面试。,I have an interview tomorrow.
+职位,position,我申请了一个管理职位。,I applied for a management position.
+升职,promotion,他刚刚获得了升职。,He just received a promotion.
+解雇,fire,公司因经济困难解雇了一些员工。,The company fired some employees due to financial difficulties.
+辞职,resign,她决定辞职去创业。,She decided to resign to start her own business.
+加班,overtime,我昨天加班到很晚。,I worked overtime until late yesterday.
+休假,vacation,我下个月去度假。,I’m going on vacation next month.
+办公室,office,我的办公室在五楼。,My office is on the fifth floor.
+打印机,printer,请把文件打印出来。,Please print out the document.
+传真机,fax machine,我需要发一封传真。,I need to send a fax.
+病,sick,他生病了，今天没去上班。,He is sick and didn’t go to work today.
+诊所,clinic,我去附近的诊所看病。,I went to the nearby clinic to see a doctor.
+体检,physical examination,我每年都做一次体检。,I have a physical examination once a year.
+症状,symptom,他出现了感冒的症状。,He has symptoms of a cold.
+失眠,insomnia,他最近有失眠的问题。,He has been having insomnia recently.
+压力,stress,工作压力让我感到很累。,The work stress makes me feel very tired.
+焦虑,anxiety,我感到很焦虑，特别是在考试前。,"I feel very anxious, especially before exams."
+抑郁,depression,抑郁症是一种常见的心理问题。,Depression is a common mental health issue.
+情绪,mood,她的情绪不太稳定。,Her mood is unstable.
+锻炼,work out,他去健身房锻炼了一个小时。,He worked out at the gym for an hour.
+瑜伽,yoga,我喜欢做瑜伽放松自己。,I like doing yoga to relax.
+骑自行车,ride a bicycle,我喜欢在公园里骑自行车。,I like riding a bicycle in the park.
+打篮球,play basketball,我们周末一起打篮球。,We play basketball together on weekends.
+足球,football/soccer,他是一个非常好的足球运动员。,He is a very good football player.
+素食,vegetarian,我正在尝试素食饮食。,I’m trying a vegetarian diet.
+维生素,vitamins,蔬菜和水果富含维生素。,Vegetables and fruits are rich in vitamins.
+蛋白质,protein,鸡肉和鱼富含蛋白质。,Chicken and fish are rich in protein.
+碳水化合物,carbohydrates,米饭和面包含有很多碳水化合物。,Rice and bread contain a lot of carbohydrates.
+脂肪,fats,避免吃太多的脂肪。,Avoid eating too much fat.
+免疫系统,immune system,免疫系统帮助我们抵抗疾病。,The immune system helps us fight diseases.
+心脏病,heart disease,心脏病是全球死亡率很高的疾病。,Heart disease is one of the leading causes of death worldwide.
+糖尿病,diabetes,糖尿病需要通过饮食和运动管理。,Diabetes needs to be managed through diet and exercise.
+高血压,hypertension,高血压可能导致心脏病。,Hypertension can lead to heart disease.
+癌症,cancer,早期诊断癌症可以提高治愈率。,Early diagnosis of cancer can improve the cure rate.
+传染病,infectious disease,传染病可以通过疫苗预防。,Infectious diseases can be prevented with vaccines.
+疫苗,vaccine,我给孩子打了流感疫苗。,I gave my child the flu vaccine.
+急诊,emergency,我去医院的急诊部了。,I went to the emergency department of the hospital.
+篮球,basketball,他是篮球队的队员。,He is a member of the basketball team.
+排球,volleyball,我们每个周末都打排球。,We play volleyball every weekend.
+网球,tennis,她是网球俱乐部的成员。,She is a member of the tennis club.
+乒乓球,table tennis,我喜欢和朋友一起打乒乓球。,I like playing table tennis with my friends.
+高尔夫,golf,他喜欢打高尔夫。,He likes playing golf.
+滑雪,skiing,冬天我喜欢去滑雪。,I like skiing in the winter.
+滑板,skateboarding,我在公园里玩滑板。,I skateboard in the park.
+武术,Martial arts,他学了很多年武术。,He has studied martial arts for many years.
+拳击,boxing,他正在学习拳击。,He is learning boxing.
+摔跤,wrestling,摔跤是一项非常激烈的运动。,Wrestling is a very intense sport.
+马拉松,marathon,我参加了今年的马拉松比赛。,I participated in this year’s marathon race.
+赛跑,race,我和我的朋友一起参加了赛跑。,I participated in a race with my friend.
+冠军,champion,他是这次比赛的冠军。,He is the champion of this competition.
+奖牌,medal,她得到了金牌。,She won the gold medal.
+运动员,athlete,她是一名职业运动员。,She is a professional athlete.
+裁判,referee,比赛开始前，裁判做了说明。,"Before the match started, the referee gave instructions."
+团队,team,我们组成了一个新的团队。,We formed a new team.
+教练,coach,我的教练非常严格。,My coach is very strict.
+训练,training,我们每天都进行训练。,We train every day.
+休闲,leisure,我喜欢在周末进行休闲活动。,I like doing leisure activities on weekends.
+旅游,tourism,中国的旅游业发展得很快。,China’s tourism industry is developing rapidly.
+景点,scenic spot,这个城市有很多著名的景点。,This city has many famous scenic spots.
+度假,vacation,我下个月要去海边度假。,I’m going to the beach for a vacation next month.
+海滩,beach,夏天我喜欢去海滩游泳。,I like swimming at the beach in the summer.
+山脉,mountain range,他喜欢在山脉中徒步旅行。,He likes hiking in the mountains.
+野营,camping,我们全家去山里野营了。,Our family went camping in the mountains.
+探险,adventure,我们进行了一次丛林探险。,We went on a jungle adventure.
+钓鱼,fishing,我和爸爸一起去钓鱼。,I went fishing with my dad.
+摄影,photography,她是一个热爱摄影的人。,She is a photography enthusiast.
+画画,painting,我喜欢在空闲时间画画。,I like painting in my free time.
+唱歌,singing,我喜欢和朋友一起唱歌。,I like singing with my friends.
+舞蹈,dance,她跳得非常好。,She dances very well.
+乐器,instrument,我学过钢琴和吉他。,I have learned the piano and guitar.
+电影,movie,周末我们一起去看电影。,We went to watch a movie together on the weekend.
+戏剧,drama,他对戏剧非常感兴趣。,He is very interested in drama.
+艺术画,art painting,这幅艺术画非常美。,This art painting is very beautiful.
+读书,reading,我每天都读书。,I read books every day.
+交通,traffic,早上的交通非常拥堵。,The traffic is very heavy in the morning.
+公共汽车,bus,我每天坐公共汽车去学校。,I take the bus to school every day.
+轮船,ship,我们坐轮船去海岛度假。,We took a ship to the island for vacation.
+摩托车,motorcycle,他骑摩托车去上学。,He rides a motorcycle to school.
+车站,station,我在车站等公交车。,I’m waiting for the bus at the station.
+码头,port,轮船将在码头停靠。,The ship will dock at the port.
+高速公路,highway,我们开车上高速公路。,We’re driving on the highway.
+隧道,tunnel,我们经过了一个很长的隧道。,We passed through a long tunnel.
+停车场,parking lot,我在停车场找不到停车位。,I can’t find a parking spot in the parking lot.
+交通灯,traffic light,你需要在红灯前停下来。,You need to stop at the red light.
+行人, pedestrian, 这个城市有很多行人。,There are many pedestrians in this city.
+过马路,cross the road,请走斑马线过马路。,Please cross the road at the crosswalk.
+驾驶,driving,他正在学习如何驾驶汽车。,He is learning how to drive a car.
+车速,speed,请控制车速，不要超过限速。,Please control your speed and don’t exceed the speed limit.
+车票,train ticket,我已经买好了车票。,I’ve already bought the train ticket.
+航班,flight,我的航班被延误了。,My flight was delayed.
+登机牌,boarding pass,请出示您的登机牌。,Please show your boarding pass.
+安检,security check,我们需要通过安检才能登机。,We need to go through security check to board the plane.
+旅行袋,travel bag,我把所有东西放进旅行袋里。,I put all my things in the travel bag.
+旅行社,travel agency,我们通过旅行社订了机票。,We booked our flight through a travel agency.
+住宿,accommodation,我们已经预定了酒店的住宿。,We’ve already booked our accommodation at the hotel.
+酒店,hotel,这家酒店很豪华。,This hotel is very luxurious.
+出发,departure,我们的航班将在下午三点出发。,Our flight will depart at 3 PM.
+收银台,checkout counter,请去收银台结账。,Please go to the checkout counter to pay.
+商品,product,这家店的商品质量很好。,The products in this store are of good quality.
+品牌,brand,这个品牌的手机很受欢迎。,This brand of phones is very popular.
+尺寸,size,我需要一个更大的尺寸。,I need a larger size.
+颜色,color,我喜欢这款鞋子的颜色。,I like the color of these shoes.
+款式,style,这款式很时尚。,This style is very fashionable.
+鞋子,shoes,我买了一双新鞋子。,I bought a new pair of shoes.
+裤子,pants,这条裤子太紧了。,These pants are too tight.
+裙子,skirt,她穿了一条漂亮的裙子。,She is wearing a beautiful skirt.
+衬衫,shirt,他穿了一件蓝色的衬衫。,He is wearing a blue shirt.
+外套,jacket,秋天的时候我喜欢穿外套。,I like wearing a jacket in the fall.
+夹克,blazer,我穿了一件夹克去参加会议。,I wore a blazer to the meeting.
+毛衣,sweater,冬天我喜欢穿毛衣。,I like wearing sweaters in the winter.
+领带,tie,他系着一条红色的领带。,He is wearing a red tie.
+手表,watch,这款手表非常精致。,This watch is very exquisite.
+包包,bag,她拿着一个漂亮的包包。,She is holding a beautiful bag.
+太阳镜,sunglasses,夏天我喜欢戴太阳镜。,I like wearing sunglasses in the summer.
+眼镜,glasses,我需要一副眼镜来阅读。,I need a pair of glasses to read.
+化妆品,cosmetics,她买了一些新的化妆品。,She bought some new cosmetics.
+香水,perfume,我送给她一瓶香水。,I gave her a bottle of perfume.
+洗发水,shampoo,我需要买一些洗发水。,I need to buy some shampoo.
+牙膏,toothpaste,我忘了买牙膏。,I forgot to buy toothpaste.
+卫生纸,toilet paper,我家没有卫生纸了。,We’re out of toilet paper at home.
+清洁剂,cleaning agent,我买了一瓶清洁剂。,I bought a bottle of cleaning agent.
+电器,appliance,这家商店卖很多电器。,This store sells many appliances.
+冰箱,refrigerator,我需要买一个新冰箱。,I need to buy a new refrigerator.
+洗衣机,washing machine,洗衣机坏了，我们需要修理它。,"The washing machine is broken, we need to fix it."
+电视机,television,我们买了一台大电视机。,We bought a large television.
+充电器,charger,我忘了带手机充电器。,I forgot to bring my phone charger.
