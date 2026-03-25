@@ -366,25 +366,63 @@ class DeckService:
     
     @staticmethod
     def get_decks_with_due_cards(user_id: str, limit: int = 3) -> List[Dict[str, Any]]:
-        """Get decks that have cards needing review."""
+        """Get decks that have cards needing review, respecting daily limits.
+        
+        For each deck, calculates:
+        - New cards: up to 10 per day (independent limit)
+        - Reviewed cards: all that are due (no limit)
+        - Total: new (up to 10) + all reviewed due
+        """
         now = datetime.now(timezone.utc)
         
         with get_db_cursor() as cursor:
             cursor.execute(
                 """
-                SELECT d.d_id, d.deck_name, d.word_lang, d.trans_lang,
-                       d.last_reviewed,
-                       COUNT(CASE WHEN c.due_date <= %s THEN 1 END) as due_count,
+                WITH introduced_today AS (
+                    -- Count how many new cards were introduced (first reviewed) today per deck
+                    SELECT c.d_id, COUNT(*) as cnt
+                    FROM Cards c
+                    WHERE c.first_reviewed IS NOT NULL
+                      AND DATE(c.first_reviewed) = CURRENT_DATE
+                    GROUP BY c.d_id
+                ),
+                new_cards_count AS (
+                    -- Count all new cards per deck
+                    SELECT c.d_id, COUNT(*) as new_count
+                    FROM Cards c
+                    WHERE c.first_reviewed IS NULL
+                    GROUP BY c.d_id
+                ),
+                reviewed_cards_due AS (
+                    -- Count reviewed cards that are due per deck
+                    SELECT c.d_id, COUNT(*) as reviewed_due_count
+                    FROM Cards c
+                    WHERE c.first_reviewed IS NOT NULL
+                      AND c.due_date <= %s
+                    GROUP BY c.d_id
+                )
+                SELECT d.d_id, d.deck_name, d.word_lang, d.trans_lang, d.last_reviewed,
+                       LEAST(
+                           COALESCE(ncc.new_count, 0),
+                           GREATEST(10 - COALESCE(it.cnt, 0), 0)
+                       ) + COALESCE(rcd.reviewed_due_count, 0) as due_count,
                        COUNT(c.c_id) as total_cards
                 FROM Decks d
                 LEFT JOIN Cards c ON d.d_id = c.d_id
+                LEFT JOIN introduced_today it ON d.d_id = it.d_id
+                LEFT JOIN new_cards_count ncc ON d.d_id = ncc.d_id
+                LEFT JOIN reviewed_cards_due rcd ON d.d_id = rcd.d_id
                 WHERE d.u_id = %s
-                GROUP BY d.d_id, d.deck_name, d.word_lang, d.trans_lang, d.last_reviewed
-                HAVING COUNT(CASE WHEN c.due_date <= %s THEN 1 END) > 0
+                  AND (
+                    LEAST(COALESCE(ncc.new_count, 0), GREATEST(10 - COALESCE(it.cnt, 0), 0)) 
+                    + COALESCE(rcd.reviewed_due_count, 0)
+                  ) > 0
+                GROUP BY d.d_id, d.deck_name, d.word_lang, d.trans_lang, d.last_reviewed,
+                         it.cnt, ncc.new_count, rcd.reviewed_due_count
                 ORDER BY due_count DESC
                 LIMIT %s
                 """,
-                (now, user_id, now, limit)
+                (now, user_id, limit)
             )
             decks = cursor.fetchall()
             return [dict(deck) for deck in decks]

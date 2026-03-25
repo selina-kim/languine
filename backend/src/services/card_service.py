@@ -596,20 +596,51 @@ class CardService:
         now = datetime.now(timezone.utc)
 
         with get_db_cursor() as cursor:
+            # Get user's new_cards_per_day setting for prioritizing new cards   
             cursor.execute(
                 """
-                SELECT c_id, d_id, word, translation, definition,
-                       image, word_example, trans_example,
-                       word_audio, trans_audio, word_roman, trans_roman,
-                       learning_state, step, difficulty, stability,
-                       due_date, last_review, successful_reps, fail_count
-                FROM Cards
-                WHERE d_id = %s
-                  AND due_date <= %s
+                SELECT new_cards_per_day
+                FROM Users
+                WHERE u_id = %s
+                """,
+                (user_id,)
+            )
+            user_settings = cursor.fetchone()
+            new_cards_per_day = user_settings["new_cards_per_day"]
+
+
+            cursor.execute(
+                """
+                WITH introduced_today AS (
+                    SELECT COUNT(*) AS cnt
+                    FROM Cards
+                    WHERE d_id = %s
+                    AND DATE(first_reviewed) = CURRENT_DATE
+                ),
+                new_cards AS (
+                    SELECT c.*
+                    FROM Cards c
+                    WHERE c.d_id = %s
+                    AND c.first_reviewed IS NULL
+                    ORDER BY c.c_id
+                    LIMIT GREATEST(%s - (SELECT cnt FROM introduced_today), 0)
+                ),
+                review_cards AS (
+                    SELECT c.*
+                    FROM Cards c
+                    WHERE c.d_id = %s
+                    AND c.first_reviewed IS NOT NULL
+                    AND c.due_date <= %s
+                )
+                SELECT *
+                FROM review_cards
+                UNION ALL
+                SELECT *
+                FROM new_cards
                 ORDER BY due_date ASC
                 LIMIT %s
                 """,
-                (deck_id, now, limit),
+                (deck_id, deck_id, new_cards_per_day, deck_id, now, limit)
             )
 
             cards = cursor.fetchall()

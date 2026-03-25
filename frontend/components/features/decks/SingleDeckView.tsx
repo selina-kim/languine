@@ -76,10 +76,23 @@ export const SingleDeckView = ({ deckId }: SingleDeckViewProps) => {
 
   const cardsDue = useMemo(() => {
     const now = new Date();
-    return cards.filter((card) => {
+    const DAILY_NEW_LIMIT = 10; // Max new cards per day (independent limit)
+    
+    // Separate new cards (learning_state = 0) from reviewed cards
+    const newCards = cards.filter((card) => card.learning_state === 0);
+    const reviewedCards = cards.filter((card) => card.learning_state > 0);
+    
+    // Count reviewed cards that are due
+    const reviewedCardsDue = reviewedCards.filter((card) => {
       if (!card.due_date) return false;
       return new Date(card.due_date) <= now;
     }).length;
+    
+    // New cards: up to 10 per day (independent limit, not affected by reviewed cards)
+    const newCardsDue = Math.min(newCards.length, DAILY_NEW_LIMIT);
+    
+    // Total: new (capped at 10) + all reviewed that are due (no cap)
+    return newCardsDue + reviewedCardsDue;
   }, [cards]);
 
   if (!deckDetails) {
