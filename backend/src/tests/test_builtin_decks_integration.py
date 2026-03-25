@@ -21,7 +21,7 @@ EXPECTED_CARD_COUNTS = {
     "Mandarin Chinese Beginner": 801,
     "Japanese Beginner":         6000,
     "Korean Beginner":           557,
-    "French Beginner":           117,
+    "French Beginner":           5000,
 }
 
 
@@ -235,12 +235,8 @@ class TestFrenchCards:
             assert card["word"], f"Empty word in card {card['c_id']}"
             assert card["translation"], f"Empty translation in card {card['c_id']}"
 
-    def test_example_columns_are_null(self, seeded_db):
-        """French CSV only has word + translation — examples must be NULL."""
+    def test_examples_non_null(self, seeded_db):
+        """French CSV has word_example and trans_example columns."""
         for card in _fetch_cards("French Beginner"):
-            assert card["word_example"] is None, (
-                f"Expected NULL word_example for French card {card['c_id']}"
-            )
-            assert card["trans_example"] is None, (
-                f"Expected NULL trans_example for French card {card['c_id']}"
-            )
+            assert card["word_example"], f"Missing word_example in card {card['c_id']}"
+            assert card["trans_example"], f"Missing trans_example in card {card['c_id']}"

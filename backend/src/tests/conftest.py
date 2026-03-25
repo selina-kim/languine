@@ -141,9 +141,9 @@ def system_decks(db_schema):
                  'ソフトクリームを二つください。', 'Please give me two ice cream cones.'),
                 ('Japanese Beginner', '円', 'yen',
                  'カレーライスは700円です。',       'The curry and rice is 700 yen.'),
-                ('French Beginner', 'je', 'I',   NULL, NULL),
-                ('French Beginner', 'tu', 'you (informal)', NULL, NULL),
-                ('French Beginner', 'il', 'he',  NULL, NULL)
+                ('French Beginner', 'etre', 'to be',   'tout le monde veut être beau', 'everyone wants to be beautiful'),
+                ('French Beginner', 'avoir', 'to have', 'on était six donc tu peux pas avoir une conversation', 'there were six of us so you can`t have a conversation'),
+                ('French Beginner', 'il', 'he',  'allez voir s`il est blessé', 'go see if he is injured')
             )
             INSERT INTO Cards (d_id, word, translation, word_example, trans_example)
             SELECT d.d_id, dc.word, dc.translation, dc.word_example, dc.trans_example

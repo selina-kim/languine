@@ -94,7 +94,7 @@ CROSS JOIN (
 DROP TABLE tmp_jp;
 
 -- ── Korean ────────────────────────────────────────────────────────────────────
-CREATE TEMP TABLE tmp_cards (translation text, word text, trans_example text, word_example text);
+CREATE TEMP TABLE tmp_cards (word text, translation text, word_example text, trans_example text);
 
 COPY tmp_cards FROM '/docker-entrypoint-initdb.d/korean_vocab_beginner.csv'
     WITH (FORMAT csv, HEADER);
@@ -117,21 +117,27 @@ CROSS JOIN (
 DROP TABLE tmp_cards;
 
 -- ── French ────────────────────────────────────────────────────────────────────
-CREATE TEMP TABLE tmp_cards (translation text, word text);
+CREATE TEMP TABLE tmp_cards (
+    c01 text,
+    word text, 
+    translation text,
+    c04 text, 
+    word_example text,    
+    trans_example text);
 
 COPY tmp_cards FROM '/docker-entrypoint-initdb.d/french_vocab_beginner.csv'
     WITH (FORMAT csv, HEADER);
 
-INSERT INTO Cards (d_id, word, translation)
-SELECT deck.d_id, t.word, t.translation
+INSERT INTO Cards (d_id, word, translation, word_example, trans_example)
+SELECT deck.d_id, t.word, t.translation, t.word_example, t.trans_example
 FROM tmp_cards t
 CROSS JOIN (
     SELECT d_id FROM Decks WHERE u_id = 'system' AND deck_name = 'French Beginner'
 ) AS deck;
 
 -- Add cards to test user for development and testing (temporary)
-INSERT INTO Cards (d_id, word, translation)
-SELECT deck.d_id, t.word, t.translation
+INSERT INTO Cards (d_id, word, translation, word_example, trans_example)
+SELECT deck.d_id, t.word, t.translation, t.word_example, t.trans_example
 FROM tmp_cards t
 CROSS JOIN (
     SELECT d_id FROM Decks WHERE u_id = '112255507948077384809' AND deck_name = 'French Beginner'
