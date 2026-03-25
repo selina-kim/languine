@@ -118,7 +118,6 @@ export const SingleDeckReview = ({
       }
 
       setIsReviewComplete(true);
-      onReviewComplete();
       return;
     }
 
@@ -130,7 +129,13 @@ export const SingleDeckReview = ({
   };
 
   const handleKeepStudying = () => {
+    onReviewComplete();
     onKeepStudying();
+  };
+
+  const handleGoHome = () => {
+    onReviewComplete();
+    onGoHome();
   };
 
   return (
@@ -205,7 +210,7 @@ export const SingleDeckReview = ({
             <CButton
               variant="secondary"
               label="Go Home"
-              onPress={onGoHome}
+              onPress={handleGoHome}
               Icon={<HomeIcon strokeWidth={3.2} stroke={COLORS.text.primary} />}
             />
           </View>
