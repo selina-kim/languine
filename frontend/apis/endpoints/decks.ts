@@ -19,6 +19,13 @@ export const getDecksWithDueCards = (
   error: string | null;
 }> => client.get(`/decks/due?limit=${limit}`);
 
+export const getRecentDecks = (
+  limit = 3,
+): Promise<{
+  data: { decks: Deck[] };
+  error: string | null;
+}> => client.get(`/decks/recent?limit=${limit}`);
+
 export const getSingleDeck = (
   deckId: string | number,
 ): Promise<{
@@ -40,6 +47,7 @@ export const deleteDeck = (deckId: string | number) =>
 export default {
   getDecks,
   getDecksWithDueCards,
+  getRecentDecks,
   getSingleDeck,
   createDeck,
   updateDeck,

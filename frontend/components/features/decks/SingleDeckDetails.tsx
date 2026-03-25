@@ -72,7 +72,11 @@ export const SingleDeckDetails = ({
         />
         <DeckDetailItem
           label="Last Reviewed"
-          value={deckDetails.last_reviewed}
+          value={
+            deckDetails.last_reviewed
+              ? new Date(deckDetails.last_reviewed).toLocaleDateString()
+              : "Never"
+          }
         />
         <DeckDetailItem label="Total Cards" value={numOfCards} />
         <DeckDetailItem label="Cards Due" value="TODO" />

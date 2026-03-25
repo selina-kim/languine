@@ -138,7 +138,12 @@ export default function Revision() {
           <SingleDeckReview
             deckId={focusedDeck.d_id}
             deckName={focusedDeck.deck_name}
-            onReviewComplete={() => setIsReviewSessionActive(false)}
+            onReviewComplete={() => {
+              setFocusedDeck(undefined);
+              setIsReviewSessionActive(false);
+              getDueDecks();
+              router.push("/(tabs)/revision");
+            }}
             onKeepStudying={() => {
               setFocusedDeck(undefined);
               setIsReviewSessionActive(false);

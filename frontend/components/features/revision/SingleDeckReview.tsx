@@ -1,13 +1,15 @@
 import { getReviewCards } from "@/apis/endpoints/cards";
+import { logReview, endReview } from "@/apis/endpoints/fsrs";
 import { HomeIcon } from "@/assets/icons/HomeIcon";
 import { RepeatIcon } from "@/assets/icons/RepeatIcon";
 import { SoundIcon } from "@/assets/icons/SoundIcon";
 import { CButton } from "@/components/common/CButton";
 import { CText } from "@/components/common/CText";
 import { COLORS } from "@/constants/colors";
+import { useReviewSession } from "@/context/ReviewSessionContext";
 import { Card } from "@/types/decks";
 import { getImageUrl } from "@/utils/imageUtils";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Image, Pressable, ScrollView, View } from "react-native";
 
 interface SingleDeckReviewProps {
@@ -32,12 +34,14 @@ export const SingleDeckReview = ({
   const [isReviewComplete, setIsReviewComplete] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string>();
+  const cardStartTimeRef = useRef<number | null>(null);
+  const { exitReviewSessionSignal } = useReviewSession();
 
   const difficultyOptions = [
-    { label: "Again", borderColor: "#F2A5A1" },
-    { label: "Hard", borderColor: "#F1B35E" },
-    { label: "Good", borderColor: "#ADD85D" },
-    { label: "Easy", borderColor: "#7CD6A0" },
+    { label: "Again", borderColor: "#F2A5A1", grade: 1 },
+    { label: "Hard",  borderColor: "#F1B35E", grade: 2 },
+    { label: "Good",  borderColor: "#ADD85D", grade: 3 },
+    { label: "Easy",  borderColor: "#7CD6A0", grade: 4 },
   ];
 
   const getCardsToReview = useCallback(async () => {
@@ -57,6 +61,7 @@ export const SingleDeckReview = ({
       setIsFrontSide(true);
       setHasRevealedBackOnce(false);
       setIsReviewComplete(false);
+      cardStartTimeRef.current = Date.now();
     } finally {
       setIsLoading(false);
     }
@@ -65,6 +70,13 @@ export const SingleDeckReview = ({
   useEffect(() => {
     getCardsToReview();
   }, [getCardsToReview]);
+
+  // Call endReview when session is exited (e.g., back gesture or app close)
+  useEffect(() => {
+    if (exitReviewSessionSignal > 0 && currentCardIndex > 0 && !isReviewComplete) {
+      endReview(currentCardIndex);
+    }
+  }, [exitReviewSessionSignal, currentCardIndex, isReviewComplete]);
 
   const totalCards = cards.length;
   const currentCard = cards[currentCardIndex];
@@ -80,13 +92,38 @@ export const SingleDeckReview = ({
     setIsFrontSide(true);
   };
 
-  const handleSelectDifficulty = () => {
+  const handleSelectDifficulty = async (grade: number) => {
+    // Calculate review duration
+    const reviewDuration = cardStartTimeRef.current
+      ? Date.now() - cardStartTimeRef.current
+      : 0;
+
+    // Log the review to backend
+    if (currentCard) {
+      const { error: reviewError } = await logReview(
+        currentCard.c_id,
+        grade,
+        reviewDuration,
+      );
+      if (reviewError) {
+        console.error("Failed to log review:", reviewError);
+      }
+    }
+
     if (currentCardIndex >= totalCards - 1) {
+      // Session complete - call end-review to update deck due counts
+      const { error: endReviewError } = await endReview(totalCards);
+      if (endReviewError) {
+        console.error("Failed to end review session:", endReviewError);
+      }
+
       setIsReviewComplete(true);
       onReviewComplete();
       return;
     }
 
+    // Reset timer and move to next card
+    cardStartTimeRef.current = Date.now();
     setCurrentCardIndex((prev) => prev + 1);
     setIsFrontSide(true);
     setHasRevealedBackOnce(false);
@@ -300,7 +337,7 @@ export const SingleDeckReview = ({
               {difficultyOptions.map((option) => (
                 <Pressable
                   key={option.label}
-                  onPress={handleSelectDifficulty}
+                  onPress={() => handleSelectDifficulty(option.grade)}
                   style={{
                     width: "23%",
                     borderWidth: 2,
