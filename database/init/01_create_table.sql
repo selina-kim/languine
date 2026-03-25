@@ -96,11 +96,11 @@ create table Cards (
 -- column definitions:
 -- c_id: primary key, storing card id
 -- word: word the user is learning
--- translation: translation of the word
+-- translation: translation of the word (english)
 -- definition: definition of the word
 -- image: file path of image for the word stored
 -- word_example: example sentence using the word in the language the user is learning
--- trans_example: example sentence using the translation in the user's language
+-- trans_example: example sentence using the translation in the user's language (english)
 -- word_audio: path to audio for the word stored from API call
 -- trans_audio: path to audio for the translation stored from API call
 -- word_roman: pronunciation or romanization of the word
