@@ -34,7 +34,7 @@ export const TipsContainer = ({
             borderRadius: 16,
           }}
         >
-          <CText variant="containerLabel" style={{ paddingBottom: 16 }} bold>
+          <CText variant="containerLabel" style={{ paddingBottom: 16 }}>
             {heading}
           </CText>
 

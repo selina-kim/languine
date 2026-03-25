@@ -362,3 +362,234 @@ class TestGetRecentDecks:
         
         # Verify limit parameter is in the query params (exact position may vary)
         assert 5 in params, "Limit parameter should be passed to query"
+
+
+class TestUpdateDeck:
+    """Tests for update_deck method."""
+    
+    def test_update_deck_success_partial(self, deck_service, sample_deck_response):
+        """Test successful partial deck update."""
+        updated_deck = sample_deck_response.copy()
+        updated_deck["deck_name"] = "Updated Spanish Basics"
+        
+        mock_cursor = MagicMock()
+        mock_cursor.fetchone.return_value = updated_deck
+        
+        with patch('services.deck_service.get_db_cursor') as mock_db:
+            mock_db.return_value.__enter__.return_value = mock_cursor
+            result = DeckService.update_deck(
+                "user-123",
+                1,
+                {"deck_name": "Updated Spanish Basics"}
+            )
+        
+        assert result is not None
+        assert result["deck_name"] == "Updated Spanish Basics"
+        assert mock_cursor.execute.called
+    
+    def test_update_deck_success_all_fields(self, deck_service, sample_deck_response):
+        """Test successful update of all fields."""
+        mock_cursor = MagicMock()
+        mock_cursor.fetchone.return_value = sample_deck_response
+        
+        update_data = {
+            "deck_name": "New Name",
+            "word_lang": "fr",
+            "trans_lang": "en",
+            "description": "Updated description",
+            "is_public": True,
+            "link": "https://example.com"
+        }
+        
+        with patch('services.deck_service.get_db_cursor') as mock_db:
+            mock_db.return_value.__enter__.return_value = mock_cursor
+            result = DeckService.update_deck("user-123", 1, update_data)
+        
+        assert result is not None
+        assert mock_cursor.execute.called
+    
+    def test_update_deck_not_found(self, deck_service):
+        """Test update of non-existent deck."""
+        mock_cursor = MagicMock()
+        mock_cursor.fetchone.return_value = None
+        
+        with patch('services.deck_service.get_db_cursor') as mock_db:
+            mock_db.return_value.__enter__.return_value = mock_cursor
+            result = DeckService.update_deck(
+                "user-123",
+                999,
+                {"deck_name": "New Name"}
+            )
+        
+        assert result is None
+    
+    def test_update_deck_duplicate_name(self, deck_service):
+        """Test update fails with duplicate deck name."""
+        mock_cursor = MagicMock()
+        mock_cursor.execute.side_effect = _FakeIntegrityError("Duplicate", "23505")
+        
+        with patch('services.deck_service.get_db_cursor') as mock_db:
+            mock_db.return_value.__enter__.return_value = mock_cursor
+            
+            with pytest.raises(DuplicateDeckNameError):
+                DeckService.update_deck(
+                    "user-123",
+                    1,
+                    {"deck_name": "Existing Deck"}
+                )
+    
+    def test_update_deck_no_changes(self, deck_service, sample_deck_response):
+        """Test update with empty data returns existing deck."""
+        mock_cursor = MagicMock()
+        mock_cursor.fetchone.return_value = sample_deck_response
+        
+        with patch('services.deck_service.get_db_cursor') as mock_db:
+            mock_db.return_value.__enter__.return_value = mock_cursor
+            result = DeckService.update_deck("user-123", 1, {})
+        
+        assert result is not None
+        assert result["deck_name"] == "Spanish Basics"
+    
+    def test_update_deck_database_error(self, deck_service):
+        """Test update fails with database error."""
+        mock_cursor = MagicMock()
+        mock_cursor.execute.side_effect = psycopg2.Error("Database error")
+        
+        with patch('services.deck_service.get_db_cursor') as mock_db:
+            mock_db.return_value.__enter__.return_value = mock_cursor
+            
+            with pytest.raises(DatabaseError):
+                DeckService.update_deck(
+                    "user-123",
+                    1,
+                    {"deck_name": "New Name"}
+                )
+
+
+class TestDeleteDeck:
+    """Tests for delete_deck method."""
+    
+    def test_delete_deck_success(self, deck_service):
+        """Test successful deck deletion."""
+        mock_cursor = MagicMock()
+        mock_cursor.rowcount = 1
+        
+        with patch('services.deck_service.get_db_cursor') as mock_db:
+            mock_db.return_value.__enter__.return_value = mock_cursor
+            # Mock the MinIO cleanup method
+            with patch.object(deck_service, '_cleanup_deck_media'):
+                result = deck_service.delete_deck("user-123", 1)
+        
+        assert result is True
+        assert mock_cursor.execute.called
+        
+        # Verify DELETE query was executed
+        query = mock_cursor.execute.call_args[0][0]
+        assert "DELETE FROM Decks" in query
+    
+    def test_delete_deck_not_found(self, deck_service):
+        """Test deletion of non-existent deck."""
+        mock_cursor = MagicMock()
+        mock_cursor.rowcount = 0
+        
+        with patch('services.deck_service.get_db_cursor') as mock_db:
+            mock_db.return_value.__enter__.return_value = mock_cursor
+            with patch.object(deck_service, '_cleanup_deck_media'):
+                result = deck_service.delete_deck("user-123", 999)
+        
+        assert result is False
+    
+    def test_delete_deck_unauthorized(self, deck_service):
+        """Test deletion fails when user doesn't own deck."""
+        mock_cursor = MagicMock()
+        mock_cursor.rowcount = 0
+        
+        with patch('services.deck_service.get_db_cursor') as mock_db:
+            mock_db.return_value.__enter__.return_value = mock_cursor
+            with patch.object(deck_service, '_cleanup_deck_media'):
+                result = deck_service.delete_deck("wrong-user", 1)
+        
+        assert result is False
+    
+    def test_delete_deck_database_error(self, deck_service):
+        """Test deletion fails with database error."""
+        mock_cursor = MagicMock()
+        mock_cursor.execute.side_effect = psycopg2.Error("Database error")
+        
+        with patch('services.deck_service.get_db_cursor') as mock_db:
+            mock_db.return_value.__enter__.return_value = mock_cursor
+            with patch.object(deck_service, '_cleanup_deck_media'):
+                with pytest.raises(DatabaseError):
+                    deck_service.delete_deck("user-123", 1)
+    
+    def test_delete_deck_cleans_up_media(self, deck_service):
+        """Test that deck deletion cleans up MinIO media files."""
+        mock_cursor = MagicMock()
+        mock_cursor.rowcount = 1
+        
+        with patch('services.deck_service.get_db_cursor') as mock_db:
+            mock_db.return_value.__enter__.return_value = mock_cursor
+            with patch.object(deck_service, '_cleanup_deck_media') as mock_cleanup:
+                deck_service.delete_deck("user-123", 1)
+                
+                # Verify cleanup was called with correct parameters
+                mock_cleanup.assert_called_once_with("user-123", 1)
+
+
+class TestCleanupDeckMedia:
+    """Tests for _cleanup_deck_media method."""
+    
+    def test_cleanup_deck_media_success(self, deck_service):
+        """Test successful cleanup of deck media files."""
+        mock_cursor = MagicMock()
+        
+        # Mock deck exists and user owns it
+        mock_cursor.fetchone.return_value = {"d_id": 1}
+        
+        # Mock cards with media files
+        mock_cursor.fetchall.return_value = [
+            {"image": "img1.jpg", "word_audio": "audio1.wav", "trans_audio": "audio2.wav"},
+            {"image": "img2.jpg", "word_audio": None, "trans_audio": "audio3.wav"},
+            {"image": None, "word_audio": "audio4.wav", "trans_audio": None}
+        ]
+        
+        with patch('services.deck_service.get_db_cursor') as mock_db:
+            mock_db.return_value.__enter__.return_value = mock_cursor
+            with patch.object(deck_service, '_delete_from_minio') as mock_delete:
+                deck_service._cleanup_deck_media("user-123", 1)
+                
+                # Verify all media files were marked for deletion (6 total non-None files)
+                assert mock_delete.call_count == 6
+                mock_delete.assert_any_call("img1.jpg")
+                mock_delete.assert_any_call("audio1.wav")
+                mock_delete.assert_any_call("audio2.wav")
+                mock_delete.assert_any_call("img2.jpg")
+                mock_delete.assert_any_call("audio3.wav")
+                mock_delete.assert_any_call("audio4.wav")
+    
+    def test_cleanup_deck_media_no_files(self, deck_service):
+        """Test cleanup when deck has no media files."""
+        mock_cursor = MagicMock()
+        mock_cursor.fetchone.return_value = {"d_id": 1}
+        mock_cursor.fetchall.return_value = []
+        
+        with patch('services.deck_service.get_db_cursor') as mock_db:
+            mock_db.return_value.__enter__.return_value = mock_cursor
+            with patch.object(deck_service, '_delete_from_minio') as mock_delete:
+                deck_service._cleanup_deck_media("user-123", 1)
+                
+                # Verify no deletion calls were made
+                mock_delete.assert_not_called()
+    
+    def test_cleanup_deck_media_deck_not_found(self, deck_service):
+        """Test cleanup when deck doesn't exist or user doesn't own it."""
+        mock_cursor = MagicMock()
+        mock_cursor.fetchone.return_value = None
+        
+        with patch('services.deck_service.get_db_cursor') as mock_db:
+            mock_db.return_value.__enter__.return_value = mock_cursor
+            with patch.object(deck_service, '_delete_from_minio') as mock_delete:
+                deck_service._cleanup_deck_media("user-123", 999)
+                
+                # Should return early without attempting deletion
+                mock_delete.assert_not_called()

@@ -3,13 +3,13 @@ import { PlusIcon } from "@/assets/icons/PlusIcon";
 import { CButton } from "@/components/common/CButton";
 import { CText } from "@/components/common/CText";
 import { COLORS } from "@/constants/colors";
-import { useState } from "react";
 import { View } from "react-native";
-import { CreateNewDeckModal } from "./CreateNewDeckModal";
 
-export const NoDecksBanner = () => {
-  const [isModalOpen, setIsModalOpen] = useState(false);
+interface NoDecksBannerProps {
+  onCreateNewDeck: () => void;
+}
 
+export const NoDecksBanner = ({ onCreateNewDeck }: NoDecksBannerProps) => {
   return (
     <View style={{ width: "100%", height: "100%" }}>
       <View
@@ -42,13 +42,9 @@ export const NoDecksBanner = () => {
         <CButton
           variant="primary"
           label="Create Your First Deck"
-          onPress={() => setIsModalOpen(true)}
+          onPress={() => onCreateNewDeck()}
           Icon={<PlusIcon />}
           style={{ marginHorizontal: "auto", marginTop: 20 }}
-        />
-        <CreateNewDeckModal
-          isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
         />
       </View>
     </View>

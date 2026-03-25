@@ -25,7 +25,7 @@ export const CardsDueBanner = ({ countDueCards }: CardsDueBannerProps) => {
             padding: 25,
             borderWidth: 3,
             borderColor: COLORS.icon.outlineSecondary,
-            backgroundColor: COLORS.backgroundSecondary,
+            backgroundColor: COLORS.background.secondary,
             borderRadius: 16,
             ...SHADOWS.default,
           }}

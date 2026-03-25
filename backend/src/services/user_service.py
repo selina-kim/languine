@@ -87,7 +87,7 @@ class UserService:
                     WHERE u_id = %s
                     RETURNING u_id, email, display_name, timezone, 
                               new_cards_per_day, desired_retention,
-                              auto_optimize,num_reviews_per_optimize, 
+                              auto_optimize, num_reviews_per_optimize, 
                               total_reviews, reviews_since_last_optimize
                 """
                 

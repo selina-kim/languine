@@ -169,10 +169,9 @@ def test_log_review_again_increments_fail_count(client, auth_headers):
     """Test that grading Again (1) increments the card's fail_count."""
     card_id = get_any_card_id()
     assert card_id is not None, "No cards available for testing"
-
     with get_db_cursor() as cursor:
         cursor.execute("SELECT fail_count FROM Cards WHERE c_id = %s", (card_id,))
-        before = cursor.fetchone()["fail_count"]
+        before_fail_count = cursor.fetchone()["fail_count"]
 
     data = {"card_id": card_id, "grade": Grade.Again, "review_duration": 2000}
     response = client.post(
@@ -183,11 +182,15 @@ def test_log_review_again_increments_fail_count(client, auth_headers):
     )
     assert response.status_code == 201
 
+    after = {}
     with get_db_cursor() as cursor:
-        cursor.execute("SELECT fail_count FROM Cards WHERE c_id = %s", (card_id,))
-        after = cursor.fetchone()["fail_count"]
+        cursor.execute("SELECT fail_count, successful_reps FROM Cards WHERE c_id = %s", (card_id,))
+        row = cursor.fetchone()
+        after["fail_count"] = row["fail_count"]
+        after["successful_reps"] = row["successful_reps"]
 
-    assert after == before + 1
+    assert after["fail_count"] == before_fail_count + 1
+    assert after["successful_reps"] == 0
 
 def test_log_review_easy_increments_success_count(client, auth_headers):
     """Test that grading Easy (4) increments the card's successful_reps."""
@@ -623,3 +626,209 @@ def test_end_review_triggers_optimization(client, auth_headers, monkeypatch):
 
     assert params_after is not None
     assert params_after != params_before
+
+# ==================== Get Due Cards Route Tests ====================
+
+def get_card_id_for_test_user():
+    """Helper to get a valid card ID owned by the test user."""
+    with get_db_cursor() as cursor:
+        cursor.execute(
+            """
+            SELECT c.c_id FROM Cards c
+            JOIN Decks d ON c.d_id = d.d_id
+            WHERE d.u_id = 'test-user-id'
+            LIMIT 1
+            """
+        )
+        row = cursor.fetchone()
+        return row['c_id'] if row else None
+
+def set_all_test_user_cards_not_due():
+    """Set all test user cards as previously reviewed with a future due_date so none are treated as new or overdue."""
+    with get_db_cursor(commit=True) as cursor:
+        cursor.execute(
+            """
+            UPDATE Cards
+            SET first_reviewed = NOW() - INTERVAL '7 days',
+                due_date       = NOW() + INTERVAL '1 day'
+            WHERE d_id IN (SELECT d_id FROM Decks WHERE u_id = 'test-user-id')
+            """
+        )
+
+def set_card_due_in_past(card_id):
+    """Set a card's due_date to one day in the past."""
+    with get_db_cursor(commit=True) as cursor:
+        cursor.execute(
+            "UPDATE Cards SET due_date = NOW() - INTERVAL '1 day' WHERE c_id = %s",
+            (card_id,)
+        )
+
+def set_card_as_reviewed(card_id):
+    """Mark a card as previously reviewed by setting first_reviewed, so it is treated as a review card (not a new card)."""
+    with get_db_cursor(commit=True) as cursor:
+        cursor.execute(
+            "UPDATE Cards SET first_reviewed = NOW() - INTERVAL '7 days' WHERE c_id = %s",
+            (card_id,)
+        )
+
+def reset_card_first_review(card_id):
+    """Clear first_reviewed so a card is treated as new again."""
+    with get_db_cursor(commit=True) as cursor:
+        cursor.execute(
+            "UPDATE Cards SET first_reviewed = NULL WHERE c_id = %s",
+            (card_id,)
+        )
+
+def test_get_due_cards_no_auth(client):
+    """Test that GET /due-cards without authentication returns 401."""
+    response = client.get("/due-cards")
+    assert response.status_code == 401
+
+def test_get_due_cards_empty_when_none_due(client, auth_headers):
+    """Test that GET /due-cards returns an empty list when no cards are due."""
+    # Mark all test user cards as previously reviewed with a future due_date
+    # so none are treated as new cards and none are overdue review cards
+    set_all_test_user_cards_not_due()
+
+    response = client.get("/due-cards", headers=auth_headers)
+    assert response.status_code == 200
+    result = json.loads(response.data)
+    assert "due_cards" in result
+    assert "num_due_cards" in result
+    assert result["due_cards"] == []
+    assert result["num_due_cards"] == 0
+
+def test_get_due_cards_success(client, auth_headers):
+    """Test that GET /due-cards returns a review card with a past due_date."""
+    card_id = get_card_id_for_test_user()
+    assert card_id is not None, "No cards found for test user"
+    set_card_as_reviewed(card_id)
+    set_card_due_in_past(card_id)
+
+    response = client.get("/due-cards", headers=auth_headers)
+    assert response.status_code == 200
+    result = json.loads(response.data)
+    assert "due_cards" in result
+    assert "num_due_cards" in result
+    card_ids = [card["card_id"] for card in result["due_cards"]]
+    assert card_id in card_ids
+    assert result["num_due_cards"] == len(result["due_cards"])
+
+def test_get_due_cards_includes_new_cards(client, auth_headers):
+    """Test that GET /due-cards includes cards with first_reviewed IS NULL (new cards)."""
+    # Start from a clean state so we know exactly what's due
+    set_all_test_user_cards_not_due()
+
+    # Reset one card back to new
+    card_id = get_card_id_for_test_user()
+    assert card_id is not None, "No cards found for test user"
+    reset_card_first_review(card_id)
+
+    response = client.get("/due-cards", headers=auth_headers)
+    assert response.status_code == 200
+    result = json.loads(response.data)
+    card_ids = [card["card_id"] for card in result["due_cards"]]
+    assert card_id in card_ids
+    assert result["num_due_cards"] >= 1
+
+def test_get_due_cards_respects_new_cards_per_day_limit(client, auth_headers):
+    """Test that GET /due-cards returns at most new_cards_per_day new cards per deck."""
+    NEW_CARDS_LIMIT = 2
+
+    # Lower the daily new card limit and mark all cards as new
+    with get_db_cursor(commit=True) as cursor:
+        cursor.execute(
+            "UPDATE Users SET new_cards_per_day = %s WHERE u_id = 'test-user-id'",
+            (NEW_CARDS_LIMIT,)
+        )
+        cursor.execute(
+            """
+            UPDATE Cards SET first_reviewed = NULL
+            WHERE d_id IN (SELECT d_id FROM Decks WHERE u_id = 'test-user-id')
+            """
+        )
+
+    try:
+        response = client.get("/due-cards", headers=auth_headers)
+        assert response.status_code == 200
+        result = json.loads(response.data)
+
+        # Count returned new cards per deck and assert the limit is respected
+        cards_per_deck = {}
+        for card in result["due_cards"]:
+            deck_id = card["deck_id"]
+            cards_per_deck[deck_id] = cards_per_deck.get(deck_id, 0) + 1
+
+        for deck_id, count in cards_per_deck.items():
+            assert count <= NEW_CARDS_LIMIT, (
+                f"Deck {deck_id} returned {count} new cards, exceeding limit of {NEW_CARDS_LIMIT}"
+            )
+    finally:
+        # Restore default new_cards_per_day even if assertions fail
+        with get_db_cursor(commit=True) as cursor:
+            cursor.execute(
+                "UPDATE Users SET new_cards_per_day = 10 WHERE u_id = 'test-user-id'"
+            )
+
+def test_get_due_cards_database_error(client, auth_headers, monkeypatch):
+    """Test that a DatabaseError raised by the service returns HTTP 500."""
+    from routes.fsrs import fsrs_service
+    from services.fsrs_service import DatabaseError
+
+    def raise_db_error(*args, **kwargs):
+        raise DatabaseError("simulated db failure")
+
+    monkeypatch.setattr(fsrs_service, 'get_due_cards', raise_db_error)
+
+    response = client.get("/due-cards", headers=auth_headers)
+    assert response.status_code == 500
+    result = json.loads(response.data)
+    assert "Database error" in result["error"]
+
+# ==================== Get Num Due Cards Route Tests ====================
+
+def test_get_num_due_cards_no_auth(client):
+    """Test that GET /num-due-cards without authentication returns 401."""
+    response = client.get("/num-due-cards")
+    assert response.status_code == 401
+
+def test_get_num_due_cards_success(client, auth_headers):
+    """Test that GET /num-due-cards returns the total_cards_due count as an integer."""
+    response = client.get("/num-due-cards", headers=auth_headers)
+    assert response.status_code == 200
+    result = json.loads(response.data)
+    assert "num_due_cards" in result
+    assert isinstance(result["num_due_cards"], int)
+
+def test_get_num_due_cards_reflects_get_due_cards(client, auth_headers):
+    """Test that GET /num-due-cards returns the same count set by a prior GET /due-cards call."""
+    card_id = get_card_id_for_test_user()
+    assert card_id is not None, "No cards found for test user"
+    set_card_as_reviewed(card_id)
+    set_card_due_in_past(card_id)
+
+    # calling /due-cards updates total_cards_due on the user
+    due_response = client.get("/due-cards", headers=auth_headers)
+    assert due_response.status_code == 200
+    due_result = json.loads(due_response.data)
+
+    num_response = client.get("/num-due-cards", headers=auth_headers)
+    assert num_response.status_code == 200
+    num_result = json.loads(num_response.data)
+
+    assert num_result["num_due_cards"] == due_result["num_due_cards"]
+
+def test_get_num_due_cards_database_error(client, auth_headers, monkeypatch):
+    """Test that a DatabaseError raised by the service returns HTTP 500."""
+    from routes.fsrs import fsrs_service
+    from services.fsrs_service import DatabaseError
+
+    def raise_db_error(*args, **kwargs):
+        raise DatabaseError("simulated db failure")
+
+    monkeypatch.setattr(fsrs_service, 'get_num_due_cards', raise_db_error)
+
+    response = client.get("/num-due-cards", headers=auth_headers)
+    assert response.status_code == 500
+    result = json.loads(response.data)
+    assert "Database error" in result["error"]

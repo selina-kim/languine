@@ -55,6 +55,8 @@ export const FAQ = ({ faqs }: FAQProps) => {
                 <View
                   style={{
                     transform: [{ rotate: isOpen ? "180deg" : "0deg" }],
+                    width: 16,
+                    height: 16,
                   }}
                 >
                   <ChevronDownIcon stroke={COLORS.text.primary} />

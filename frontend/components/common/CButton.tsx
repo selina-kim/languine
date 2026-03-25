@@ -1,7 +1,7 @@
 import { COLORS } from "@/constants/colors";
 import { ReactNode } from "react";
 import { Pressable, PressableProps, StyleSheet, View } from "react-native";
-import { CText } from "./CText";
+import { CText, CTextProps } from "./CText";
 
 const buttonBaseStyle = StyleSheet.create({
   base: {
@@ -10,7 +10,7 @@ const buttonBaseStyle = StyleSheet.create({
     borderRadius: 8,
     display: "flex",
     flexDirection: "row",
-    columnGap: 5,
+    columnGap: 8,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -21,22 +21,47 @@ const buttonVariants = StyleSheet.create({
     backgroundColor: COLORS.accent.primary,
   },
   secondary: {
-    backgroundColor: COLORS.backgroundPrimary,
+    backgroundColor: COLORS.background.primary,
     borderColor: COLORS.text.primary,
+    borderWidth: 2,
+  },
+  google: {
+    height: 50,
+    backgroundColor: COLORS.button.fillSecondary,
+    borderColor: COLORS.button.outlinePrimary,
+    borderWidth: 2,
+  },
+  criticalPrimary: {
+    backgroundColor: COLORS.accent.delete,
+  },
+  criticalSecondary: {
+    backgroundColor: COLORS.background.primary,
+    borderColor: COLORS.accent.delete,
     borderWidth: 2,
   },
 });
 
-// const buttonTextProps: { [variant: string]: CTextProps } = {
-//   primary: {
-//     bold: true,
-//   },
-//   secondary: {
-//     bold: true,
-//   },
-// };
+const buttonTextProps: { [buttonTextVariant: string]: CTextProps } = {
+  primary: {
+    bold: true,
+  },
+  secondary: {
+    bold: true,
+  },
+  google: {
+    variant: "google",
+  },
+  criticalPrimary: {
+    bold: true,
+    style: { color: COLORS.text.white },
+  },
+  criticalSecondary: {
+    bold: true,
+    style: { color: COLORS.accent.delete },
+  },
+};
 
-type ButtonVariantType = keyof typeof buttonVariants;
+export type ButtonVariantType = keyof typeof buttonVariants;
 
 interface CButtonProps extends PressableProps {
   variant: ButtonVariantType;
@@ -57,20 +82,19 @@ export const CButton: React.FC<CButtonProps> = ({
         typeof style === "function"
           ? (state) => [
               buttonBaseStyle.base,
-              buttonVariants[variant],
+              variant && buttonVariants[variant],
               style(state),
             ]
-          : [buttonBaseStyle.base, buttonVariants[variant], style]
+          : [buttonBaseStyle.base, variant && buttonVariants[variant], style]
       }
       {...props}
     >
-      {Icon && <View style={{ minWidth: "auto" }}>{Icon}</View>}
+      {Icon && <View style={{ width: 16, height: 16 }}>{Icon}</View>}
       <CText
         style={{
           textAlign: "center",
         }}
-        bold
-        // {...buttonTextProps[variant]}
+        {...(variant && buttonTextProps[variant])}
       >
         {label}
       </CText>
