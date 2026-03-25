@@ -130,7 +130,7 @@ export const CreateNewCardModal = ({
       learning_state: 0,
       difficulty: 0,
       stability: 0,
-      due_date: null,
+      due_date: new Date().toISOString(),
     };
 
     (modeProps as CreateCardModalProps).onOptimisticCreate(optimisticCard);

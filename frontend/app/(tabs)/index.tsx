@@ -1,4 +1,5 @@
 import { getRecentDecks } from "@/apis/endpoints/decks";
+import { getDueCards } from "@/apis/endpoints/fsrs";
 import { CText } from "@/components/common/CText";
 import { RouteButton } from "@/components/common/RouteButton";
 import { CardsDueBanner } from "@/components/features/index/CardsDueBanner";
@@ -10,6 +11,7 @@ import { ScrollView, View } from "react-native";
 
 export default function Index() {
   const [decks, setDecks] = useState<Deck[]>([]);
+  const [countDueCards, setCountDueCards] = useState<number>(0);
 
   useFocusEffect(
     useCallback(() => {
@@ -24,7 +26,19 @@ export default function Index() {
         setDecks(data.decks);
       };
 
+      const getDueCardsCount = async () => {
+        const { data, error } = await getDueCards();
+
+        if (error) {
+          console.log(error);
+          return;
+        }
+
+        setCountDueCards(data.num_due_cards);
+      };
+
       getHomeDecks();
+      getDueCardsCount();
     }, []),
   );
 
@@ -48,7 +62,7 @@ export default function Index() {
         padding: 10,
       }}
     >
-      <CardsDueBanner countDueCards={5} />
+      <CardsDueBanner countDueCards={countDueCards} />
       {label}
       <View
         style={{

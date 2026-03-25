@@ -6,7 +6,7 @@ import { CText } from "@/components/common/CText";
 import { COLORS } from "@/constants/colors";
 import { SHADOWS } from "@/constants/shadows";
 import { Card, DeckDetails } from "@/types/decks";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Pressable, ScrollView, View } from "react-native";
 import { CreateNewCardModal } from "./CreateNewCardModal";
 import { PlusFilledIcon } from "@/assets/icons/PlusFilledIcon";
@@ -74,6 +74,14 @@ export const SingleDeckView = ({ deckId }: SingleDeckViewProps) => {
     </View>
   );
 
+  const cardsDue = useMemo(() => {
+    const now = new Date();
+    return cards.filter((card) => {
+      if (!card.due_date) return false;
+      return new Date(card.due_date) <= now;
+    }).length;
+  }, [cards]);
+
   if (!deckDetails) {
     return;
   }
@@ -93,6 +101,7 @@ export const SingleDeckView = ({ deckId }: SingleDeckViewProps) => {
         <SingleDeckDetails
           deckDetails={deckDetails}
           numOfCards={cards.length}
+          cardsDue={cardsDue}
           onEditDeck={() => setIsEditDeckModalOpen(true)}
         />
         <CButton
