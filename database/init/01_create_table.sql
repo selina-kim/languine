@@ -143,7 +143,3 @@ create table Review_Logs (
 
 -- index: all review history by card
 create index idx_review_logs_card ON Review_Logs(c_id);
-
--- Insert default test user for development and testing (temporary)
-INSERT INTO Users (u_id, email, display_name, timezone)
-VALUES ('112255507948077384809', 'languinetest@gmail.com', 'languinetest', 'UTC');

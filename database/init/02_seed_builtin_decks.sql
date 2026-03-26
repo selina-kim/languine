@@ -11,22 +11,27 @@ INSERT INTO Users (u_id, email, display_name, timezone)
 VALUES ('system', 'system@languine.app', 'Languine', 'UTC')
 ON CONFLICT (u_id) DO NOTHING;
 
+-- Insert default test user for development and testing
+INSERT INTO Users (u_id, email, display_name, timezone)
+VALUES ('112255507948077384809', 'languinetest@gmail.com', 'languinetest', 'UTC');
+
+
 INSERT INTO Decks (u_id, deck_name, word_lang, trans_lang, description, is_public)
 VALUES
-    ('system', 'Mandarin Chinese Beginner', 'Chinese (Mandarin)', 'English', 'Essential beginner vocabulary for Mandarin Chinese', true),
-    ('system', 'Japanese Beginner',         'Japanese',           'English', 'Essential beginner vocabulary for Japanese',         true),
-    ('system', 'Korean Beginner',           'Korean',             'English', 'Essential beginner vocabulary for Korean',           true),
-    ('system', 'French Beginner',           'French',             'English', 'Essential beginner vocabulary for French',           true)
+    ('system', 'Mandarin Chinese Beginner', 'ZH', 'EN', 'Essential beginner vocabulary for Mandarin Chinese', true),
+    ('system', 'Japanese Beginner',         'JA', 'EN', 'Essential beginner vocabulary for Japanese',         true),
+    ('system', 'Korean Beginner',           'KO', 'EN', 'Essential beginner vocabulary for Korean',           true),
+    ('system', 'French Beginner',           'FR', 'EN', 'Essential beginner vocabulary for French',           true)
 
 ON CONFLICT (u_id, deck_name) DO NOTHING;
 
 -- Add decks to test user for development and testing (temporary)
 INSERT INTO Decks (u_id, deck_name, word_lang, trans_lang, description, is_public)
 VALUES
-    ('112255507948077384809', 'Mandarin Chinese Beginner', 'Chinese (Mandarin)', 'English', 'Essential beginner vocabulary for Mandarin Chinese', true),
-    ('112255507948077384809', 'Japanese Beginner',         'Japanese',           'English', 'Essential beginner vocabulary for Japanese',         true),
-    ('112255507948077384809', 'Korean Beginner',           'Korean',             'English', 'Essential beginner vocabulary for Korean',           true),
-    ('112255507948077384809', 'French Beginner',           'French',             'English', 'Essential beginner vocabulary for French',           true)
+    ('112255507948077384809', 'Mandarin Chinese Beginner', 'ZH', 'EN', 'Essential beginner vocabulary for Mandarin Chinese', true),
+    ('112255507948077384809', 'Japanese Beginner',         'JA', 'EN', 'Essential beginner vocabulary for Japanese',         true),
+    ('112255507948077384809', 'Korean Beginner',           'KO', 'EN', 'Essential beginner vocabulary for Korean',           true),
+    ('112255507948077384809', 'French Beginner',           'FR', 'EN', 'Essential beginner vocabulary for French',           true)
 
 ON CONFLICT (u_id, deck_name) DO NOTHING;
 
