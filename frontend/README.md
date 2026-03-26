@@ -48,6 +48,11 @@ npm install
 npx expo start
 ```
 
+Might have to use this if running on wsl2 + using actual Android phone (not emulator)
+```bash
+npm start -- --tunnel
+```
+
 ### Build the Application (for Android)
 
 1. Install EAS CLI (if not already installed)
