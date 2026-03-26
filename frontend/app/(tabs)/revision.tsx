@@ -2,13 +2,14 @@ import { getDecksWithDueCards } from "@/apis/endpoints/decks";
 import { CText } from "@/components/common/CText";
 import { RevisionDeckPreview } from "@/components/features/revision/RevisionDeckPreview";
 import { SingleDeckReview } from "@/components/features/revision/SingleDeckReview";
+import { COLORS } from "@/constants/colors";
 import { useLanguageOptions } from "@/context/LanguageOptionsContext";
 import { useReviewSession } from "@/context/ReviewSessionContext";
 import { DueDeck } from "@/types/decks";
 import { useFocusEffect } from "@react-navigation/native";
 import { useLocalSearchParams, usePathname, useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
-import { ScrollView, View } from "react-native";
+import { ActivityIndicator, ScrollView, View } from "react-native";
 
 interface FocusedReviewDeck {
   d_id: string;
@@ -108,7 +109,11 @@ export default function Revision() {
       }}
     >
       <CText variant="title">Select a deck to start your review session</CText>
-      {isLoading && <CText>Loading decks...</CText>}
+      {isLoading && (
+        <View style={{ paddingVertical: 16 }}>
+          <ActivityIndicator size="large" color={COLORS.accent.primary} />
+        </View>
+      )}
       {error && <CText variant="inputError">{error}</CText>}
       {!isLoading && !error && decksList.length === 0 && (
         <CText>No decks with due cards right now.</CText>
