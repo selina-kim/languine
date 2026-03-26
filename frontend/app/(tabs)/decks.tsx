@@ -13,9 +13,12 @@ import { SingleDeckView } from "@/components/features/decks/SingleDeckView";
 import { usePathname } from "expo-router";
 import { Modal } from "@/components/common/Modal";
 import { CText } from "@/components/common/CText";
+import { CreateOrImportDeckModal } from "@/components/features/decks/CreateOrImportDeckModal";
 
 export default function Decks() {
   const [decks, setDecks] = useState<Deck[]>([]);
+  const [isCreateOrImportDeckModalOpen, setIsCreateOrImportDeckModalOpen] =
+    useState(false);
   const [isCreateDeckModalOpen, setIsCreateDeckModalOpen] = useState(false);
   const [focusedDeckId, setFocusedDeckId] = useState<string>();
   const [deckIdToDelete, setDeckIdToDelete] = useState<string>();
@@ -36,7 +39,7 @@ export default function Decks() {
   useEffect(() => {
     setFocusedDeckId(undefined);
     getAllDecks();
-  }, [isCreateDeckModalOpen, pathname]);
+  }, [isCreateOrImportDeckModalOpen, pathname]);
 
   const handleDeleteDeck = async (deckId: string) => {
     if (isDeletingDeck) {
@@ -87,7 +90,7 @@ export default function Decks() {
           >
             <NoDecksBanner
               onCreateNewDeck={() => {
-                setIsCreateDeckModalOpen(true);
+                setIsCreateOrImportDeckModalOpen(true);
               }}
             />
           </View>
@@ -117,10 +120,16 @@ export default function Decks() {
           borderRadius: 10,
           ...SHADOWS.smallButton,
         }}
-        onPress={() => setIsCreateDeckModalOpen(true)}
+        onPress={() => setIsCreateOrImportDeckModalOpen(true)}
       >
         <PlusFilledIcon />
       </Pressable>
+      <CreateOrImportDeckModal
+        isOpen={isCreateOrImportDeckModalOpen}
+        onClose={() => setIsCreateOrImportDeckModalOpen(false)}
+        onCreateDeck={() => setIsCreateDeckModalOpen(true)}
+        onImportDeck={() => {}}
+      />
       <CreateNewDeckModal
         isOpen={isCreateDeckModalOpen}
         onClose={() => setIsCreateDeckModalOpen(false)}

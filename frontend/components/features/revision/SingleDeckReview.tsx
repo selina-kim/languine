@@ -45,10 +45,30 @@ export const SingleDeckReview = ({
   const { exitReviewSessionSignal } = useReviewSession();
 
   const difficultyOptions = [
-    { label: "Again", borderColor: "#F2A5A1", backgroundColor: "#f7e5e4" , grade: 1 },
-    { label: "Hard", borderColor: "#F1B35E", backgroundColor: "#f7e8d4" , grade: 2 },
-    { label: "Good", borderColor: "#ADD85D", backgroundColor: "#e5f1cf" , grade: 3 },
-    { label: "Easy", borderColor: "#7CD6A0", backgroundColor: "#e8f5ed" , grade: 4 },
+    {
+      label: "Again",
+      borderColor: "#F2A5A1",
+      backgroundColor: "#f7e5e4",
+      grade: 1,
+    },
+    {
+      label: "Hard",
+      borderColor: "#F1B35E",
+      backgroundColor: "#f7e8d4",
+      grade: 2,
+    },
+    {
+      label: "Good",
+      borderColor: "#ADD85D",
+      backgroundColor: "#e5f1cf",
+      grade: 3,
+    },
+    {
+      label: "Easy",
+      borderColor: "#7CD6A0",
+      backgroundColor: "#e8f5ed",
+      grade: 4,
+    },
   ];
 
   const getCardsToReview = useCallback(async () => {
