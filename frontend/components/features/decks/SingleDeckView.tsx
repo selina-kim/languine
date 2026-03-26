@@ -176,8 +176,8 @@ export const SingleDeckView = ({ deckId }: SingleDeckViewProps) => {
   if (!deckDetails) {
     if (isLoadingDeckDetails) {
       return (
-        <View style={{ padding: 25 }}>
-          <CText>Loading deck details...</CText>
+        <View style={{ padding: 25, marginHorizontal: "auto" }}>
+          <ActivityIndicator size="large" color={COLORS.accent.primary} />
         </View>
       );
     }

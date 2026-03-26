@@ -10,7 +10,7 @@ import { useReviewSession } from "@/context/ReviewSessionContext";
 import { Card } from "@/types/decks";
 import { getImageUrl } from "@/utils/imageUtils";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Image, Pressable, ScrollView, View } from "react-native";
+import { ActivityIndicator, Image, Pressable, ScrollView, View } from "react-native";
 
 interface SingleDeckReviewProps {
   deckId: string;
@@ -153,7 +153,11 @@ export const SingleDeckReview = ({
         {deckName}
       </CText>
 
-      {isLoading && <CText>Loading cards...</CText>}
+      {isLoading && (
+        <View style={{ paddingVertical: 16, marginHorizontal: "auto" }}>
+          <ActivityIndicator size="large" color={COLORS.accent.primary} />
+        </View>
+      )}
       {error && <CText variant="inputError">{error}</CText>}
       {!isLoading && !error && cards.length === 0 && (
         <CText>No cards are due right now.</CText>
