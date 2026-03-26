@@ -1,4 +1,5 @@
-import { getSingleDeck } from "@/apis/endpoints/decks";
+import { getCards } from "@/apis/endpoints/cards";
+import { getDecks } from "@/apis/endpoints/decks";
 import { PlusIcon } from "@/assets/icons/PlusIcon";
 import { CButton } from "@/components/common/CButton";
 import { Modal } from "@/components/common/Modal";
@@ -7,7 +8,7 @@ import { COLORS } from "@/constants/colors";
 import { SHADOWS } from "@/constants/shadows";
 import { Card, DeckDetails } from "@/types/decks";
 import { useEffect, useMemo, useState } from "react";
-import { Pressable, ScrollView, View } from "react-native";
+import { ActivityIndicator, Pressable, ScrollView, View } from "react-native";
 import { CreateNewCardModal } from "./CreateNewCardModal";
 import { PlusFilledIcon } from "@/assets/icons/PlusFilledIcon";
 import { CardsList } from "./CardsList";
@@ -21,8 +22,15 @@ interface SingleDeckViewProps {
 }
 
 export const SingleDeckView = ({ deckId }: SingleDeckViewProps) => {
+  const CARDS_PER_PAGE = 100;
   const router = useRouter();
   const [cards, setCards] = useState<Card[]>([]);
+  const [totalCards, setTotalCards] = useState(0);
+  const [nextPage, setNextPage] = useState(1);
+  const [hasMoreCards, setHasMoreCards] = useState(false);
+  const [isLoadingCards, setIsLoadingCards] = useState(false);
+  const [isLoadingDeckDetails, setIsLoadingDeckDetails] = useState(false);
+  const [isLoadingMoreCards, setIsLoadingMoreCards] = useState(false);
   const [deckDetails, setDeckDetails] = useState<DeckDetails>();
   const [isStartReviewModalVisible, setIsStartReviewModalVisible] =
     useState(false);
@@ -32,19 +40,89 @@ export const SingleDeckView = ({ deckId }: SingleDeckViewProps) => {
   const [cardBeingEdited, setCardBeingEdited] = useState<Card | null>(null);
 
   useEffect(() => {
-    const getDeck = async () => {
-      const { data, error } = await getSingleDeck(deckId);
+    let isMounted = true;
 
-      setCards(data.cards);
-      setDeckDetails(data.deck);
+    const loadDeckView = async () => {
+      setIsLoadingDeckDetails(true);
+      setIsLoadingCards(true);
 
-      if (error) {
-        console.log(error);
+      const decksPromise = getDecks();
+      const cardsPromise = getCards(deckId, 1, CARDS_PER_PAGE);
+
+      const decksResponse = await decksPromise;
+
+      if (isMounted) {
+        if (decksResponse.error) {
+          console.log(decksResponse.error);
+        } else {
+          const deck = decksResponse.data.decks.find(
+            (candidateDeck) => String(candidateDeck.d_id) === String(deckId),
+          );
+
+          if (deck) {
+            setDeckDetails({
+              d_id: Number(deck.d_id),
+              deck_name: deck.deck_name,
+              word_lang: deck.word_lang,
+              trans_lang: deck.trans_lang,
+              description: deck.description,
+              creation_date: deck.creation_date,
+              last_reviewed: deck.last_reviewed,
+              is_public: deck.is_public,
+            });
+          }
+        }
+
+        setIsLoadingDeckDetails(false);
+      }
+
+      const cardsResponse = await cardsPromise;
+
+      if (isMounted) {
+        if (cardsResponse.error) {
+          console.log(cardsResponse.error);
+        } else {
+          setCards(cardsResponse.data.cards);
+          setTotalCards(cardsResponse.data.pagination.total);
+          setNextPage(cardsResponse.data.pagination.page + 1);
+          setHasMoreCards(
+            cardsResponse.data.pagination.page <
+              cardsResponse.data.pagination.total_pages,
+          );
+        }
+
+        setIsLoadingCards(false);
       }
     };
 
-    getDeck();
+    loadDeckView();
+
+    return () => {
+      isMounted = false;
+    };
   }, [deckId]);
+
+  const loadMoreCards = async () => {
+    if (!hasMoreCards || isLoadingMoreCards) {
+      return;
+    }
+
+    setIsLoadingMoreCards(true);
+
+    const { data, error } = await getCards(deckId, nextPage, CARDS_PER_PAGE);
+
+    if (error) {
+      console.log(error);
+      setIsLoadingMoreCards(false);
+      return;
+    }
+
+    setCards((prevCards) => [...prevCards, ...data.cards]);
+    setTotalCards(data.pagination.total);
+    setNextPage(data.pagination.page + 1);
+    setHasMoreCards(data.pagination.page < data.pagination.total_pages);
+    setIsLoadingMoreCards(false);
+  };
 
   const renderNoCardsBanner = () => (
     <View
@@ -77,25 +155,33 @@ export const SingleDeckView = ({ deckId }: SingleDeckViewProps) => {
   const cardsDue = useMemo(() => {
     const now = new Date();
     const DAILY_NEW_LIMIT = 10; // Max new cards per day (independent limit)
-    
+
     // Separate new cards (learning_state = 0) from reviewed cards
     const newCards = cards.filter((card) => card.learning_state === 0);
     const reviewedCards = cards.filter((card) => card.learning_state > 0);
-    
+
     // Count reviewed cards that are due
     const reviewedCardsDue = reviewedCards.filter((card) => {
       if (!card.due_date) return false;
       return new Date(card.due_date) <= now;
     }).length;
-    
+
     // New cards: up to 10 per day (independent limit, not affected by reviewed cards)
     const newCardsDue = Math.min(newCards.length, DAILY_NEW_LIMIT);
-    
+
     // Total: new (capped at 10) + all reviewed that are due (no cap)
     return newCardsDue + reviewedCardsDue;
   }, [cards]);
 
   if (!deckDetails) {
+    if (isLoadingDeckDetails) {
+      return (
+        <View style={{ padding: 25 }}>
+          <CText>Loading deck details...</CText>
+        </View>
+      );
+    }
+
     return;
   }
 
@@ -113,7 +199,7 @@ export const SingleDeckView = ({ deckId }: SingleDeckViewProps) => {
       >
         <SingleDeckDetails
           deckDetails={deckDetails}
-          numOfCards={cards.length}
+          numOfCards={totalCards}
           cardsDue={cardsDue}
           onEditDeck={() => setIsEditDeckModalOpen(true)}
         />
@@ -123,26 +209,49 @@ export const SingleDeckView = ({ deckId }: SingleDeckViewProps) => {
           style={{ width: "100%", marginVertical: 10 }}
           onPress={() => console.log("export deck clicked")}
         />
-        <CText variant="containerLabel">Flashcards ({cards.length})</CText>
-        {cards.length === 0 ? (
+        <CText variant="containerLabel">Flashcards ({totalCards})</CText>
+        {isLoadingCards ? (
+          <View
+            style={{
+              width: "100%",
+              alignItems: "center",
+              justifyContent: "center",
+              paddingVertical: 20,
+            }}
+          >
+            <ActivityIndicator size="large" color={COLORS.accent.primary} />
+          </View>
+        ) : totalCards === 0 ? (
           renderNoCardsBanner()
         ) : (
-          <CardsList
-            deckId={deckId}
-            cards={cards}
-            onCardDeleted={(cardId) =>
-              setCards((prevCards) =>
-                prevCards.filter((card) => card.c_id !== cardId),
-              )
-            }
-            onCardEdit={(card) => {
-              setCardBeingEdited(card);
-              setIsEditCardModalOpen(true);
-            }}
-          />
+          <>
+            <CardsList
+              deckId={deckId}
+              cards={cards}
+              onCardDeleted={(cardId) => {
+                setCards((prevCards) =>
+                  prevCards.filter((card) => card.c_id !== cardId),
+                );
+                setTotalCards((prevTotal) => Math.max(prevTotal - 1, 0));
+              }}
+              onCardEdit={(card) => {
+                setCardBeingEdited(card);
+                setIsEditCardModalOpen(true);
+              }}
+            />
+            {hasMoreCards && (
+              <CButton
+                variant="secondary"
+                label={isLoadingMoreCards ? "Loading..." : "Load 100 more"}
+                disabled={isLoadingMoreCards}
+                style={{ width: "100%" }}
+                onPress={loadMoreCards}
+              />
+            )}
+          </>
         )}
       </ScrollView>
-      {cards.length !== 0 && (
+      {totalCards !== 0 && (
         <View
           style={{
             right: 20,
@@ -185,21 +294,23 @@ export const SingleDeckView = ({ deckId }: SingleDeckViewProps) => {
         wordLanguageCode={deckDetails.word_lang}
         translationLanguageCode={deckDetails.trans_lang}
         isOpen={isCreateCardModalOpen}
-        onOptimisticCreate={(optimisticCard) =>
-          setCards((prevCards) => [optimisticCard, ...prevCards])
-        }
-        onCreateSuccess={(tempCardId, createdCard) =>
+        onOptimisticCreate={(optimisticCard) => {
+          setCards((prevCards) => [optimisticCard, ...prevCards]);
+          setTotalCards((prevTotal) => prevTotal + 1);
+        }}
+        onCreateSuccess={(tempCardId, createdCard) => {
           setCards((prevCards) =>
             prevCards.map((card) =>
               card.c_id === tempCardId ? createdCard : card,
             ),
-          )
-        }
-        onCreateFailed={(tempCardId) =>
+          );
+        }}
+        onCreateFailed={(tempCardId) => {
           setCards((prevCards) =>
             prevCards.filter((card) => card.c_id !== tempCardId),
-          )
-        }
+          );
+          setTotalCards((prevTotal) => Math.max(prevTotal - 1, 0));
+        }}
         onClose={() => setIsCreateCardModalOpen(false)}
       />
       <CreateNewDeckModal
