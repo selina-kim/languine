@@ -1,7 +1,13 @@
 module.exports = {
   testEnvironment: 'node',
   transform: {
-    '^.+\\.(js|jsx|ts|tsx)$': 'babel-jest',
+    '^.+\\.(js|jsx|ts|tsx)$': ['babel-jest', {
+      presets: [
+        ['@babel/preset-env', { targets: { node: 'current' } }],
+        '@babel/preset-typescript',
+        '@babel/preset-react',
+      ],
+    }],
   },
   testMatch: ['<rootDir>/tests/**/*.test.(js|jsx|ts|tsx)'],
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
