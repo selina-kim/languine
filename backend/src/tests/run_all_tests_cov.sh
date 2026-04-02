@@ -84,7 +84,7 @@ for entry in "${TESTS[@]}"; do
     # Extract individual failed test names from verbose output
     while IFS= read -r line; do
         [ -n "$line" ] && FAILED_TESTS+=("$line")
-    done < <(echo "$output" | grep -E "FAILED " | sed 's/ FAILED.*//')
+    done < <(echo "$output" | grep -E "FAILED " | sed -e 's/^FAILED //' -e 's/ FAILED.*//')
 
     # Capture all per-file coverage lines into COVERAGE_ROWS
     while IFS= read -r cov_line; do
@@ -182,6 +182,8 @@ echo ""
 
 if [ "${#FAILED_TESTS[@]}" -gt 0 ]; then
     echo -e "\n${RED}Failed tests:${NC}"
+    # Deduplicate and sort failed tests
+    mapfile -t FAILED_TESTS < <(printf '%s\n' "${FAILED_TESTS[@]}" | sort -u)
     for t in "${FAILED_TESTS[@]}"; do
         echo -e "  ${RED}✗${NC} $t"
     done
