@@ -1,23 +1,32 @@
 import { describe, expect, test, beforeEach, jest, afterEach } from '@jest/globals';
 
-// Mock storage
+// Mock storage with proper typing
 jest.mock('@/utils/storage', () => ({
   storage: {
-    getItem: jest.fn(),
-    setItem: jest.fn(),
-    deleteItem: jest.fn(),
+    getItem: jest.fn() as jest.Mock,
+    setItem: jest.fn() as jest.Mock,
+    deleteItem: jest.fn() as jest.Mock,
   },
 }));
 
-// Mock fetch globally
-global.fetch = jest.fn();
+// Mock fetch globally with proper type
+(global as any).fetch = jest.fn() as jest.MockedFunction<typeof fetch>;
 
-import { setUnauthorizedHandler } from '@/apis/client';
+import client, { setUnauthorizedHandler } from '@/apis/client';
 import { storage } from '@/utils/storage';
+
+// Type assertion to tell TypeScript this is a mocked storage object
+const mockStorage = storage as jest.Mocked<typeof storage>;
+
+const mockFetch = global.fetch as jest.MockedFunction<typeof fetch>;
 
 describe('API Client', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockStorage.getItem.mockReset();
+    mockStorage.setItem.mockReset();
+    mockStorage.deleteItem.mockReset();
+    mockFetch.mockReset();
     process.env.EXPO_PUBLIC_API_URL = 'https://api.example.com';
   });
 
@@ -28,7 +37,7 @@ describe('API Client', () => {
 
   describe('setUnauthorizedHandler', () => {
     test('should set unauthorized handler', async () => {
-      const handler = jest.fn();
+      const handler = jest.fn(async () => Promise.resolve());
       setUnauthorizedHandler(handler);
 
       expect(handler).toBeDefined();
@@ -43,7 +52,7 @@ describe('API Client', () => {
   describe('Token Storage', () => {
     test('should retrieve stored user data', async () => {
       const userData = { token: 'access123', refreshToken: 'refresh123' };
-      (storage.getItem as jest.Mock).mockResolvedValueOnce(JSON.stringify(userData));
+      mockStorage.getItem.mockResolvedValueOnce(JSON.stringify(userData));
 
       const result = await storage.getItem('user');
       expect(result).toBeTruthy();
@@ -51,7 +60,7 @@ describe('API Client', () => {
     });
 
     test('should handle missing user data', async () => {
-      (storage.getItem as jest.Mock).mockResolvedValueOnce(null);
+      mockStorage.getItem.mockResolvedValueOnce(null);
 
       const result = await storage.getItem('user');
       expect(result).toBeNull();
@@ -59,7 +68,7 @@ describe('API Client', () => {
 
     test('should store user tokens', async () => {
       const userData = { token: 'access123', refreshToken: 'refresh123' };
-      (storage.setItem as jest.Mock).mockResolvedValueOnce(undefined);
+      mockStorage.setItem.mockResolvedValueOnce(undefined);
 
       await storage.setItem('user', JSON.stringify(userData));
 
@@ -70,8 +79,8 @@ describe('API Client', () => {
       const oldData = { token: 'old_token', refreshToken: 'refresh123' };
       const newData = { token: 'new_token', refreshToken: 'refresh123' };
 
-      (storage.getItem as jest.Mock).mockResolvedValueOnce(JSON.stringify(oldData));
-      (storage.setItem as jest.Mock).mockResolvedValueOnce(undefined);
+      mockStorage.getItem.mockResolvedValueOnce(JSON.stringify(oldData));
+      mockStorage.setItem.mockResolvedValueOnce(undefined);
 
       const result = await storage.getItem('user');
       expect(JSON.parse(result as string).token).toBe('old_token');
@@ -83,7 +92,7 @@ describe('API Client', () => {
 
   describe('Token Refresh', () => {
     test('should handle token refresh without refresh token', async () => {
-      (storage.getItem as jest.Mock).mockResolvedValueOnce(JSON.stringify({ token: 'access123' }));
+      mockStorage.getItem.mockResolvedValueOnce(JSON.stringify({ token: 'access123' }));
 
       const result = await storage.getItem('user');
       const user = JSON.parse(result as string);
@@ -134,7 +143,7 @@ describe('API Client', () => {
     });
 
     test('should handle network errors gracefully', async () => {
-      (global.fetch as jest.Mock).mockRejectedValueOnce(new Error('Network error'));
+      (global.fetch as jest.MockedFunction<typeof fetch>).mockRejectedValueOnce(new Error('Network error'));
 
       try {
         await fetch('https://api.example.com/test');
@@ -180,7 +189,7 @@ describe('API Client', () => {
     });
 
     test('should call unauthorized handler on 401', async () => {
-      const handler = jest.fn();
+      const handler = jest.fn(async () => Promise.resolve());
       setUnauthorizedHandler(handler);
 
       expect(handler).toBeDefined();
@@ -243,6 +252,166 @@ describe('API Client', () => {
       }
 
       expect(refreshPromise).toBeNull();
+    });
+
+    test('should refresh token on 401 and retry request', async () => {
+      const oldToken = 'old_access_token';
+      const newToken = 'new_access_token';
+      const refreshToken = 'refresh_token_123';
+      const userData = { token: oldToken, refreshToken };
+
+      // 1. Initial getAuthToken() call
+      mockStorage.getItem.mockResolvedValueOnce(JSON.stringify(userData));
+
+      // 2. First request returns 401
+      mockFetch.mockResolvedValueOnce({
+        ok: false,
+        status: 401,
+        text: async () => JSON.stringify({ error: 'Token expired' }),
+        json: async () => ({ error: 'Token expired' }),
+      } as Response);
+
+      // 3. refreshAccessToken() calls getStoredUser() to get refresh token
+      mockStorage.getItem.mockResolvedValueOnce(JSON.stringify(userData));
+
+      // 4. Refresh endpoint returns new token
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        text: async () =>
+          JSON.stringify({
+            tokens: { access_token: newToken, refresh_token: refreshToken },
+          }),
+        json: async () => ({
+          tokens: { access_token: newToken, refresh_token: refreshToken },
+        }),
+      } as Response);
+
+      // 5. updateStoredTokens() reads current user
+      mockStorage.getItem.mockResolvedValueOnce(JSON.stringify(userData));
+
+      // 6. updateStoredTokens() writes updated user
+      mockStorage.setItem.mockResolvedValueOnce(undefined);
+
+      // 7. Retry request's getAuthToken() call
+      mockStorage.getItem.mockResolvedValueOnce(
+        JSON.stringify({ token: newToken, refreshToken })
+      );
+
+      // 8. Retry request succeeds
+      const successData = { data: 'success', id: 1 };
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        text: async () => JSON.stringify(successData),
+        json: async () => successData,
+      } as Response);
+
+      // Make request
+      const result = await client.get('/protected/resource');
+
+      // Verify success
+      expect(result.error).toBeNull();
+      expect(result.data).toEqual(successData);
+
+      // Verify fetch was called 3 times (original, refresh, retry)
+      expect(mockFetch).toHaveBeenCalledTimes(3);
+
+      // Verify calls in order
+      const calls = mockFetch.mock.calls;
+      expect(calls[0][0]).toContain('/protected/resource'); // Original request
+      const originalHeaders = calls[0][1]?.headers as Record<string, string>;
+      expect(originalHeaders?.Authorization).toContain(oldToken); // With old token
+      expect(calls[1][0]).toContain('/auth/refresh'); // Refresh endpoint
+      expect(calls[2][0]).toContain('/protected/resource'); // Retry
+      const retryHeaders = calls[2][1]?.headers as Record<string, string>;
+      expect(retryHeaders?.Authorization).toContain(newToken); // With new token
+    });
+  });
+
+  describe('Client GET requests', () => {
+    test('should make GET request and return data', async () => {
+      const mockData = { id: 1, name: 'Test' };
+      mockStorage.getItem.mockResolvedValueOnce(JSON.stringify({ token: 'test_token' }));
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        text: async () => JSON.stringify(mockData),
+        json: async () => mockData,
+      } as Response);
+
+      const result = await client.get('/test/endpoint');
+      
+      expect(result.error).toBeNull();
+      expect(result.data).toEqual(mockData);
+      expect(mockFetch).toHaveBeenCalledWith(
+        'https://api.example.com/test/endpoint',
+        expect.objectContaining({
+          method: 'GET',
+          headers: expect.objectContaining({
+            'Content-Type': 'application/json',
+            Authorization: 'Bearer test_token',
+          }),
+        })
+      );
+    });
+  });
+
+  describe('HTTP Method Calls', () => {
+    test('client.post includes body in request', async () => {
+      const body = JSON.stringify({ name: 'test' });
+      mockStorage.getItem.mockResolvedValueOnce(JSON.stringify({ token: 'test_token' }));
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        status: 201,
+        text: async () => JSON.stringify({ id: 1 }),
+        json: async () => ({ id: 1 }),
+      } as Response);
+
+      await client.post('/items', body);
+      
+      expect(mockFetch).toHaveBeenCalledWith(
+        expect.any(String),
+        expect.objectContaining({
+          method: 'POST',
+          body: body,
+        })
+      );
+    });
+
+    test('client.put calls request with PUT method', async () => {
+      const body = JSON.stringify({ name: 'updated' });
+      mockStorage.getItem.mockResolvedValueOnce(JSON.stringify({ token: 'test_token' }));
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        text: async () => JSON.stringify({ success: true }),
+        json: async () => ({ success: true }),
+      } as Response);
+
+      await client.put('/items/1', body);
+      
+      expect(mockFetch).toHaveBeenCalledWith(
+        expect.any(String),
+        expect.objectContaining({ method: 'PUT' })
+      );
+    });
+
+    test('client.delete calls request with DELETE method', async () => {
+      mockStorage.getItem.mockResolvedValueOnce(JSON.stringify({ token: 'test_token' }));
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        text: async () => JSON.stringify({}),
+        json: async () => ({}),
+      } as Response);
+
+      await client.delete('/items/1');
+      
+      expect(mockFetch).toHaveBeenCalledWith(
+        expect.any(String),
+        expect.objectContaining({ method: 'DELETE' })
+      );
     });
   });
 });

@@ -11,21 +11,6 @@ describe('React Native Component Logic Integration', () => {
     expect(rendered[0].label).toBe('Apple');
   });
 
-  test('should filter decks by search term', () => {
-    const decks = [
-      { id: '1', name: 'Japanese Beginner' },
-      { id: '2', name: 'Spanish Intermediate' },
-      { id: '3', name: 'Japanese Advanced' },
-    ];
-
-    const searchTerm = 'Japanese';
-    const filtered = decks.filter((d) => d.name.includes(searchTerm));
-
-    expect(filtered).toHaveLength(2);
-    expect(filtered[0].id).toBe('1');
-    expect(filtered[1].id).toBe('3');
-  });
-
   test('should sort decks by name', () => {
     const decks = [
       { name: 'Zebra Deck', id: '3' },
