@@ -181,6 +181,9 @@ class CardService:
         """
         if not text:
             return None
+        
+        # Normalize language to lowercase
+        language = language.lower()
 
         if not self.minio_client:
             print("Warning: MinIO client not available, skipping TTS storage")

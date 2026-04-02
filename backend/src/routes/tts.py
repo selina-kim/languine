@@ -85,6 +85,10 @@ def text_to_speech():
         language = data.get("language")
         speaker = data.get("speaker")
         
+        # Normalize language to lowercase
+        if language:
+            language = language.lower()
+        
         # Validate required fields
         if not text:
             return Response(
