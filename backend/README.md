@@ -69,11 +69,23 @@ Should get this output:
 ```
 
 ### Run Tests
+To run tests and get a coverage report, run the following command from the `backend/src/tests/` directory:
 
 ```bash
-cd backend
-py -3.12 -m pytest
+./run_all_tests_cov.sh
 ```
+
+To run individual test files, see the docstring of the testfiles in the `backend/src/tests/` directory for instructions.
+
+**Note:** You need a valid Google ID Token to run the auth integration tests. Otherwise some tests will be skipped. Also keep in mind that the ID token expires within an hour, and when you refresh it, you need to rebuild the docker image for it to pick up the new token.
+
+#### Getting a Google ID Token for Testing
+1. Go to https://developers.google.com/oauthplayground
+2. Click the gear icon in the top right corner and check the box that says "Use your own OAuth credentials". Then input the client ID and client secret that is shared in the env file
+3. In the left panel, find and select the scope that says "https://www.googleapis.com/auth/userinfo.email" and "https://www.googleapis.com/auth/userinfo.profile" (under "Google OAuth2 API v2")
+4. Click the "Authorize APIs" button and go through the Google sign-in flow
+5. After authorizing, click the "Exchange authorization code for tokens" button
+6. You should now see an ID token in the "ID Token" field. Copy this token and set it as the value for the `GOOGLE_ID_TOKEN` variable in the `.env` file.
 
 ## Remote Access Home Server
 
