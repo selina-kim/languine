@@ -4,9 +4,11 @@ Unit tests for google oauth API.
 These tests mock Google OAuth and token generation to test the application logic
 without making real API calls or requiring a database. 
 
-Run with: 
-- poetry run pytest -v (excludes integration by default)
-- poetry run pytest src/tests/test_auth_unit.py -v
+Run this test file:
+    docker compose exec backend pytest src/tests/test_auth_unit.py -v
+
+Run with coverage:
+    docker compose exec backend pytest src/tests/test_auth_unit.py --cov=services.auth_service
 
 Test coverage:
 - Google token verification (success and failure)

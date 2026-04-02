@@ -8,9 +8,11 @@ Important:
 - Requires real Google OAuth tokens set in .env as GOOGLE_TEST_ID_TOKEN
 - Skipped by default (pytest runs only unit tests)
 
-Run with: 
-- poetry run pytest -v -m integration -rs (runs only integration tests)
-- poetry run pytest src/tests/test_auth_integration.py -v  -m integration -rs
+Run this test file:
+    docker compose exec backend pytest src/tests/test_auth_integration.py -v -m integration
+
+Run with coverage:
+    docker compose exec backend pytest src/tests/test_auth_integration.py --cov=routes.auth -m integration 
 
 Test coverage:
 - Real Google OAuth token verification

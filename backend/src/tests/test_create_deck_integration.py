@@ -3,6 +3,13 @@ Integration tests for create-deck endpoint.
 
 These tests rely on repo conftest fixtures (db_schema/db_setup/app/client/auth_headers).
 See src/tests/conftest.py. :contentReference[oaicite:1]{index=1}
+
+Run this test file:
+    docker compose exec backend pytest src/tests/test_create_deck_integration.py -v -m integration
+
+Run with coverage:
+    docker compose exec backend pytest src/tests/test_create_deck_integration.py --cov=routes.decks -m integration
+
 """
 
 import json
