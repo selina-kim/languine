@@ -16,12 +16,13 @@ TOTAL_SKIPPED=0
 TOTAL_ERRORS=0
 SUMMARY=()
 FAILED_TESTS=()
+COVERAGE_ROWS=()  # "test_name|path|stmts|miss|pct" — one entry per covered file
 
 # Format: "test_file:coverage_module:marker"
 TESTS=(
     "test_auth_integration.py:routes.auth:integration"
     "test_auth_unit.py:services.auth_service:not_integration"
-    "test_builtin_decks_integration.py:routes.decks:integration"
+    "test_builtin_decks_integration.py:db:integration"
     "test_card_integration.py:routes.cards:integration"
     "test_card_unit.py:services.card_service:not_integration"
     "test_create_deck_integration.py:routes.decks:integration"
@@ -85,16 +86,26 @@ for entry in "${TESTS[@]}"; do
         [ -n "$line" ] && FAILED_TESTS+=("$line")
     done < <(echo "$output" | grep -E "FAILED " | sed 's/ FAILED.*//')
 
-    # Extract the actual source file line from coverage output (e.g. "src/routes/auth.py   47   3   94%")
-    cov_line=$(echo "$output" | grep -E "^src/.*[0-9]+%$" | head -1)
-    if [ -n "$cov_line" ]; then
-        cov_path=$(echo "$cov_line"  | awk '{print $1}')
-        cov_stmts=$(echo "$cov_line" | awk '{print $2}')
-        cov_miss=$(echo "$cov_line"  | awk '{print $3}')
-        cov_pct=$(echo "$cov_line"   | awk '{print $4}')
+    # Capture all per-file coverage lines into COVERAGE_ROWS
+    while IFS= read -r cov_line; do
+        [ -z "$cov_line" ] && continue
+        cp=$(echo "$cov_line" | awk '{print $1}')
+        cs=$(echo "$cov_line" | awk '{print $2}')
+        cm=$(echo "$cov_line" | awk '{print $3}')
+        cpct=$(echo "$cov_line" | awk '{print $4}')
+        COVERAGE_ROWS+=("$test_name|$cp|$cs|$cm|$cpct")
+    done < <(echo "$output" | grep -E "^src/.*[0-9]+%$")
+
+    # For inline display: prefer TOTAL line (multi-file), fall back to first src/ line
+    total_line=$(echo "$output" | grep -E "^TOTAL\b")
+    if [ -n "$total_line" ]; then
+        cov_pct=$(echo "$total_line" | awk '{print $4}')
+    elif echo "$output" | grep -qE "^src/.*[0-9]+%$"; then
+        cov_pct=$(echo "$output" | grep -E "^src/.*[0-9]+%$" | head -1 | awk '{print $4}')
     else
-        cov_path="N/A"; cov_stmts="-"; cov_miss="-"; cov_pct="N/A"
+        cov_pct="N/A"
     fi
+    cov_path="(see coverage table)"; cov_stmts="-"; cov_miss="-"
 
     if [ "$failed" -eq 0 ] && [ "$errors" -eq 0 ] && [ "$exit_ok" = true ]; then
         echo -e "  ${GREEN}✓ PASSED${NC} (${GREEN}$passed passed${NC}, ${YELLOW}$skipped skipped${NC})  coverage: $cov_pct\n"
@@ -138,12 +149,21 @@ echo -e "${BLUE}  COVERAGE SUMMARY${NC}"
 echo -e "${BLUE}================================${NC}"
 printf "\n  %-34s  %-44s  %5s  %5s  %s\n" "Test File" "Path" "Stmts" "Miss" "Cover"
 printf "  %-34s  %-44s  %5s  %5s  %s\n" "──────────────────────────────────" "────────────────────────────────────────────" "─────" "─────" "──────"
-for line in "${SUMMARY[@]}"; do
-    name=$(echo "$line"    | cut -d'|' -f2)
-    path=$(echo "$line"    | cut -d'|' -f3)
-    stmts=$(echo "$line"   | cut -d'|' -f7)
-    miss=$(echo "$line"    | cut -d'|' -f8)
-    cov=$(echo "$line"     | cut -d'|' -f9)
+prev_test=""
+for row in "${COVERAGE_ROWS[@]}"; do
+    name=$(echo "$row"  | cut -d'|' -f1)
+    path=$(echo "$row"  | cut -d'|' -f2)
+    stmts=$(echo "$row" | cut -d'|' -f3)
+    miss=$(echo "$row"  | cut -d'|' -f4)
+    cov=$(echo "$row"   | cut -d'|' -f5)
+
+    # Only show the test name on the first row for each test
+    if [ "$name" = "$prev_test" ]; then
+        display_name=""
+    else
+        display_name="$name"
+        prev_test="$name"
+    fi
 
     num=$(echo "$cov" | tr -d '%')
     if [ "$cov" = "N/A" ]; then
@@ -156,7 +176,7 @@ for line in "${SUMMARY[@]}"; do
         cov_colored="${RED}$cov${NC}"
     fi
 
-    printf "  %-34s  %-44s  %5s  %5s  %b\n" "$name" "$path" "$stmts" "$miss" "$cov_colored"
+    printf "  %-34s  %-44s  %5s  %5s  %b\n" "$display_name" "$path" "$stmts" "$miss" "$cov_colored"
 done
 echo ""
 
