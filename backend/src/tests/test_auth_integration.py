@@ -515,25 +515,6 @@ class TestGoogleOAuthEdgeCases:
         assert response.status_code == 401
         assert "error" in response.get_json()
 
-    # def test_service_exception_returns_500(self, builtin_client, monkeypatch):
-    #     """POST /auth/google when AuthService raises an unexpected exception returns 500."""
-    #     # First let token verification succeed, then blow up in the service layer
-    #     monkeypatch.setattr(
-    #         "routes.auth.id_token.verify_oauth2_token",
-    #         _fake_builtin_token,
-    #     )
-
-    #     def raise_runtime_error(*args, **kwargs):
-    #         raise RuntimeError("DB connection lost")
-
-    #     monkeypatch.setattr(
-    #         "routes.auth.AuthService.get_or_create_oauth_user",
-    #         raise_runtime_error,
-    #     )
-    #     response = builtin_client.post("/auth/google", json={"id_token": "some-token"})
-    #     assert response.status_code == 500
-    #     assert response.get_json()["error"] == "Authentication failed"
-
 
 class TestProtectedEndpoints:
     """Cover GET /auth/me and POST /auth/logout using pre-built JWT tokens."""
