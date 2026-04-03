@@ -1,13 +1,25 @@
 import { CButton } from "@/components/common/CButton";
 import { Modal } from "@/components/common/Modal";
 import { useState } from "react";
+import { deleteCurrentUser } from "@/apis/endpoints/users";
+import { Alert } from "react-native";
+import { useAuth } from "@/context/AuthContext";
 
 export const DeleteAccountButton = () => {
   const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
+  const { signOut } = useAuth();
 
   const handleConfirm = () => {
-    // TODO
-    console.log("deleted account");
+    void deleteCurrentUser().then(({ error }) => {
+      if (error) {
+        Alert.alert("Delete failed", error);
+        return;
+      }
+
+      Alert.alert("Account deleted", "Your account has been removed.");
+      setIsDeleteModalVisible(false);
+      void signOut();
+    });
   };
 
   return (
