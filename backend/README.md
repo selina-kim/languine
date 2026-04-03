@@ -69,11 +69,11 @@ Should get this output:
 ```
 
 ### Run Tests
-To run tests and get a coverage report, run the following command from the `backend/src/tests/` directory:
-
+To run tests and get a coverage report, run the following command from the `backend/src/tests/`
 ```bash
-./run_all_tests_cov.sh
+ docker compose exec backend pytest src/tests/ --cov=routes --cov=services --cov-report=html -v  -m 'integration or not integration'
 ```
+You will find an html report of the coverage results in `backend/src/tests/htmlcov/index.html` after running the command.
 
 To run individual test files, see the docstring of the testfiles in the `backend/src/tests/` directory for instructions.
 
