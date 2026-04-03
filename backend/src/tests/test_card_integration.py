@@ -26,7 +26,7 @@ pytestmark = [pytest.mark.integration, pytest.mark.usefixtures("mock_tts_for_int
 # ==================== Card Creation Tests ====================
 
 
-def test_create_card_success(client, auth_headers):
+def test_create_card_success(client, auth_headers, deck_id):
     """Test successful card creation."""
     card_data = {
         "word": "안녕하세요",
@@ -37,7 +37,7 @@ def test_create_card_success(client, auth_headers):
     }
     
     response = client.post(
-        "/decks/1/card",
+        f"/decks/{deck_id}/card",
         data=json.dumps(card_data),
         content_type='application/json',
         headers=auth_headers
@@ -50,14 +50,14 @@ def test_create_card_success(client, auth_headers):
     assert result["card"]["translation"] == "hello"
 
 
-def test_create_card_missing_word(client, auth_headers):
+def test_create_card_missing_word(client, auth_headers, deck_id):
     """Test card creation fails without required word field."""
     card_data = {
         "translation": "thank you"
     }
     
     response = client.post(
-        "/decks/1/card",
+        f"/decks/{deck_id}/card",
         data=json.dumps(card_data),
         content_type='application/json',
         headers=auth_headers
@@ -68,14 +68,14 @@ def test_create_card_missing_word(client, auth_headers):
     assert "Missing required field" in result["error"]
 
 
-def test_create_card_missing_translation(client, auth_headers):
+def test_create_card_missing_translation(client, auth_headers, deck_id):
     """Test card creation fails without required translation field."""
     card_data = {
         "word": "Bonjour"
     }
     
     response = client.post(
-        "/decks/1/card",
+        f"/decks/{deck_id}/card",
         data=json.dumps(card_data),
         content_type='application/json',
         headers=auth_headers
@@ -86,10 +86,10 @@ def test_create_card_missing_translation(client, auth_headers):
     assert "Missing required field" in result["error"]
 
 
-def test_create_card_no_data(client, auth_headers):
+def test_create_card_no_data(client, auth_headers, deck_id):
     """Test card creation fails with no data."""
     response = client.post(
-        "/decks/1/card",
+        f"/decks/{deck_id}/card",
         data="",
         content_type='application/json',
         headers=auth_headers
@@ -117,7 +117,7 @@ def test_create_card_deck_not_found(client, auth_headers):
     assert response.status_code == 404
 
 
-def test_create_card_unauthorized(client):
+def test_create_card_unauthorized(client, deck_id):
     """Test card creation fails without auth token."""
     card_data = {
         "word": "Merci",
@@ -125,7 +125,7 @@ def test_create_card_unauthorized(client):
     }
     
     response = client.post(
-        "/decks/1/card",
+        f"/decks/{deck_id}/card",
         data=json.dumps(card_data),
         content_type='application/json'
     )
@@ -136,7 +136,7 @@ def test_create_card_unauthorized(client):
 # ==================== Card Retrieval Tests ====================
 
 
-def test_get_card_success(client, auth_headers):
+def test_get_card_success(client, auth_headers, deck_id):
     """Test successful card retrieval."""
     card_data = {
         "word": "你好",
@@ -144,7 +144,7 @@ def test_get_card_success(client, auth_headers):
     }
     
     create_response = client.post(
-        "/decks/1/card",
+        f"/decks/{deck_id}/card",
         data=json.dumps(card_data),
         content_type='application/json',
         headers=auth_headers
@@ -152,19 +152,19 @@ def test_get_card_success(client, auth_headers):
     
     assert create_response.status_code == 201
     card_id = json.loads(create_response.data)["card"]["c_id"]
-    
-    response = client.get(f"/decks/1/cards/{card_id}", headers=auth_headers)
-    
+
+    response = client.get(f"/decks/{deck_id}/cards/{card_id}", headers=auth_headers)
+
     assert response.status_code == 200
     result = json.loads(response.data)
     assert result["word"] == "你好"
     assert result["translation"] == "hello"
 
 
-def test_get_card_not_found(client, auth_headers):
+def test_get_card_not_found(client, auth_headers, deck_id):
     """Test card retrieval for non-existent card."""
-    response = client.get("/decks/1/cards/9999", headers=auth_headers)
-    
+    response = client.get(f"/decks/{deck_id}/cards/9999", headers=auth_headers)
+
     assert response.status_code == 404
 
 
@@ -175,17 +175,17 @@ def test_get_card_wrong_deck(client, auth_headers):
     assert response.status_code == 404
 
 
-def test_get_card_unauthorized(client):
+def test_get_card_unauthorized(client, deck_id):
     """Test card retrieval fails without auth token."""
-    response = client.get("/decks/1/cards/1")
-    
+    response = client.get(f"/decks/{deck_id}/cards/1")
+
     assert response.status_code == 401
 
 
 # ==================== Card Update Tests ====================
 
 
-def test_update_card_success(client, auth_headers):
+def test_update_card_success(client, auth_headers, deck_id):
     """Test successful card update."""
     # First create a card to update
     card_data = {
@@ -194,7 +194,7 @@ def test_update_card_success(client, auth_headers):
     }
     
     create_response = client.post(
-        "/decks/1/card",
+        f"/decks/{deck_id}/card",
         data=json.dumps(card_data),
         content_type='application/json',
         headers=auth_headers
@@ -209,7 +209,7 @@ def test_update_card_success(client, auth_headers):
     }
     
     response = client.post(
-        f"/decks/1/cards/{card_id}",
+        f"/decks/{deck_id}/cards/{card_id}",
         data=json.dumps(update_data),
         content_type='application/json',
         headers=auth_headers
@@ -220,7 +220,7 @@ def test_update_card_success(client, auth_headers):
     assert result["card"]["definition"] == "Updated definition"
 
 
-def test_update_card_word(client, auth_headers):
+def test_update_card_word(client, auth_headers, deck_id):
     """Test updating card word field."""
     # First create a card to update
     card_data = {
@@ -229,7 +229,7 @@ def test_update_card_word(client, auth_headers):
     }
     
     create_response = client.post(
-        "/decks/1/card",
+        f"/decks/{deck_id}/card",
         data=json.dumps(card_data),
         content_type='application/json',
         headers=auth_headers
@@ -244,7 +244,7 @@ def test_update_card_word(client, auth_headers):
     }
     
     response = client.post(
-        f"/decks/1/cards/{card_id}",
+        f"/decks/{deck_id}/cards/{card_id}",
         data=json.dumps(update_data),
         content_type='application/json',
         headers=auth_headers
@@ -255,14 +255,14 @@ def test_update_card_word(client, auth_headers):
     assert result["card"]["word"] == "どうも"
 
 
-def test_update_card_not_found(client, auth_headers):
+def test_update_card_not_found(client, auth_headers, deck_id):
     """Test update for non-existent card."""
     update_data = {
         "definition": "Updated"
     }
     
     response = client.post(
-        "/decks/1/cards/9999",
+        f"/decks/{deck_id}/cards/9999",
         data=json.dumps(update_data),
         content_type='application/json',
         headers=auth_headers
@@ -271,10 +271,10 @@ def test_update_card_not_found(client, auth_headers):
     assert response.status_code == 404
 
 
-def test_update_card_no_data(client, auth_headers):
+def test_update_card_no_data(client, auth_headers, deck_id):
     """Test update with no data."""
     response = client.post(
-        "/decks/1/cards/1",
+        f"/decks/{deck_id}/cards/1",
         data="",
         content_type='application/json',
         headers=auth_headers
@@ -285,14 +285,14 @@ def test_update_card_no_data(client, auth_headers):
     assert "No data provided" in result["error"]
 
 
-def test_update_card_unauthorized(client):
+def test_update_card_unauthorized(client, deck_id):
     """Test update fails without auth token."""
     update_data = {
         "definition": "Updated"
     }
     
     response = client.post(
-        "/decks/1/cards/1",
+        f"/decks/{deck_id}/cards/1",
         data=json.dumps(update_data),
         content_type='application/json'
     )
@@ -303,7 +303,7 @@ def test_update_card_unauthorized(client):
 # ==================== Card Deletion Tests ====================
 
 
-def test_delete_card_success(client, auth_headers):
+def test_delete_card_success(client, auth_headers, deck_id):
     """Test successful card deletion."""
     # First create a card to delete
     card_data = {
@@ -312,7 +312,7 @@ def test_delete_card_success(client, auth_headers):
     }
     
     create_response = client.post(
-        "/decks/1/card",
+        f"/decks/{deck_id}/card",
         data=json.dumps(card_data),
         content_type='application/json',
         headers=auth_headers
@@ -322,38 +322,38 @@ def test_delete_card_success(client, auth_headers):
     card_id = json.loads(create_response.data)["card"]["c_id"]
     
     # Now delete it
-    response = client.delete(f"/decks/1/cards/{card_id}", headers=auth_headers)
-    
+    response = client.delete(f"/decks/{deck_id}/cards/{card_id}", headers=auth_headers)
+
     assert response.status_code == 200
     result = json.loads(response.data)
     assert "deleted" in result["message"].lower()
     
     # Verify it's gone
-    get_response = client.get(f"/decks/1/cards/{card_id}", headers=auth_headers)
+    get_response = client.get(f"/decks/{deck_id}/cards/{card_id}", headers=auth_headers)
     assert get_response.status_code == 404
 
 
-def test_delete_card_not_found(client, auth_headers):
+def test_delete_card_not_found(client, auth_headers, deck_id):
     """Test delete for non-existent card."""
-    response = client.delete("/decks/1/cards/9999", headers=auth_headers)
-    
+    response = client.delete(f"/decks/{deck_id}/cards/9999", headers=auth_headers)
+
     assert response.status_code == 404
 
 
-def test_delete_card_unauthorized(client):
+def test_delete_card_unauthorized(client, deck_id):
     """Test delete fails without auth token."""
-    response = client.delete("/decks/1/cards/1")
-    
+    response = client.delete(f"/decks/{deck_id}/cards/1")
+
     assert response.status_code == 401
 
 
 # ==================== Deck-Level Card Queries ====================
 
 
-def test_get_deck_cards_success(client, auth_headers):
+def test_get_deck_cards_success(client, auth_headers, deck_id):
     """Test successful retrieval of all cards in a deck."""
-    response = client.get("/decks/1/cards", headers=auth_headers)
-    
+    response = client.get(f"/decks/{deck_id}/cards", headers=auth_headers)
+
     assert response.status_code == 200
     result = json.loads(response.data)
     assert "cards" in result
@@ -361,10 +361,10 @@ def test_get_deck_cards_success(client, auth_headers):
     assert len(result["cards"]) >= 1
 
 
-def test_get_deck_cards_pagination(client, auth_headers):
+def test_get_deck_cards_pagination(client, auth_headers, deck_id):
     """Test pagination parameters for deck cards."""
-    response = client.get("/decks/1/cards?page=1&per_page=10", headers=auth_headers)
-    
+    response = client.get(f"/decks/{deck_id}/cards?page=1&per_page=10", headers=auth_headers)
+
     assert response.status_code == 200
     result = json.loads(response.data)
     assert result["pagination"]["page"] == 1
@@ -378,14 +378,14 @@ def test_get_deck_cards_deck_not_found(client, auth_headers):
     assert response.status_code == 404
 
 
-def test_get_deck_cards_unauthorized(client):
+def test_get_deck_cards_unauthorized(client, deck_id):
     """Test cards retrieval fails without auth token."""
-    response = client.get("/decks/1/cards")
-    
+    response = client.get(f"/decks/{deck_id}/cards")
+
     assert response.status_code == 401
 
 
-def test_create_multiple_cards(client, auth_headers):
+def test_create_multiple_cards(client, auth_headers, deck_id):
     """Test creating multiple cards in a deck."""
     cards = [
         {"word": "一", "translation": "one"},
@@ -395,7 +395,7 @@ def test_create_multiple_cards(client, auth_headers):
     
     for card_data in cards:
         response = client.post(
-            "/decks/1/card",
+            f"/decks/{deck_id}/card",
             data=json.dumps(card_data),
             content_type='application/json',
             headers=auth_headers
@@ -403,7 +403,7 @@ def test_create_multiple_cards(client, auth_headers):
         assert response.status_code == 201
     
     # Verify all cards are in the deck
-    response = client.get("/decks/1/cards", headers=auth_headers)
+    response = client.get(f"/decks/{deck_id}/cards", headers=auth_headers)
     result = json.loads(response.data)
     assert result["pagination"]["total"] >= 4  # 1 from setup + 3 new
 
@@ -411,7 +411,7 @@ def test_create_multiple_cards(client, auth_headers):
 # ==================== Card Field Combinations ====================
 
 
-def test_card_fields_preserved(client, auth_headers):
+def test_card_fields_preserved(client, auth_headers, deck_id):
     """Test that all optional fields are preserved."""
     card_data = {
         "word": "고양이",
@@ -424,7 +424,7 @@ def test_card_fields_preserved(client, auth_headers):
     }
     
     response = client.post(
-        "/decks/1/card",
+        f"/decks/{deck_id}/card",
         data=json.dumps(card_data),
         content_type='application/json',
         headers=auth_headers
@@ -443,7 +443,7 @@ def test_card_fields_preserved(client, auth_headers):
     assert card["trans_roman"] == "kat"
 
 
-def test_card_with_definition_only(client, auth_headers):
+def test_card_with_definition_only(client, auth_headers, deck_id):
     """Test creating card with definition but no examples."""
     card_data = {
         "word": "Liberté",
@@ -452,7 +452,7 @@ def test_card_with_definition_only(client, auth_headers):
     }
     
     response = client.post(
-        "/decks/1/card",
+        f"/decks/{deck_id}/card",
         data=json.dumps(card_data),
         content_type='application/json',
         headers=auth_headers
@@ -468,7 +468,7 @@ def test_card_with_definition_only(client, auth_headers):
     assert card["word_example"] is None
 
 
-def test_card_with_examples_only(client, auth_headers):
+def test_card_with_examples_only(client, auth_headers, deck_id):
     """Test creating card with examples but no definition."""
     card_data = {
         "word": "食べる",
@@ -478,7 +478,7 @@ def test_card_with_examples_only(client, auth_headers):
     }
     
     response = client.post(
-        "/decks/1/card",
+        f"/decks/{deck_id}/card",
         data=json.dumps(card_data),
         content_type='application/json',
         headers=auth_headers
@@ -495,7 +495,7 @@ def test_card_with_examples_only(client, auth_headers):
     assert card["definition"] is None
 
 
-def test_card_with_long_definition(client, auth_headers):
+def test_card_with_long_definition(client, auth_headers, deck_id):
     """Test creating card with lengthy definition text."""
     card_data = {
         "word": "Schadenfreude",
@@ -504,7 +504,7 @@ def test_card_with_long_definition(client, auth_headers):
     }
     
     response = client.post(
-        "/decks/1/card",
+        f"/decks/{deck_id}/card",
         data=json.dumps(card_data),
         content_type='application/json',
         headers=auth_headers
@@ -521,7 +521,7 @@ def test_card_with_long_definition(client, auth_headers):
 
 # --- Field Update Tests ---
 
-def test_update_card_add_examples(client, auth_headers):
+def test_update_card_add_examples(client, auth_headers, deck_id):
     """Test adding examples to existing card."""
     # Create basic card
     card_data = {
@@ -530,7 +530,7 @@ def test_update_card_add_examples(client, auth_headers):
     }
     
     create_response = client.post(
-        "/decks/1/card",
+        f"/decks/{deck_id}/card",
         data=json.dumps(card_data),
         content_type='application/json',
         headers=auth_headers
@@ -545,7 +545,7 @@ def test_update_card_add_examples(client, auth_headers):
     }
     
     update_response = client.post(
-        f"/decks/1/cards/{card_id}",
+        f"/decks/{deck_id}/cards/{card_id}",
         data=json.dumps(update_data),
         content_type='application/json',
         headers=auth_headers
@@ -557,7 +557,7 @@ def test_update_card_add_examples(client, auth_headers):
     assert result["card"]["trans_example"] == "A beautiful day"
 
 
-def test_card_with_special_characters(client, auth_headers):
+def test_card_with_special_characters(client, auth_headers, deck_id):
     """Test creating card with various special characters."""
     card_data = {
         "word": "Ça va?",
@@ -567,7 +567,7 @@ def test_card_with_special_characters(client, auth_headers):
     }
     
     response = client.post(
-        "/decks/1/card",
+        f"/decks/{deck_id}/card",
         data=json.dumps(card_data),
         content_type='application/json',
         headers=auth_headers
@@ -583,7 +583,7 @@ def test_card_with_special_characters(client, auth_headers):
     assert card["word_example"] == "Salut! Ça va bien?"
 
 
-def test_update_multiple_fields(client, auth_headers):
+def test_update_multiple_fields(client, auth_headers, deck_id):
     """Test updating multiple fields at once."""
     # First create a card to update
     card_data = {
@@ -592,7 +592,7 @@ def test_update_multiple_fields(client, auth_headers):
     }
     
     create_response = client.post(
-        "/decks/1/card",
+        f"/decks/{deck_id}/card",
         data=json.dumps(card_data),
         content_type='application/json',
         headers=auth_headers
@@ -609,7 +609,7 @@ def test_update_multiple_fields(client, auth_headers):
     }
     
     response = client.post(
-        f"/decks/1/cards/{card_id}",
+        f"/decks/{deck_id}/cards/{card_id}",
         data=json.dumps(update_data),
         content_type='application/json',
         headers=auth_headers
@@ -627,35 +627,35 @@ def test_update_multiple_fields(client, auth_headers):
 # ==================== Review System Tests ====================
 
 
-def test_get_cards_for_review_success(client, auth_headers):
+def test_get_cards_for_review_success(client, auth_headers, deck_id):
     """Test retrieving cards due for review."""
-    response = client.get("/decks/1/review", headers=auth_headers)
-    
+    response = client.get(f"/decks/{deck_id}/review", headers=auth_headers)
+
     assert response.status_code == 200
     result = json.loads(response.data)
     assert "cards" in result
     assert isinstance(result["cards"], list)
 
 
-def test_get_cards_for_review_with_limit(client, auth_headers):
+def test_get_cards_for_review_with_limit(client, auth_headers, deck_id):
     """Test review endpoint respects limit parameter."""
-    response = client.get("/decks/1/review?limit=5", headers=auth_headers)
-    
+    response = client.get(f"/decks/{deck_id}/review?limit=5", headers=auth_headers)
+
     assert response.status_code == 200
     result = json.loads(response.data)
     assert len(result["cards"]) <= 5
 
 
-def test_get_cards_for_review_limit_clamping(client, auth_headers):
+def test_get_cards_for_review_limit_clamping(client, auth_headers, deck_id):
     """Test that limit is clamped between 1 and 100."""
     # Test limit too high
-    response = client.get("/decks/1/review?limit=200", headers=auth_headers)
+    response = client.get(f"/decks/{deck_id}/review?limit=200", headers=auth_headers)
     assert response.status_code == 200
     result = json.loads(response.data)
     assert len(result["cards"]) <= 100
     
     # Test limit too low (should default to 1)
-    response = client.get("/decks/1/review?limit=0", headers=auth_headers)
+    response = client.get(f"/decks/{deck_id}/review?limit=0", headers=auth_headers)
     assert response.status_code == 200
 
 
@@ -668,18 +668,18 @@ def test_get_cards_for_review_deck_not_found(client, auth_headers):
     assert "error" in result
 
 
-def test_get_cards_for_review_unauthorized(client):
+def test_get_cards_for_review_unauthorized(client, deck_id):
     """Test review endpoint without authentication."""
-    response = client.get("/decks/1/review")
-    
+    response = client.get(f"/decks/{deck_id}/review")
+
     assert response.status_code == 401
 
 
-def test_get_cards_for_review_empty_deck(client, auth_headers):
+def test_get_cards_for_review_empty_deck(client, auth_headers, deck_id):
     """Test review endpoint with deck that has no cards."""
     # This test assumes deck 1 is empty or has no due cards
-    response = client.get("/decks/1/review", headers=auth_headers)
-    
+    response = client.get(f"/decks/{deck_id}/review", headers=auth_headers)
+
     assert response.status_code == 200
     result = json.loads(response.data)
     # Result may be empty or have cards depending on test data
@@ -690,30 +690,30 @@ def test_get_cards_for_review_empty_deck(client, auth_headers):
 # ==================== Pagination Edge Cases ====================
 
 
-def test_get_deck_cards_negative_page(client, auth_headers):
+def test_get_deck_cards_negative_page(client, auth_headers, deck_id):
     """Test that negative page numbers are handled gracefully by clamping to page 1."""
-    response = client.get("/decks/1/cards?page=-1", headers=auth_headers)
-    
+    response = client.get(f"/decks/{deck_id}/cards?page=-1", headers=auth_headers)
+
     # Should clamp to page 1 and return successfully
     assert response.status_code == 200
     result = json.loads(response.data)
     assert result["pagination"]["page"] == 1  # Clamped to minimum
 
 
-def test_get_deck_cards_zero_per_page(client, auth_headers):
+def test_get_deck_cards_zero_per_page(client, auth_headers, deck_id):
     """Test that zero per_page is handled gracefully by clamping to minimum value."""
-    response = client.get("/decks/1/cards?per_page=0", headers=auth_headers)
-    
+    response = client.get(f"/decks/{deck_id}/cards?per_page=0", headers=auth_headers)
+
     # Should clamp to minimum (1) and return successfully
     assert response.status_code == 200
     result = json.loads(response.data)
     assert result["pagination"]["per_page"] >= 1  # Clamped to minimum
 
 
-def test_get_deck_cards_excessive_per_page(client, auth_headers):
+def test_get_deck_cards_excessive_per_page(client, auth_headers, deck_id):
     """Test that excessively large per_page values are clamped to maximum."""
-    response = client.get("/decks/1/cards?per_page=10000", headers=auth_headers)
-    
+    response = client.get(f"/decks/{deck_id}/cards?per_page=10000", headers=auth_headers)
+
     # Should clamp to maximum (200) and return successfully
     assert response.status_code == 200
     result = json.loads(response.data)
@@ -726,8 +726,8 @@ def test_get_deck_cards_excessive_per_page(client, auth_headers):
 
 class TestImageIntegration:
     """Integration tests for image upload with MinIO."""
-    
-    def test_create_card_with_image_url(self, client, auth_headers):
+
+    def test_create_card_with_image_url(self, client, auth_headers, deck_id):
         """Test card creation with image URL."""
         # Using a real image URL that should be accessible
         card_data = {
@@ -737,7 +737,7 @@ class TestImageIntegration:
         }
         
         response = client.post(
-            "/decks/1/card",
+            f"/decks/{deck_id}/card",
             data=json.dumps(card_data),
             content_type='application/json',
             headers=auth_headers
@@ -756,8 +756,8 @@ class TestImageIntegration:
         if card["image"]:
             # If image was stored, it should follow naming convention
             assert "images/card_" in card["image"] or card["image"].startswith("images/")
-    
-    def test_create_card_with_invalid_image_url(self, client, auth_headers):
+
+    def test_create_card_with_invalid_image_url(self, client, auth_headers, deck_id):
         """Test card creation with invalid/unreachable image URL."""
         card_data = {
             "word": "犬",
@@ -766,7 +766,7 @@ class TestImageIntegration:
         }
         
         response = client.post(
-            "/decks/1/card",
+            f"/decks/{deck_id}/card",
             data=json.dumps(card_data),
             content_type='application/json',
             headers=auth_headers
@@ -780,8 +780,8 @@ class TestImageIntegration:
         assert card["word"] == "犬"
         # Image should be None since download failed
         assert card["image"] is None
-    
-    def test_update_card_with_image_url(self, client, auth_headers):
+
+    def test_update_card_with_image_url(self, client, auth_headers, deck_id):
         """Test updating card with new image URL."""
         # First create a card
         card_data = {
@@ -790,7 +790,7 @@ class TestImageIntegration:
         }
         
         create_response = client.post(
-            "/decks/1/card",
+            f"/decks/{deck_id}/card",
             data=json.dumps(card_data),
             content_type='application/json',
             headers=auth_headers
@@ -805,7 +805,7 @@ class TestImageIntegration:
         }
         
         update_response = client.post(
-            f"/decks/1/cards/{card_id}",
+            f"/decks/{deck_id}/cards/{card_id}",
             data=json.dumps(update_data),
             content_type='application/json',
             headers=auth_headers
@@ -816,8 +816,8 @@ class TestImageIntegration:
         
         # Image field should be updated (or None if MinIO unavailable)
         assert "image" in result["card"]
-    
-    def test_update_card_remove_image(self, client, auth_headers):
+
+    def test_update_card_remove_image(self, client, auth_headers, deck_id):
         """Test removing image from card by setting to None/empty."""
         # Create card with image placeholder
         card_data = {
@@ -827,7 +827,7 @@ class TestImageIntegration:
         }
         
         create_response = client.post(
-            "/decks/1/card",
+            f"/decks/{deck_id}/card",
             data=json.dumps(card_data),
             content_type='application/json',
             headers=auth_headers
@@ -839,7 +839,7 @@ class TestImageIntegration:
         update_data = {"image": None}
         
         update_response = client.post(
-            f"/decks/1/cards/{card_id}",
+            f"/decks/{deck_id}/cards/{card_id}",
             data=json.dumps(update_data),
             content_type='application/json',
             headers=auth_headers
@@ -849,8 +849,8 @@ class TestImageIntegration:
         result = json.loads(update_response.data)
         # Image should be removed (set to None/NULL)
         assert result["card"]["image"] is None
-    
-    def test_delete_card_with_image(self, client, auth_headers):
+
+    def test_delete_card_with_image(self, client, auth_headers, deck_id):
         """Test that deleting card handles image cleanup."""
         # Create card with image
         card_data = {
@@ -860,7 +860,7 @@ class TestImageIntegration:
         }
         
         create_response = client.post(
-            "/decks/1/card",
+            f"/decks/{deck_id}/card",
             data=json.dumps(card_data),
             content_type='application/json',
             headers=auth_headers
@@ -871,7 +871,7 @@ class TestImageIntegration:
         
         # Delete the card
         delete_response = client.delete(
-            f"/decks/1/cards/{card_id}",
+            f"/decks/{deck_id}/cards/{card_id}",
             headers=auth_headers
         )
         
@@ -880,12 +880,12 @@ class TestImageIntegration:
         
         # Verify card is actually deleted
         get_response = client.get(
-            f"/decks/1/cards/{card_id}",
+            f"/decks/{deck_id}/cards/{card_id}",
             headers=auth_headers
         )
         assert get_response.status_code == 404
-    
-    def test_create_card_with_placeholder_image(self, client, auth_headers):
+
+    def test_create_card_with_placeholder_image(self, client, auth_headers, deck_id):
         """Test that placeholder/non-URL images are not treated as URLs."""
         card_data = {
             "word": "Eau",
@@ -894,7 +894,7 @@ class TestImageIntegration:
         }
         
         response = client.post(
-            "/decks/1/card",
+            f"/decks/{deck_id}/card",
             data=json.dumps(card_data),
             content_type='application/json',
             headers=auth_headers
@@ -912,8 +912,8 @@ class TestImageIntegration:
 
 class TestTTSIntegration:
     """Integration tests for TTS audio generation."""
-    
-    def test_create_card_with_tts(self, client, auth_headers):
+
+    def test_create_card_with_tts(self, client, auth_headers, deck_id):
         """Test card creation attempts TTS generation."""
         card_data = {
             "word": "おはよう",
@@ -921,7 +921,7 @@ class TestTTSIntegration:
         }
         
         response = client.post(
-            "/decks/1/card",
+            f"/decks/{deck_id}/card",
             data=json.dumps(card_data),
             content_type='application/json',
             headers=auth_headers
@@ -940,8 +940,8 @@ class TestTTSIntegration:
             assert "audio/card_" in card["word_audio"] and "_word.wav" in card["word_audio"]
         if card["trans_audio"]:
             assert "audio/card_" in card["trans_audio"] and "_translation.wav" in card["trans_audio"]
-    
-    def test_update_card_word_regenerates_tts(self, client, auth_headers):
+
+    def test_update_card_word_regenerates_tts(self, client, auth_headers, deck_id):
         """Test updating word field triggers TTS regeneration."""
         # Create initial card
         card_data = {
@@ -950,7 +950,7 @@ class TestTTSIntegration:
         }
         
         create_response = client.post(
-            "/decks/1/card",
+            f"/decks/{deck_id}/card",
             data=json.dumps(card_data),
             content_type='application/json',
             headers=auth_headers
@@ -968,7 +968,7 @@ class TestTTSIntegration:
         update_data = {"word": "아니요"}
         
         update_response = client.post(
-            f"/decks/1/cards/{card_id}",
+            f"/decks/{deck_id}/cards/{card_id}",
             data=json.dumps(update_data),
             content_type='application/json',
             headers=auth_headers
@@ -983,8 +983,8 @@ class TestTTSIntegration:
         # Verify audio was regenerated (same path, new content)
         assert result["card"]["word_audio"] == expected_path, \
             f"Audio should be regenerated at same path: {expected_path}"
-    
-    def test_update_card_definition_preserves_tts(self, client, auth_headers):
+
+    def test_update_card_definition_preserves_tts(self, client, auth_headers, deck_id):
         """Test updating non-audio fields doesn't change TTS."""
         # Create card
         card_data = {
@@ -993,7 +993,7 @@ class TestTTSIntegration:
         }
         
         create_response = client.post(
-            "/decks/1/card",
+            f"/decks/{deck_id}/card",
             data=json.dumps(card_data),
             content_type='application/json',
             headers=auth_headers
@@ -1009,7 +1009,7 @@ class TestTTSIntegration:
         update_data = {"definition": "perhaps, possibly"}
         
         update_response = client.post(
-            f"/decks/1/cards/{card_id}",
+            f"/decks/{deck_id}/cards/{card_id}",
             data=json.dumps(update_data),
             content_type='application/json',
             headers=auth_headers
@@ -1020,8 +1020,8 @@ class TestTTSIntegration:
         
         # Audio should remain unchanged
         assert result["card"]["word_audio"] == original_word_audio
-    
-    def test_delete_card_with_audio(self, client, auth_headers):
+
+    def test_delete_card_with_audio(self, client, auth_headers, deck_id):
         """Test deleting card handles audio cleanup."""
         # Create card with audio
         card_data = {
@@ -1030,7 +1030,7 @@ class TestTTSIntegration:
         }
         
         create_response = client.post(
-            "/decks/1/card",
+            f"/decks/{deck_id}/card",
             data=json.dumps(card_data),
             content_type='application/json',
             headers=auth_headers
@@ -1040,22 +1040,22 @@ class TestTTSIntegration:
         
         # Delete card
         delete_response = client.delete(
-            f"/decks/1/cards/{card_id}",
+            f"/decks/{deck_id}/cards/{card_id}",
             headers=auth_headers
         )
         
         # Should delete successfully (audio cleanup handled internally)
         assert delete_response.status_code == 200
-    
-    def test_tts_with_accented_characters(self, client, auth_headers):
+
+    def test_tts_with_accented_characters(self, client, auth_headers, deck_id):
         """Test TTS handles accented and special characters."""
         card_data = {
-            "word": "Garçon", 
+            "word": "Garçon",
             "translation": "boy"
         }
         
         response = client.post(
-            "/decks/1/card",
+            f"/decks/{deck_id}/card",
             data=json.dumps(card_data),
             content_type='application/json',
             headers=auth_headers
@@ -1064,8 +1064,8 @@ class TestTTSIntegration:
         assert response.status_code == 201
         result = json.loads(response.data)
         assert result["card"]["word"] == "Garçon"
-    
-    def test_tts_with_long_text(self, client, auth_headers):
+
+    def test_tts_with_long_text(self, client, auth_headers, deck_id):
         """Test TTS handles longer text passages."""
         card_data = {
             "word": "저는 서울에 살고 있습니다",
@@ -1073,7 +1073,7 @@ class TestTTSIntegration:
         }
         
         response = client.post(
-            "/decks/1/card",
+            f"/decks/{deck_id}/card",
             data=json.dumps(card_data),
             content_type='application/json',
             headers=auth_headers
@@ -1087,8 +1087,8 @@ class TestTTSIntegration:
 
 class TestFSRSIntegration:
     """Integration tests for FSRS scheduling fields."""
-    
-    def test_card_has_fsrs_fields(self, client, auth_headers):
+
+    def test_card_has_fsrs_fields(self, client, auth_headers, deck_id):
         """Test that card response includes FSRS scheduling fields."""
         # First create a card to test
         card_data = {
@@ -1097,7 +1097,7 @@ class TestFSRSIntegration:
         }
         
         create_response = client.post(
-            "/decks/1/card",
+            f"/decks/{deck_id}/card",
             data=json.dumps(card_data),
             content_type='application/json',
             headers=auth_headers
@@ -1107,8 +1107,8 @@ class TestFSRSIntegration:
         card_id = json.loads(create_response.data)["card"]["c_id"]
         
         # Fetch the card
-        response = client.get(f"/decks/1/cards/{card_id}", headers=auth_headers)
-        
+        response = client.get(f"/decks/{deck_id}/cards/{card_id}", headers=auth_headers)
+
         assert response.status_code == 200
         result = json.loads(response.data)
         
@@ -1118,8 +1118,8 @@ class TestFSRSIntegration:
         assert "difficulty" in result
         assert "stability" in result
         assert "due_date" in result
-    
-    def test_new_card_default_fsrs_values(self, client, auth_headers):
+
+    def test_new_card_default_fsrs_values(self, client, auth_headers, deck_id):
         """Test that new cards have default FSRS values."""
         card_data = {
             "word": "新しい",
@@ -1127,7 +1127,7 @@ class TestFSRSIntegration:
         }
         
         response = client.post(
-            "/decks/1/card",
+            f"/decks/{deck_id}/card",
             data=json.dumps(card_data),
             content_type='application/json',
             headers=auth_headers
@@ -1138,8 +1138,8 @@ class TestFSRSIntegration:
         
         # Fetch the card to verify all FSRS defaults
         card_id = card["c_id"]
-        
-        get_response = client.get(f"/decks/1/cards/{card_id}", headers=auth_headers)
+
+        get_response = client.get(f"/decks/{deck_id}/cards/{card_id}", headers=auth_headers)
         assert get_response.status_code == 200
         result = json.loads(get_response.data)
         

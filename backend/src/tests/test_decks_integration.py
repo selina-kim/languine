@@ -26,10 +26,10 @@ from io import BytesIO
 pytestmark = pytest.mark.integration
 
 
-def test_export_deck_json_success(client, auth_headers):
+def test_export_deck_json_success(client, auth_headers, deck_id):
     """Test successful deck export in JSON format"""
-    response = client.get("/decks/1/export?format=json", headers=auth_headers)
-    
+    response = client.get(f"/decks/{deck_id}/export?format=json", headers=auth_headers)
+
     assert response.status_code == 200
     assert response.mimetype == "application/json"
     
@@ -37,36 +37,36 @@ def test_export_deck_json_success(client, auth_headers):
     assert "attachment" in response.headers.get("Content-Disposition", "")
 
 
-def test_export_deck_csv_success(client, auth_headers):
+def test_export_deck_csv_success(client, auth_headers, deck_id):
     """Test successful deck export in CSV format"""
-    response = client.get("/decks/1/export?format=csv", headers=auth_headers)
-    
+    response = client.get(f"/decks/{deck_id}/export?format=csv", headers=auth_headers)
+
     assert response.status_code == 200
     assert response.mimetype == "text/csv"
 
 
-def test_export_deck_anki_success(client, auth_headers):
+def test_export_deck_anki_success(client, auth_headers, deck_id):
     """Test successful deck export in Anki format"""
-    response = client.get("/decks/1/export?format=anki", headers=auth_headers)
-    
+    response = client.get(f"/decks/{deck_id}/export?format=anki", headers=auth_headers)
+
     assert response.status_code == 200
     assert response.mimetype == "text/plain"
 
 
-def test_export_deck_invalid_format(client, auth_headers):
+def test_export_deck_invalid_format(client, auth_headers, deck_id):
     """Test deck export with invalid format"""
-    response = client.get("/decks/1/export?format=invalid", headers=auth_headers)
-    
+    response = client.get(f"/decks/{deck_id}/export?format=invalid", headers=auth_headers)
+
     assert response.status_code == 400
     data = json.loads(response.data)
     assert "error" in data
     assert "Unsupported export format" in data["error"]
 
 
-def test_export_deck_default_format(client, auth_headers):
+def test_export_deck_default_format(client, auth_headers, deck_id):
     """Test deck export defaults to JSON when no format specified"""
-    response = client.get("/decks/1/export", headers=auth_headers)
-    
+    response = client.get(f"/decks/{deck_id}/export", headers=auth_headers)
+
     assert response.status_code == 200
     assert response.mimetype == "application/json"
 
@@ -292,10 +292,10 @@ def test_create_deck_no_data(client, auth_headers):
     assert "No data provided" in result["error"]
 
 
-def test_get_deck_success(client, auth_headers):
+def test_get_deck_success(client, auth_headers, deck_id):
     """Test successful deck retrieval"""
-    response = client.get("/decks/1", headers=auth_headers)
-    
+    response = client.get(f"/decks/{deck_id}", headers=auth_headers)
+
     assert response.status_code == 200
     result = json.loads(response.data)
     assert "deck" in result
@@ -311,7 +311,7 @@ def test_list_decks_success(client, auth_headers):
     assert "decks" in result
 
 
-def test_update_deck_success(client, auth_headers):
+def test_update_deck_success(client, auth_headers, deck_id):
     """Test successful deck update with all fields"""
     update_data = {
         "deck_name": "Updated Deck Name",
@@ -323,7 +323,7 @@ def test_update_deck_success(client, auth_headers):
     }
     
     response = client.put(
-        "/decks/1",
+        f"/decks/{deck_id}",
         data=json.dumps(update_data),
         content_type="application/json",
         headers=auth_headers
@@ -336,14 +336,14 @@ def test_update_deck_success(client, auth_headers):
     assert result["deck"]["deck_name"] == "Updated Deck Name"
 
 
-def test_update_deck_partial(client, auth_headers):
+def test_update_deck_partial(client, auth_headers, deck_id):
     """Test partial deck update (only description)"""
     update_data = {
         "description": "Just updating the description"
     }
     
     response = client.put(
-        "/decks/1",
+        f"/decks/{deck_id}",
         data=json.dumps(update_data),
         content_type="application/json",
         headers=auth_headers
@@ -354,14 +354,14 @@ def test_update_deck_partial(client, auth_headers):
     assert "deck" in result
 
 
-def test_update_deck_empty_name(client, auth_headers):
+def test_update_deck_empty_name(client, auth_headers, deck_id):
     """Test update with empty deck name fails"""
     update_data = {
         "deck_name": "   "
     }
     
     response = client.put(
-        "/decks/1",
+        f"/decks/{deck_id}",
         data=json.dumps(update_data),
         content_type="application/json",
         headers=auth_headers
@@ -391,10 +391,10 @@ def test_update_deck_not_found(client, auth_headers):
     assert "error" in result
 
 
-def test_update_deck_no_data(client, auth_headers):
+def test_update_deck_no_data(client, auth_headers, deck_id):
     """Test update with no data provided"""
     response = client.put(
-        "/decks/1",
+        f"/decks/{deck_id}",
         data="",
         content_type="application/json",
         headers=auth_headers
@@ -405,14 +405,14 @@ def test_update_deck_no_data(client, auth_headers):
     assert "No data provided" in result["error"]
 
 
-def test_update_deck_unauthorized(client, auth_headers):
+def test_update_deck_unauthorized(client, auth_headers, deck_id):
     """Test update without authentication"""
     update_data = {
         "deck_name": "New Name"
     }
     
     response = client.put(
-        "/decks/1",
+        f"/decks/{deck_id}",
         data=json.dumps(update_data),
         content_type="application/json"
     )
@@ -420,10 +420,10 @@ def test_update_deck_unauthorized(client, auth_headers):
     assert response.status_code == 401
 
 
-def test_delete_deck_success(client, auth_headers):
+def test_delete_deck_success(client, auth_headers, deck_id):
     """Test successful deck deletion"""
-    response = client.delete("/decks/1", headers=auth_headers)
-    
+    response = client.delete(f"/decks/{deck_id}", headers=auth_headers)
+
     assert response.status_code == 200
     result = json.loads(response.data)
     assert result["message"] == "Deck deleted successfully"
@@ -438,10 +438,10 @@ def test_delete_deck_not_found(client, auth_headers):
     assert "error" in result
 
 
-def test_delete_deck_unauthorized(client):
+def test_delete_deck_unauthorized(client, deck_id):
     """Test deletion without authentication"""
-    response = client.delete("/decks/1")
-    
+    response = client.delete(f"/decks/{deck_id}")
+
     assert response.status_code == 401
 
 
