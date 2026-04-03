@@ -8,14 +8,9 @@ Executes the real seed SQL file against the test database and verifies:
 NOTE: The COPY commands in the seed SQL read from /docker-entrypoint-initdb.d/
       which is only mounted in Docker. These tests must be run inside the container:
 
-NOTE: The coverage here is only 80% because I'm not both sql scripts here, just 02_seed_builtin_decks.sql. 
-The 01_create_tables.sql script is indirectly tested by other tests that rely on the schema.
-
 Run this test file:
     docker compose exec backend pytest src/tests/test_builtin_decks_integration.py -v -m integration
 
-Run with coverage:
-    docker compose exec backend pytest src/tests/test_builtin_decks_integration.py --cov=db -m integration
 """
 
 import pytest
