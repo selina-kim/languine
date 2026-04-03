@@ -20,6 +20,7 @@ Run with coverage:
 """
 import json
 import numpy as np
+from unittest.mock import patch, MagicMock
 
 
 def test_tts_post_success_with_speaker(client, monkeypatch):
