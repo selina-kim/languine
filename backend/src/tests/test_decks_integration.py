@@ -463,14 +463,14 @@ def test_get_recent_decks(client, auth_headers):
     assert "decks" in result
 
 
-def test_export_deck_database_error(client, auth_headers):
+def test_export_deck_database_error(client, auth_headers, deck_id):
     """Test export endpoint when database error occurs"""
     from unittest.mock import patch
     
     with patch("routes.decks.deck_service.get_deck_for_export") as mock_export:
         mock_export.side_effect = Exception("DB connection failed")
         
-        response = client.get("/decks/1/export?format=json", headers=auth_headers)
+        response = client.get(f"/decks/{deck_id}/export?format=json", headers=auth_headers)
         
         assert response.status_code == 500
         result = json.loads(response.data)
@@ -631,14 +631,14 @@ def test_list_decks_database_error(client, auth_headers):
         assert "Database error" in result["error"]
 
 
-def test_get_deck_database_error(client, auth_headers):
+def test_get_deck_database_error(client, auth_headers, deck_id):
     """Test getting a deck when database error occurs"""
     from unittest.mock import patch
     
     with patch("routes.decks.deck_service.get_deck_with_cards") as mock_get:
         mock_get.side_effect = Exception("DB connection failed")
         
-        response = client.get("/decks/1", headers=auth_headers)
+        response = client.get(f"/decks/{deck_id}", headers=auth_headers)
         
         assert response.status_code == 500
         result = json.loads(response.data)
@@ -673,7 +673,7 @@ def test_get_recent_decks_database_error(client, auth_headers):
         assert "Database error" in result["error"]
 
 
-def test_update_deck_duplicate_name_error(client, auth_headers):
+def test_update_deck_duplicate_name_error(client, auth_headers, deck_id):
     """Test updating deck with duplicate name"""
     from unittest.mock import patch
     from services.deck_service import DuplicateDeckNameError
@@ -686,7 +686,7 @@ def test_update_deck_duplicate_name_error(client, auth_headers):
         mock_update.side_effect = DuplicateDeckNameError("Deck name already exists")
         
         response = client.put(
-            "/decks/1",
+            f"/decks/{deck_id}",
             data=json.dumps(update_data),
             content_type="application/json",
             headers=auth_headers
@@ -697,7 +697,7 @@ def test_update_deck_duplicate_name_error(client, auth_headers):
         assert "error" in result
 
 
-def test_update_deck_database_error(client, auth_headers):
+def test_update_deck_database_error(client, auth_headers, deck_id):
     """Test updating deck when database error occurs"""
     from unittest.mock import patch
     from services.deck_service import DatabaseError
@@ -710,7 +710,7 @@ def test_update_deck_database_error(client, auth_headers):
         mock_update.side_effect = DatabaseError("DB error")
         
         response = client.put(
-            "/decks/1",
+            f"/decks/{deck_id}",
             data=json.dumps(update_data),
             content_type="application/json",
             headers=auth_headers
@@ -721,7 +721,7 @@ def test_update_deck_database_error(client, auth_headers):
         assert "error" in result
 
 
-def test_delete_deck_database_error(client, auth_headers):
+def test_delete_deck_database_error(client, auth_headers, deck_id):
     """Test deleting deck when database error occurs"""
     from unittest.mock import patch
     from services.deck_service import DatabaseError
@@ -729,7 +729,7 @@ def test_delete_deck_database_error(client, auth_headers):
     with patch("routes.decks.deck_service.delete_deck") as mock_delete:
         mock_delete.side_effect = DatabaseError("DB error")
         
-        response = client.delete("/decks/1", headers=auth_headers)
+        response = client.delete(f"/decks/{deck_id}", headers=auth_headers)
         
         assert response.status_code == 500
         result = json.loads(response.data)

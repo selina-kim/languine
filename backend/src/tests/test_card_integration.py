@@ -781,7 +781,7 @@ class TestImageIntegration:
         # Image URL is stored as-is (download failures don't prevent storage)
         assert card["image"] == "http://this-domain-does-not-exist-12345.com/image.jpg"
     
-    def test_update_card_with_image_url(self, client, auth_headers):
+    def test_update_card_with_image_url(self, client, auth_headers, deck_id):
         """Test updating card with new image URL."""
         # First create a card
         card_data = {
@@ -1313,7 +1313,7 @@ class TestErrorHandling:
         # Should return 404 since card doesn't exist
         assert response.status_code == 404
     
-    def test_update_card_with_empty_fields(self, client, auth_headers):
+    def test_update_card_with_empty_fields(self, client, auth_headers, deck_id):
         """Test update with empty string and None values."""
         # Create a card first
         card_data = {
@@ -1322,7 +1322,7 @@ class TestErrorHandling:
         }
         
         create_response = client.post(
-            "/decks/1/card",
+            f"/decks/{deck_id}/card",
             data=json.dumps(card_data),
             content_type='application/json',
             headers=auth_headers
@@ -1337,7 +1337,7 @@ class TestErrorHandling:
         }
         
         response = client.post(
-            f"/decks/1/cards/{card_id}",
+            f"/decks/{deck_id}/cards/{card_id}",
             data=json.dumps(update_data),
             content_type='application/json',
             headers=auth_headers
@@ -1346,17 +1346,17 @@ class TestErrorHandling:
         # Should succeed (empty/null values are accepted)
         assert response.status_code == 200
     
-    def test_pagination_with_invalid_types(self, client, auth_headers):
+    def test_pagination_with_invalid_types(self, client, auth_headers, deck_id):
         """Test pagination with invalid parameter types."""
         # Send non-integer pagination values
-        response = client.get("/decks/1/cards?page=invalid&per_page=abc", headers=auth_headers)
+        response = client.get(f"/decks/{deck_id}/cards?page=invalid&per_page=abc", headers=auth_headers)
         
         # Invalid values default to defaults (200)
         assert response.status_code == 200
     
-    def test_review_endpoint_with_invalid_limit_type(self, client, auth_headers):
+    def test_review_endpoint_with_invalid_limit_type(self, client, auth_headers, deck_id):
         """Test review endpoint with invalid limit type."""
-        response = client.get("/decks/1/review?limit=not-a-number", headers=auth_headers)
+        response = client.get(f"/decks/{deck_id}/review?limit=not-a-number", headers=auth_headers)
         
         # Invalid values default to defaults (200)
         assert response.status_code == 200
@@ -1389,7 +1389,7 @@ class TestErrorHandling:
 class TestResponseFormat:
     """Tests for response formatting and structure."""
     
-    def test_create_card_response_structure(self, client, auth_headers):
+    def test_create_card_response_structure(self, client, auth_headers, deck_id):
         """Test that create response has correct structure."""
         card_data = {
             "word": "структура",
@@ -1397,7 +1397,7 @@ class TestResponseFormat:
         }
         
         response = client.post(
-            "/decks/1/card",
+            f"/decks/{deck_id}/card",
             data=json.dumps(card_data),
             content_type='application/json',
             headers=auth_headers
@@ -1411,12 +1411,12 @@ class TestResponseFormat:
         assert "card" in result
         assert "Card created successfully" in result["message"]
     
-    def test_update_card_response_structure(self, client, auth_headers):
+    def test_update_card_response_structure(self, client, auth_headers, deck_id):
         """Test that update response has correct structure."""
         # Create a card first
         card_data = {"word": "test", "translation": "test"}
         create_resp = client.post(
-            "/decks/1/card",
+            f"/decks/{deck_id}/card",
             data=json.dumps(card_data),
             content_type='application/json',
             headers=auth_headers
@@ -1426,7 +1426,7 @@ class TestResponseFormat:
         # Update it
         update_data = {"definition": "test definition"}
         response = client.post(
-            f"/decks/1/cards/{card_id}",
+            f"/decks/{deck_id}/cards/{card_id}",
             data=json.dumps(update_data),
             content_type='application/json',
             headers=auth_headers
@@ -1440,12 +1440,12 @@ class TestResponseFormat:
         assert "card" in result
         assert "updated" in result["message"].lower()
     
-    def test_delete_card_response_structure(self, client, auth_headers):
+    def test_delete_card_response_structure(self, client, auth_headers, deck_id):
         """Test that delete response has correct structure."""
         # Create a card first
         card_data = {"word": "test", "translation": "test"}
         create_resp = client.post(
-            "/decks/1/card",
+            f"/decks/{deck_id}/card",
             data=json.dumps(card_data),
             content_type='application/json',
             headers=auth_headers
@@ -1453,7 +1453,7 @@ class TestResponseFormat:
         card_id = json.loads(create_resp.data)["card"]["c_id"]
         
         # Delete it
-        response = client.delete(f"/decks/1/cards/{card_id}", headers=auth_headers)
+        response = client.delete(f"/decks/{deck_id}/cards/{card_id}", headers=auth_headers)
         
         assert response.status_code == 200
         result = json.loads(response.data)
@@ -1462,11 +1462,11 @@ class TestResponseFormat:
         assert "message" in result
         assert "deleted" in result["message"].lower()
     
-    def test_error_response_has_error_field(self, client, auth_headers):
+    def test_error_response_has_error_field(self, client, auth_headers, deck_id):
         """Test that error responses have error field."""
         # Try invalid request
         response = client.post(
-            "/decks/1/card",
+            f"/decks/{deck_id}/card",
             data="",
             content_type='application/json',
             headers=auth_headers
