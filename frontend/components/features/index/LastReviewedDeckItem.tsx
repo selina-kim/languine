@@ -1,22 +1,29 @@
 import { CText } from "@/components/common/CText";
 import { COLORS } from "@/constants/colors";
 import { SHADOWS } from "@/constants/shadows";
+import { useRouter } from "expo-router";
 import { Pressable } from "react-native";
 
 type LastReviewedDeckItemProps = {
+  deckId: string;
   deckName: string;
   lastReviewed: string;
 };
 
 export const LastReviewedDeckItem = ({
+  deckId,
   deckName,
   lastReviewed,
 }: LastReviewedDeckItemProps) => {
+  const router = useRouter();
+
   return (
     <Pressable
       onPress={() => {
-        // TODO
-        console.log(`${deckName} deck was clicked!`);
+        router.push({
+          pathname: "/decks",
+          params: { deckId },
+        });
       }}
       style={{
         paddingVertical: 10,
