@@ -59,17 +59,51 @@ export const ImportDeckModal = ({
         copyToCacheDirectory: true,
       });
 
-      if (result.canceled || !result.assets || result.assets.length === 0) {
+      // Support both new ({ canceled, assets }) and legacy
+      // ({ type: 'success' | 'cancel', uri, name, mimeType })
+      let asset: DocumentPicker.DocumentPickerAsset | null = null;
+
+      const anyResult = result as any;
+
+      if ("canceled" in anyResult) {
+        if (
+          anyResult.canceled ||
+          !anyResult.assets ||
+          anyResult.assets.length === 0
+        ) {
+          return;
+        }
+        asset = anyResult.assets[0];
+      } else if ("type" in anyResult) {
+        if (anyResult.type !== "success") {
+          return;
+        }
+
+        asset = {
+          uri: anyResult.uri,
+          name: anyResult.name,
+          mimeType: anyResult.mimeType,
+          size: anyResult.size,
+        } as DocumentPicker.DocumentPickerAsset;
+      }
+
+      if (!asset) {
         return;
       }
 
-      const asset = result.assets[0];
-      setFile(asset);
-
       const detectedFormat = autoDetectFormat(asset.name);
-      if (detectedFormat) {
-        setFormat(detectedFormat);
+
+      if (!detectedFormat) {
+        setFormat(null);
+        setFile(null);
+        setFileError(
+          "Unsupported file type. Please upload a JSON, CSV, or Anki (.txt) file.",
+        );
+        return;
       }
+
+      setFile(asset);
+      setFormat(detectedFormat);
     } catch (error) {
       const message =
         error instanceof Error
@@ -186,17 +220,30 @@ export const ImportDeckModal = ({
             marginVertical: 12,
           }}
         >
-          <View
-            style={{
-              height: 64,
-              width: 64,
-            }}
-          >
-            <UploadIcon />
-          </View>
-          <CText bold style={{ color: COLORS.text.secondary }}>
-            Browse Files
-          </CText>
+          {file ? (
+            <CText
+              bold
+              numberOfLines={1}
+              ellipsizeMode="tail"
+              style={{ color: COLORS.text.primary, maxWidth: "90%" }}
+            >
+              {file.name}
+            </CText>
+          ) : (
+            <>
+              <View
+                style={{
+                  height: 64,
+                  width: 64,
+                }}
+              >
+                <UploadIcon />
+              </View>
+              <CText bold style={{ color: COLORS.text.secondary }}>
+                Browse Files
+              </CText>
+            </>
+          )}
         </Pressable>
         {fileError && <CText variant="inputError">{fileError}</CText>}
       </View>
