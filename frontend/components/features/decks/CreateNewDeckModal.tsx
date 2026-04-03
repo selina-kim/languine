@@ -145,7 +145,7 @@ export const CreateNewDeckModal = ({
           label="Deck Name *"
           value={deckName}
           onChangeText={setDeckName}
-          placeholder="e.g., Spanish Basics"
+          placeholder="e.g., French Basics"
         />
         {deckNameInputError && (
           <CText variant="inputError">{deckNameInputError}</CText>

@@ -8,6 +8,7 @@ import { CText } from "@/components/common/CText";
 import { CTextInput } from "@/components/common/CTextInput";
 import { Modal } from "@/components/common/Modal";
 import { COLORS } from "@/constants/colors";
+import { getPlaceholdersForLanguages } from "@/constants/placeholders";
 import { useLanguageOptions } from "@/context/LanguageOptionsContext";
 import { Card } from "@/types/decks";
 import { useEffect, useState } from "react";
@@ -70,6 +71,13 @@ export const CreateNewCardModal = ({
 
   const sourceLanguageName = getLanguageName(translationLanguageCode);
   const targetLanguageName = getLanguageName(wordLanguageCode);
+
+  const {
+    wordPlaceholder,
+    translationPlaceholder,
+    exampleSourcePlaceholder,
+    exampleTargetPlaceholder,
+  } = getPlaceholdersForLanguages(translationLanguageCode, wordLanguageCode);
 
   const onSubmitCard = async () => {
     if (isSavingCard) {
@@ -445,13 +453,13 @@ export const CreateNewCardModal = ({
           sublabel={sourceLanguageName.toUpperCase()}
           value={sourceWord}
           onChangeText={setSourceWord}
-          placeholder="e.g., Hello"
+          placeholder={wordPlaceholder}
         />
         <CTextInput
           sublabel={targetLanguageName.toUpperCase()}
           value={targetWord}
           onChangeText={setTargetWord}
-          placeholder="e.g., 안녕하세요"
+          placeholder={translationPlaceholder}
         />
         {wordInputError && <CText variant="inputError">{wordInputError}</CText>}
         <CButton
@@ -466,13 +474,13 @@ export const CreateNewCardModal = ({
           sublabel={sourceLanguageName.toUpperCase()}
           value={sourceExample}
           onChangeText={setSourceExample}
-          placeholder="e.g., Hello my name is Tinu."
+          placeholder={exampleSourcePlaceholder}
         />
         <CTextInput
           sublabel={targetLanguageName.toUpperCase()}
           value={targetExample}
           onChangeText={setTargetExample}
-          placeholder="e.g., 안녕하세요! 제 이름은 티누예요."
+          placeholder={exampleTargetPlaceholder}
         />
         {exampleError && <CText variant="inputError">{exampleError}</CText>}
         <CButton
