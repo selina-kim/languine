@@ -9,6 +9,8 @@ import { StepContainer } from "@/components/features/help/StepContainer";
 import { TipsContainer } from "@/components/features/help/TipsContainer";
 import { DATA_FAQ, DATA_TIP } from "@/constants/helpData";
 import { ScrollView } from "react-native";
+import { useCallback, useRef, useEffect, useState } from "react";
+import { useFocusEffect } from "@react-navigation/native";
 
 type LabelProps = {
   text: string;
@@ -30,6 +32,29 @@ const Label = ({ text }: LabelProps) => (
 );
 
 export default function Help() {
+  const screenStart = useRef(Date.now());
+  const [shouldMeasure, setShouldMeasure] = useState(false);
+  const hasMarked = useRef(false);
+
+  useFocusEffect(
+    useCallback(() => {
+      hasMarked.current = false;
+      screenStart.current = Date.now();
+      setShouldMeasure(true);
+    }, []),
+  );
+
+  useEffect(() => {
+    if (shouldMeasure && !hasMarked.current) {
+      // Use requestAnimationFrame to measure actual render time
+      requestAnimationFrame(() => {
+        const tti = Date.now() - screenStart.current;
+        console.log(`[PERF] HelpScreen TTI: ${tti}ms`);
+        hasMarked.current = true;
+      });
+    }
+  }, [shouldMeasure]);
+
   return (
     <ScrollView
       style={{

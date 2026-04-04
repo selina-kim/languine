@@ -90,3 +90,21 @@ def get_current_user():
 def logout():
     """Logout user (client-side token invalidation)."""
     return jsonify({'message': 'Logged out successfully'}), 200
+
+@auth_bp.route('/test-token', methods=['POST'])
+def get_test_token():
+    """Get a test JWT token for development/testing (DEVELOPMENT ONLY)."""
+    import os
+    if os.getenv('FLASK_ENV') != 'development':
+        return jsonify({'error': 'Test tokens only available in development'}), 403
+    
+    # Use the seeded test user that has prebuilt decks
+    test_user_uid = '112255507948077384809'
+    tokens = AuthService.generate_tokens(test_user_uid)
+    
+    return jsonify({
+        'message': 'Test token generated for seeded test user',
+        'user_id': test_user_uid,
+        'decks': ['Mandarin Chinese Beginner', 'Japanese Beginner', 'Korean Beginner', 'French Beginner'],
+        'tokens': tokens
+    }), 200

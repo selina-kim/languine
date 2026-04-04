@@ -47,7 +47,7 @@ export const DeckPreview = ({
         style={{ color: COLORS.text.language, fontSize: 16, lineHeight: 24 }}
         special
       >
-        {language.toUpperCase()}
+        {language}
       </CText>
       {hasDescription && (
         <CText

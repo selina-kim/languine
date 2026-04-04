@@ -46,5 +46,8 @@ export const getImageUrl = (objectId: string | null): string | null => {
  */
 export const isBackendImageUrl = (url: string): boolean => {
   const baseUrl = process.env.EXPO_PUBLIC_API_URL;
-  return url.startsWith(baseUrl || "");
+  if (!baseUrl) {
+    return false;
+  }
+  return url.startsWith(baseUrl);
 };

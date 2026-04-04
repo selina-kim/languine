@@ -30,6 +30,8 @@ sudo service --status-all    # check if docker service is running
 sudo service docker start    # if it isn't, manually start
 ```
 
+On other OS platforms, you may have different ways to have the docker daemon running.
+
 #### 2. Start the docker image of the backend service
 
 ```bash

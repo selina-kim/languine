@@ -8,7 +8,7 @@ import { useReviewSession } from "@/context/ReviewSessionContext";
 import { DueDeck } from "@/types/decks";
 import { useFocusEffect } from "@react-navigation/native";
 import { useLocalSearchParams, usePathname, useRouter } from "expo-router";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, useRef } from "react";
 import { ActivityIndicator, ScrollView, View } from "react-native";
 
 interface FocusedReviewDeck {
@@ -21,6 +21,8 @@ export default function Revision() {
   const [focusedDeck, setFocusedDeck] = useState<FocusedReviewDeck>();
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string>();
+  const screenStart = useRef(Date.now());
+  const hasMarked = useRef(false);
   const pathname = usePathname();
   const router = useRouter();
   const params = useLocalSearchParams<{ deckId?: string; deckName?: string }>();
@@ -42,6 +44,8 @@ export default function Revision() {
   const getDueDecks = useCallback(async () => {
     setIsLoading(true);
     setError(undefined);
+    screenStart.current = Date.now();
+    hasMarked.current = false;
 
     try {
       const { data, error: responseError } = await getDecksWithDueCards(20);
@@ -56,6 +60,15 @@ export default function Revision() {
       setIsLoading(false);
     }
   }, []);
+
+  // Mark interactive once decks are loaded
+  useEffect(() => {
+    if (!isLoading && decksList.length > 0 && !hasMarked.current) {
+      const tti = Date.now() - screenStart.current;
+      console.log(`[PERF] RevisionScreen TTI: ${tti}ms`);
+      hasMarked.current = true;
+    }
+  }, [isLoading, decksList]);
 
   useFocusEffect(
     useCallback(() => {

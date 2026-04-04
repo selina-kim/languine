@@ -78,6 +78,14 @@ eas build --profile development --platform android
 
 1. Open Android Emulator → More Actions → Virtual Device Manager → Start your device.
 
-2. Run the app on Expo (follow [these steps](#run-the-application-expo))
+2. Run the app on Expo (follow previous steps)
 
 - If app screen on emulator shows error on launch instead of bundling the app, might have to manually type in `<ip address>:8081` for the local server on the expo app
+
+## Run Tests
+
+Run the following command to run the entire frontend test suite. Make sure the backend docker instance is running (check backend README for instructions) before running this command.
+
+```bash
+npm test
+```
