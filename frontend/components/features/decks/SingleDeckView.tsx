@@ -17,6 +17,7 @@ import {
   Platform,
 } from "react-native";
 import * as FileSystem from "expo-file-system/legacy";
+import * as Sharing from "expo-sharing";
 import { CreateNewCardModal } from "./CreateNewCardModal";
 import { PlusFilledIcon } from "@/assets/icons/PlusFilledIcon";
 import { CardsList } from "./CardsList";
@@ -159,17 +160,62 @@ export const SingleDeckView = ({ deckId }: SingleDeckViewProps) => {
         a.click();
         a.remove();
         window.URL.revokeObjectURL(url);
+        Alert.alert("Deck exported", "Your deck file has been downloaded.");
       } else {
+        const content = await response.text();
+
+        if (Platform.OS === "android") {
+          const permissions =
+            await FileSystem.StorageAccessFramework.requestDirectoryPermissionsAsync();
+
+          if (!permissions.granted || !permissions.directoryUri) {
+            Alert.alert(
+              "Export canceled",
+              "No folder selected, so the deck was not exported.",
+            );
+            return;
+          }
+
+          const safeFilename = filename.replace(/[\\/:*?"<>|]/g, "_");
+          const fileUri =
+            await FileSystem.StorageAccessFramework.createFileAsync(
+              permissions.directoryUri,
+              safeFilename,
+              "application/json",
+            );
+
+          await FileSystem.writeAsStringAsync(fileUri, content, {
+            encoding: FileSystem.EncodingType.UTF8,
+          });
+
+          Alert.alert(
+            "Deck exported",
+            "Your deck file has been saved to the selected folder.",
+          );
+          return;
+        }
+
         const baseDir =
           (FileSystem.cacheDirectory as string | undefined) ??
           (FileSystem.documentDirectory as string | undefined) ??
           "";
         const fileUri = `${baseDir}${filename}`;
-        const content = await response.text();
         await FileSystem.writeAsStringAsync(fileUri, content);
-      }
 
-      Alert.alert("Deck exported", "Your deck file has been saved.");
+        if (await Sharing.isAvailableAsync()) {
+          await Sharing.shareAsync(fileUri, {
+            mimeType: "application/json",
+            UTI: "public.json",
+            dialogTitle: "Save or share your exported deck",
+          });
+        }
+
+        Alert.alert(
+          "Deck exported",
+          "Your deck file is ready. Choose Save to Files in the share menu.",
+        );
+        return;
+      }
     } catch (error) {
       const message =
         error instanceof Error ? error.message : "Failed to export deck.";
