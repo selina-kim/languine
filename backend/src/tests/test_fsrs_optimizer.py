@@ -19,32 +19,13 @@ The tests cover:
 
 Run this test file:
     docker compose exec backend pytest src/tests/test_fsrs_optimizer.py -v
+
+Run with coverage:
+    docker compose exec backend pytest src/tests/test_fsrs_optimizer.py --cov=services.fsrs.optimizer
 """
 
 from services.fsrs.optimizer import Optimizer, max_seq_len
 from services.fsrs.scheduler import Scheduler, DEFAULT_PARAMETERS, LOWER_BOUNDS_PARAMETERS, UPPER_BOUNDS_PARAMETERS
-"""
-Unit tests for the Optimizer class in fsrs.optimizer.
-
-The tests cover:
-- Behavior with zero review logs (should return default parameters) 
-- Behavior with a sample set of review logs (parameters should change and loss should improve)
-- Behavior with fewer than the minimum number of review logs (should return default parameters)
-- Invariance to the order of review logs
-- Handling of cards with difficulty driven down to 1.0
-- Performance with the minimum number of review logs (512)
-- Test that optimized parameters lie within specified bounds
-- Validity of computed probabilities and costs
-- Correct counting of reviews for optimization
-- Acceptance of tuple review logs
-- String representation of the optimizer
-- Performance of optimization under 10k reviews
-- Generalization and overfitting checks with a train/val/test split
-- Evaluation of AUC-ROC and ECE metrics for the optimized model
-
-Run this test file:
-    docker compose exec backend pytest src/tests/test_fsrs_optimizer.py -v
-"""
 
 from services.fsrs.optimizer import Optimizer, max_seq_len
 from services.fsrs.scheduler import Scheduler, DEFAULT_PARAMETERS, LOWER_BOUNDS_PARAMETERS, UPPER_BOUNDS_PARAMETERS

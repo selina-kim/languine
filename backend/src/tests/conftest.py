@@ -110,13 +110,13 @@ def system_decks(db_schema):
         cursor.execute("""
             INSERT INTO Decks (u_id, deck_name, word_lang, trans_lang, description, is_public)
             VALUES
-                ('system', 'Mandarin Chinese Beginner', 'Chinese (Mandarin)', 'English',
+                ('system', 'Mandarin Chinese Beginner', 'ZH', 'EN',
                  'Essential beginner vocabulary for Mandarin Chinese', true),
-                ('system', 'Korean Beginner', 'Korean', 'English',
+                ('system', 'Korean Beginner', 'KO', 'EN',
                  'Essential beginner vocabulary for Korean', true),
-                ('system', 'French Beginner', 'French', 'English',
+                ('system', 'French Beginner', 'FR', 'EN',
                  'Essential beginner vocabulary for French', true), 
-                ('system', 'Japanese Beginner', 'Japanese', 'English',
+                ('system', 'Japanese Beginner', 'JA', 'EN',
                  'Essential beginner vocabulary for Japanese', true)
             ON CONFLICT (u_id, deck_name) DO NOTHING
         """)
@@ -163,10 +163,10 @@ def db_setup(db_schema):
     """Set up test data before each test."""
     with get_db_cursor(commit=True) as cursor:
         # Clean up existing test data
+        cursor.execute("DELETE FROM Review_Logs WHERE c_id IN (SELECT c_id FROM Cards WHERE d_id IN (SELECT d_id FROM Decks WHERE u_id = 'test-user-id'))")
         cursor.execute("DELETE FROM Cards WHERE d_id IN (SELECT d_id FROM Decks WHERE u_id = 'test-user-id')")
         cursor.execute("DELETE FROM Decks WHERE u_id = 'test-user-id'")
         cursor.execute("DELETE FROM Users WHERE u_id = 'test-user-id'")
-        cursor.execute("DELETE FROM Review_Logs WHERE c_id IN (SELECT c_id FROM Cards WHERE d_id IN (SELECT d_id FROM Decks WHERE u_id = 'test-user-id'))")
 
         # Insert test user
         cursor.execute("""
@@ -174,10 +174,7 @@ def db_setup(db_schema):
             VALUES ('test-user-id', 'test@example.com', 'Test User', 'America/Toronto', %s, 600, 600)
         """, (list(DEFAULT_PARAMETERS),))
         
-        # Reset the decks sequence to ensure we get d_id = 1  
-        cursor.execute("SELECT setval('decks_d_id_seq', 1, false)")
-        
-        # Insert test deck with d_id = 1
+        # Insert test deck
         cursor.execute("""
             INSERT INTO Decks (u_id, deck_name, word_lang, trans_lang, description)
             VALUES ('test-user-id', 'Test Deck', 'es', 'en', 'Test deck for integration tests')
@@ -238,10 +235,10 @@ def db_setup(db_schema):
     
     # Cleanup after each test
     with get_db_cursor(commit=True) as cursor:
+        cursor.execute("DELETE FROM Review_Logs WHERE c_id IN (SELECT c_id FROM Cards WHERE d_id IN (SELECT d_id FROM Decks WHERE u_id = 'test-user-id'))")
         cursor.execute("DELETE FROM Cards WHERE d_id IN (SELECT d_id FROM Decks WHERE u_id = 'test-user-id')")
         cursor.execute("DELETE FROM Decks WHERE u_id = 'test-user-id'")
         cursor.execute("DELETE FROM Users WHERE u_id = 'test-user-id'")
-        cursor.execute("DELETE FROM Review_Logs WHERE c_id IN (SELECT c_id FROM Cards WHERE d_id IN (SELECT d_id FROM Decks WHERE u_id = 'test-user-id'))")
     
     # Clean up MinIO test files
     cleanup_minio_test_data()
@@ -274,6 +271,12 @@ def auth_token(app):
 def auth_headers(auth_token):
     """Create authorization headers with JWT token."""
     return {'Authorization': f'Bearer {auth_token}'}
+
+
+@pytest.fixture
+def deck_id(db_setup):
+    """Expose the test deck ID for tests that construct URLs with it."""
+    return db_setup
 
 
 @pytest.fixture

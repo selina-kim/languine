@@ -20,6 +20,7 @@ import time
 
 # mark all tests in this file as integration tests
 pytestmark = pytest.mark.integration
+MAX_DICTIONARY_API_SECONDS = 20.0
 
 @pytest.fixture
 def skip_if_no_api_key():
@@ -36,6 +37,7 @@ def test_define_real_api_call(client, skip_if_no_api_key):
     elapsed_time = time.time() - start_time
     
     print(f"\n[TIMING] Dictionary /define/hello: {elapsed_time:.3f}s")
+    assert elapsed_time < MAX_DICTIONARY_API_SECONDS
 
     # verify successful response
     assert response.status_code == 200
@@ -77,6 +79,7 @@ def test_define_real_api_complex_word(client, skip_if_no_api_key):
     elapsed_time = time.time() - start_time
     
     print(f"\n[TIMING] Dictionary /define/run (complex): {elapsed_time:.3f}s")
+    assert elapsed_time < MAX_DICTIONARY_API_SECONDS
     
     assert response.status_code == 200
     data = response.get_json()

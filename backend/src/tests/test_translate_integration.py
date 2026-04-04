@@ -15,6 +15,8 @@ import time
 
 
 pytestmark = pytest.mark.integration
+MAX_TRANSLATE_API_SECONDS = 20.0
+MAX_TRANSLATE_LANGUAGES_SECONDS = 10.0
 
 # test translation via POST
 def test_translate_real_api_post(client):
@@ -27,6 +29,7 @@ def test_translate_real_api_post(client):
     elapsed_time = time.time() - start_time
     
     print(f"\n[TIMING] Translation POST EN->KO: {elapsed_time:.3f}s")
+    assert elapsed_time < MAX_TRANSLATE_API_SECONDS
     
     # parse the JSON response body
     data = json.loads(response.data)
@@ -47,6 +50,7 @@ def test_translate_real_api_get_with_source(client):
     elapsed_time = time.time() - start_time
     
     print(f"\n[TIMING] Translation GET JA->EN-US: {elapsed_time:.3f}s")
+    assert elapsed_time < MAX_TRANSLATE_API_SECONDS
     
     data = json.loads(response.data)
     
@@ -66,6 +70,7 @@ def test_translate_real_api_complex_text(client):
     elapsed_time = time.time() - start_time
     
     print(f"\n[TIMING] Translation POST KO->EN-US (complex): {elapsed_time:.3f}s")
+    assert elapsed_time < MAX_TRANSLATE_API_SECONDS
     
     data = json.loads(response.data)
     
@@ -84,6 +89,7 @@ def test_get_supported_languages_real_api(client):
     elapsed_time = time.time() - start_time
     
     print(f"\n[TIMING] Get supported languages: {elapsed_time:.3f}s")
+    assert elapsed_time < MAX_TRANSLATE_LANGUAGES_SECONDS
     
     data = json.loads(response.data)
     

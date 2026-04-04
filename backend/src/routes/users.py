@@ -54,7 +54,7 @@ def get_current_user():
         return json_response(user)
     
     except DatabaseError as e:
-        return error_response(str(e) or "Database error", status=500)
+        return error_response(f"Database error: {str(e)}", status=500)
     
     except Exception as e:
         return error_response(f"Failed to retrieve user: {str(e)}", status=500)
@@ -187,7 +187,7 @@ def update_current_user():
         return error_response(str(e), status=400)
     
     except DatabaseError as e:
-        return error_response(str(e) or "Database error", status=500)
+        return error_response(f"Database error: {str(e)}", status=500)
     
     except Exception as e:
         return error_response(f"Failed to update user: {str(e)}", status=500)
@@ -220,7 +220,7 @@ def delete_current_user():
         return error_response(str(e) or "User not found", status=404)
     
     except DatabaseError as e:
-        return error_response(str(e) or "Database error", status=500)
+        return error_response(f"Database error: {str(e)}", status=500)
     
     except Exception as e:
         return error_response(f"Failed to delete user: {str(e)}", status=500)

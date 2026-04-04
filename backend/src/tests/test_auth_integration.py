@@ -8,9 +8,11 @@ Important:
 - Requires real Google OAuth tokens set in .env as GOOGLE_TEST_ID_TOKEN
 - Skipped by default (pytest runs only unit tests)
 
-Run with: 
-- poetry run pytest -v -m integration -rs (runs only integration tests)
-- poetry run pytest src/tests/test_auth_integration.py -v  -m integration -rs
+Run this test file:
+    docker compose exec backend pytest src/tests/test_auth_integration.py -v -m integration
+
+Run with coverage:
+    docker compose exec backend pytest src/tests/test_auth_integration.py --cov=routes.auth -m integration 
 
 Test coverage:
 - Real Google OAuth token verification
@@ -481,3 +483,95 @@ class TestBuiltinDecksOnSignupIntegration:
         assert user["u_id"] == _BUILTIN_TEST_USER_ID
         assert user["email"] == "builtin-test@example.com"
         assert user["display_name"] == "Builtin Test User"
+
+
+# ---------------------------------------------------------------------------
+# Edge-case and protected-endpoint coverage tests (no real Google token needed)
+# ---------------------------------------------------------------------------
+
+class TestGoogleOAuthEdgeCases:
+    """Cover error-handling branches in POST /auth/google."""
+
+    def test_missing_token_returns_400(self, builtin_client):
+        """POST /auth/google with no id_token field returns 400."""
+        response = builtin_client.post("/auth/google", json={})
+        assert response.status_code == 400
+        assert response.get_json()["error"] == "Token required"
+
+    def test_null_token_returns_400(self, builtin_client):
+        """POST /auth/google with null id_token returns 400."""
+        response = builtin_client.post("/auth/google", json={"id_token": None})
+        assert response.status_code == 400
+        assert response.get_json()["error"] == "Token required"
+
+    def test_invalid_token_returns_401(self, builtin_client, monkeypatch):
+        """POST /auth/google with a token that fails verification returns 401."""
+        def fake_raise_value_error(*args, **kwargs):
+            raise ValueError("Invalid token: signature mismatch")
+
+        monkeypatch.setattr(
+            "routes.auth.id_token.verify_oauth2_token",
+            fake_raise_value_error,
+        )
+        response = builtin_client.post("/auth/google", json={"id_token": "bad-token"})
+        assert response.status_code == 401
+        assert "error" in response.get_json()
+
+
+class TestProtectedEndpoints:
+    """Cover GET /auth/me and POST /auth/logout using pre-built JWT tokens."""
+
+    def test_get_current_user_returns_200(self, builtin_client, builtin_auth_headers):
+        """GET /auth/me with a valid access token returns 200 and the user's u_id."""
+        response = builtin_client.get("/auth/me", headers=builtin_auth_headers)
+        assert response.status_code == 200
+        data = response.get_json()
+        assert "user" in data
+        assert data["user"]["u_id"] == _BUILTIN_TEST_USER_ID
+
+    def test_get_current_user_without_token_returns_401(self, builtin_client):
+        """GET /auth/me without an Authorization header returns 401."""
+        response = builtin_client.get("/auth/me")
+        assert response.status_code == 401
+
+    def test_logout_returns_success_message(self, builtin_client, builtin_auth_headers):
+        """POST /auth/logout with a valid access token returns 200."""
+        response = builtin_client.post("/auth/logout", headers=builtin_auth_headers)
+        assert response.status_code == 200
+        assert response.get_json()["message"] == "Logged out successfully"
+
+    def test_logout_without_token_returns_401(self, builtin_client):
+        """POST /auth/logout without an Authorization header returns 401."""
+        response = builtin_client.post("/auth/logout")
+        assert response.status_code == 401
+
+
+class TestRefreshEndpointMocked:
+    """Cover POST /auth/refresh using a refresh JWT (no real Google token needed)."""
+
+    def test_refresh_with_valid_refresh_token(self, builtin_app, builtin_client):
+        """POST /auth/refresh with a valid refresh token returns a new access token."""
+        from flask_jwt_extended import create_refresh_token
+
+        with builtin_app.app_context():
+            refresh_tok = create_refresh_token(identity=_BUILTIN_TEST_USER_ID)
+
+        response = builtin_client.post(
+            "/auth/refresh",
+            headers={"Authorization": f"Bearer {refresh_tok}"},
+        )
+        assert response.status_code == 200
+        data = response.get_json()
+        assert "tokens" in data
+        assert "access_token" in data["tokens"]
+        assert data["tokens"]["access_token"].count(".") == 2
+
+    def test_refresh_with_access_token_returns_401(self, builtin_client, builtin_auth_headers):
+        """POST /auth/refresh with an access token (not a refresh token) returns 401."""
+        response = builtin_client.post("/auth/refresh", headers=builtin_auth_headers)
+        assert response.status_code == 401
+
+    def test_refresh_without_token_returns_401(self, builtin_client):
+        """POST /auth/refresh without any token returns 401."""
+        response = builtin_client.post("/auth/refresh")
+        assert response.status_code == 401

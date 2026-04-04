@@ -18,7 +18,6 @@ jwt = JWTManager()
 
 def create_app():    
     app = Flask(__name__) 
-    print("Test")
 
     app.config['JSON_AS_ASCII'] = False
     app.config['GOOGLE_CLIENT_ID'] = os.getenv('GOOGLE_CLIENT_ID')
