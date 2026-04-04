@@ -461,3 +461,276 @@ def test_get_recent_decks(client, auth_headers):
     assert response.status_code == 200
     result = json.loads(response.data)
     assert "decks" in result
+
+
+def test_export_deck_database_error(client, auth_headers, deck_id):
+    """Test export endpoint when database error occurs"""
+    from unittest.mock import patch
+    
+    with patch("routes.decks.deck_service.get_deck_for_export") as mock_export:
+        mock_export.side_effect = Exception("DB connection failed")
+        
+        response = client.get(f"/decks/{deck_id}/export?format=json", headers=auth_headers)
+        
+        assert response.status_code == 500
+        result = json.loads(response.data)
+        assert "Database error" in result["error"]
+
+
+def test_export_deck_not_found(client, auth_headers):
+    """Test export of non-existent deck"""
+    response = client.get("/decks/99999/export?format=json", headers=auth_headers)
+    
+    assert response.status_code == 404
+    result = json.loads(response.data)
+    assert "error" in result
+    assert "not found" in result["error"].lower()
+
+
+def test_import_deck_database_error(client, auth_headers):
+    """Test import endpoint when database error occurs"""
+    from unittest.mock import patch
+    
+    deck_data = {
+        "deck": {
+            "deck_name": "Test Deck",
+            "word_lang": "Spanish",
+            "trans_lang": "English",
+            "description": "Test"
+        },
+        "cards": []
+    }
+    
+    with patch("routes.decks.deck_service.save_imported_deck") as mock_save:
+        mock_save.side_effect = Exception("DB connection failed")
+        
+        file_content = json.dumps(deck_data)
+        data = {
+            'file': (BytesIO(file_content.encode()), 'test.json')
+        }
+        
+        response = client.post(
+            "/decks/import",
+            data=data,
+            content_type='multipart/form-data',
+            headers=auth_headers
+        )
+        
+        assert response.status_code == 500
+        result = json.loads(response.data)
+        assert "error" in result
+
+
+def test_import_deck_empty_file(client, auth_headers):
+    """Test import with empty file"""
+    data = {
+        'file': (BytesIO(b''), 'test.json')
+    }
+    
+    response = client.post(
+        "/decks/import",
+        data=data,
+        content_type='multipart/form-data',
+        headers=auth_headers
+    )
+    
+    assert response.status_code == 400
+    result = json.loads(response.data)
+    assert "error" in result
+
+
+def test_create_deck_duplicate_name_error(client, auth_headers):
+    """Test deck creation with duplicate name"""
+    from unittest.mock import patch
+    from services.deck_service import DuplicateDeckNameError
+    
+    deck_data = {
+        "deck_name": "Spanish",
+        "word_lang": "es",
+        "trans_lang": "en"
+    }
+    
+    with patch("routes.decks.deck_service.create_deck") as mock_create:
+        mock_create.side_effect = DuplicateDeckNameError("Deck name already exists")
+        
+        response = client.post(
+            "/decks/new",
+            data=json.dumps(deck_data),
+            content_type='application/json',
+            headers=auth_headers
+        )
+        
+        assert response.status_code == 409
+        result = json.loads(response.data)
+        assert "error" in result
+
+
+def test_create_deck_user_not_found_error(client, auth_headers):
+    """Test deck creation when user not found"""
+    from unittest.mock import patch
+    from services.deck_service import UserNotFoundError
+    
+    deck_data = {
+        "deck_name": "Test Deck",
+        "word_lang": "es",
+        "trans_lang": "en"
+    }
+    
+    with patch("routes.decks.deck_service.create_deck") as mock_create:
+        mock_create.side_effect = UserNotFoundError("User not found")
+        
+        response = client.post(
+            "/decks/new",
+            data=json.dumps(deck_data),
+            content_type='application/json',
+            headers=auth_headers
+        )
+        
+        assert response.status_code == 401
+        result = json.loads(response.data)
+        assert "error" in result
+
+
+def test_create_deck_database_error(client, auth_headers):
+    """Test deck creation when database error occurs"""
+    from unittest.mock import patch
+    from services.deck_service import DatabaseError
+    
+    deck_data = {
+        "deck_name": "Test Deck",
+        "word_lang": "es",
+        "trans_lang": "en"
+    }
+    
+    with patch("routes.decks.deck_service.create_deck") as mock_create:
+        mock_create.side_effect = DatabaseError("DB error")
+        
+        response = client.post(
+            "/decks/new",
+            data=json.dumps(deck_data),
+            content_type='application/json',
+            headers=auth_headers
+        )
+        
+        assert response.status_code == 500
+        result = json.loads(response.data)
+        assert "error" in result
+
+
+def test_list_decks_database_error(client, auth_headers):
+    """Test listing decks when database error occurs"""
+    from unittest.mock import patch
+    
+    with patch("routes.decks.deck_service.list_user_decks") as mock_list:
+        mock_list.side_effect = Exception("DB connection failed")
+        
+        response = client.get("/decks", headers=auth_headers)
+        
+        assert response.status_code == 500
+        result = json.loads(response.data)
+        assert "Database error" in result["error"]
+
+
+def test_get_deck_database_error(client, auth_headers, deck_id):
+    """Test getting a deck when database error occurs"""
+    from unittest.mock import patch
+    
+    with patch("routes.decks.deck_service.get_deck_with_cards") as mock_get:
+        mock_get.side_effect = Exception("DB connection failed")
+        
+        response = client.get(f"/decks/{deck_id}", headers=auth_headers)
+        
+        assert response.status_code == 500
+        result = json.loads(response.data)
+        assert "Database error" in result["error"]
+
+
+def test_get_decks_due_database_error(client, auth_headers):
+    """Test getting due decks when database error occurs"""
+    from unittest.mock import patch
+    
+    with patch("routes.decks.deck_service.get_decks_with_due_cards") as mock_get:
+        mock_get.side_effect = Exception("DB connection failed")
+        
+        response = client.get("/decks/due", headers=auth_headers)
+        
+        assert response.status_code == 500
+        result = json.loads(response.data)
+        assert "Database error" in result["error"]
+
+
+def test_get_recent_decks_database_error(client, auth_headers):
+    """Test getting recent decks when database error occurs"""
+    from unittest.mock import patch
+    
+    with patch("routes.decks.deck_service.get_recent_decks") as mock_get:
+        mock_get.side_effect = Exception("DB connection failed")
+        
+        response = client.get("/decks/recent", headers=auth_headers)
+        
+        assert response.status_code == 500
+        result = json.loads(response.data)
+        assert "Database error" in result["error"]
+
+
+def test_update_deck_duplicate_name_error(client, auth_headers, deck_id):
+    """Test updating deck with duplicate name"""
+    from unittest.mock import patch
+    from services.deck_service import DuplicateDeckNameError
+    
+    update_data = {
+        "deck_name": "Spanish"
+    }
+    
+    with patch("routes.decks.deck_service.update_deck") as mock_update:
+        mock_update.side_effect = DuplicateDeckNameError("Deck name already exists")
+        
+        response = client.put(
+            f"/decks/{deck_id}",
+            data=json.dumps(update_data),
+            content_type="application/json",
+            headers=auth_headers
+        )
+        
+        assert response.status_code == 409
+        result = json.loads(response.data)
+        assert "error" in result
+
+
+def test_update_deck_database_error(client, auth_headers, deck_id):
+    """Test updating deck when database error occurs"""
+    from unittest.mock import patch
+    from services.deck_service import DatabaseError
+    
+    update_data = {
+        "deck_name": "Updated Name"
+    }
+    
+    with patch("routes.decks.deck_service.update_deck") as mock_update:
+        mock_update.side_effect = DatabaseError("DB error")
+        
+        response = client.put(
+            f"/decks/{deck_id}",
+            data=json.dumps(update_data),
+            content_type="application/json",
+            headers=auth_headers
+        )
+        
+        assert response.status_code == 500
+        result = json.loads(response.data)
+        assert "error" in result
+
+
+def test_delete_deck_database_error(client, auth_headers, deck_id):
+    """Test deleting deck when database error occurs"""
+    from unittest.mock import patch
+    from services.deck_service import DatabaseError
+    
+    with patch("routes.decks.deck_service.delete_deck") as mock_delete:
+        mock_delete.side_effect = DatabaseError("DB error")
+        
+        response = client.delete(f"/decks/{deck_id}", headers=auth_headers)
+        
+        assert response.status_code == 500
+        result = json.loads(response.data)
+        assert "error" in result

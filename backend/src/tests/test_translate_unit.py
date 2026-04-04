@@ -5,7 +5,7 @@ without making real API calls.
 
 Test coverage:
 - Success cases (POST/GET with auto-detected and explicit source language)
-- Missing required parameters (text, target_lang)
+- Missing required parameters (POST: text/target_lang, GET: text/target)
 - Missing API key configuration
 - API errors and exceptions
 - Unicode text handling (Korean, emoji)
@@ -127,6 +127,17 @@ def test_translate_get_without_source_lang(client, monkeypatch):
     assert response.status_code == 200
     assert data["detectedSourceLang"] == "EN"
     assert data["translatedText"] == "您好"
+
+
+def test_translate_get_missing_target(client, monkeypatch):
+    """GET /translate should require target query parameter."""
+    monkeypatch.setenv("DEEPL_API_KEY", "test_api_key_12345")
+
+    response = client.get("/translate?text=Hello")
+    data = json.loads(response.data)
+
+    assert response.status_code == 400
+    assert "Missing text or target_lang" in data["error"]
 
 # test error handling when text is missing from POST request
 def test_translate_missing_text(client, monkeypatch):
@@ -267,15 +278,13 @@ def test_get_supported_languages_success(client, monkeypatch):
             return [
                 MockLanguage("EN", "English"),
                 MockLanguage("FR", "French"),
-                MockLanguage("DE", "German")
             ]
         
         def get_target_languages(self):
             return [
-                MockLanguage("ES", "Spanish"),
                 MockLanguage("KO", "Korean"),
                 MockLanguage("JA", "Japanese"),
-                MockLanguage("ZH", "Chinese (simplified)")
+                MockLanguage("ZH", "Mandarin"),
             ]
     
     monkeypatch.setattr("services.translate_service._client", MockTranslator())
@@ -293,14 +302,13 @@ def test_get_supported_languages_success(client, monkeypatch):
     assert isinstance(data["target"], list)
     
     # verify source languages
-    assert len(data["source"]) == 3
+    assert len(data["source"]) == 2
     assert data["source"][0]["code"] == "EN"
     assert data["source"][0]["name"] == "English"
     
     # verify target languages
-    assert len(data["target"]) == 4
-    assert data["target"][0]["code"] == "ES"
-    assert data["target"][1]["code"] == "KO"
+    assert len(data["target"]) == 3
+    assert data["target"][1]["code"] == "JA"
 
 
 def test_get_supported_languages_api_error(client, monkeypatch):

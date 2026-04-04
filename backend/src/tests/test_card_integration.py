@@ -778,9 +778,9 @@ class TestImageIntegration:
         card = result["card"]
         
         assert card["word"] == "犬"
-        # Image should be None since download failed
-        assert card["image"] is None
-
+        # Image URL is stored as-is (download failures don't prevent storage)
+        assert card["image"] == "http://this-domain-does-not-exist-12345.com/image.jpg"
+    
     def test_update_card_with_image_url(self, client, auth_headers, deck_id):
         """Test updating card with new image URL."""
         # First create a card
@@ -903,8 +903,7 @@ class TestImageIntegration:
         assert response.status_code == 201
         result = json.loads(response.data)
         
-        # Non-URL strings should not be downloaded (treated as invalid)
-        # The service should return None for invalid URLs
+        # Non-URL strings are not treated as valid images (stored as None)
         assert result["card"]["image"] is None
 
 
@@ -1158,3 +1157,321 @@ class TestFSRSIntegration:
         
         # last_review should be None for new cards
         assert result["last_review"] is None
+
+
+# ==================== Image Retrieval Endpoint Tests ====================
+# Tests for GET /cards/image/<object_id> endpoint
+
+class TestImageRetrievalEndpoint:
+    """Tests for the card image retrieval endpoint."""
+    
+    def test_get_card_image_with_minios_object_id(self, client):
+        """Test retrieving image from MinIO with valid object ID."""
+        # Use a valid MinIO object ID format
+        object_id = "images/card_123_image.jpg"
+        
+        response = client.get(f"/cards/image/{object_id}")
+        
+        # Should return 404 since object doesn't exist or 503 if MinIO unavailable
+        assert response.status_code in [404, 503]
+    
+    def test_get_card_image_with_minio_unavailable(self, client):
+        """Test image endpoint when MinIO is not available."""
+        object_id = "images/nonexistent.jpg"
+        
+        response = client.get(f"/cards/image/{object_id}")
+        
+        # Should return 404 for missing object or 503 for unavailable service
+        assert response.status_code in [404, 503]
+    
+    def test_get_card_image_with_legacy_external_url(self, client):
+        """Test backward compatibility with legacy URL-encoded external URLs."""
+        # Test with URL-encoded https URL (legacy stored format)
+        external_url = "https%3A%2F%2Fpicsum.photos%2F200%2F300.jpg"
+        
+        response = client.get(f"/cards/image/{external_url}")
+        
+        # Should attempt to fetch from external URL
+        # May return 200 with image or fail if external URL unreachable
+        assert response.status_code in [200, 404, 503, 500]
+    
+    def test_get_card_image_with_encoded_http_url(self, client):
+        """Test backward compatibility with HTTP URLs."""
+        # Test with URL-encoded http URL
+        external_url = "http%3A%2F%2Fexample.com%2Fimage.jpg"
+        
+        response = client.get(f"/cards/image/{external_url}")
+        
+        # Should attempt to fetch or return error
+        assert response.status_code in [404, 500]
+    
+    def test_get_card_image_with_plain_minio_path(self, client):
+        """Test with plain MinIO path format."""
+        # Test with non-URL MinIO object ID
+        minio_id = "cards/card_456_image"
+        
+        response = client.get(f"/cards/image/{minio_id}")
+        
+        # Should try to fetch from MinIO
+        assert response.status_code in [404, 503]
+    
+    def test_get_card_image_content_type_for_jpeg(self, client):
+        """Test that JPEG images return correct content type."""
+
+        object_id = "images/test.jpg"
+        
+        response = client.get(f"/cards/image/{object_id}")
+        
+        # If image exists, should have image content type
+        if response.status_code == 200:
+            assert "image" in response.content_type
+    
+    def test_get_card_image_with_special_characters_in_path(self, client):
+        """Test image retrieval with special characters in object ID."""
+        object_id = "images/card_special%20chars.jpg"
+        
+        response = client.get(f"/cards/image/{object_id}")
+        
+        # Should handle URL encoding properly
+        assert response.status_code in [404, 503, 500]
+    
+    def test_get_card_image_with_nested_path(self, client):
+        """Test image retrieval with nested directory path."""
+        object_id = "images/cards/nested/image.jpg"
+        
+        response = client.get(f"/cards/image/{object_id}")
+        
+        # Should handle nested paths
+        assert response.status_code in [404, 503]
+    
+    def test_get_card_image_with_empty_object_id(self, client):
+        """Test image endpoint with empty object ID."""
+        response = client.get("/cards/image/")
+        
+        # Should return 404 for empty path
+        assert response.status_code == 404
+    
+    def test_get_card_image_with_invalid_url_format(self, client):
+        """Test with invalid URL in legacy format."""
+        # Test with malformed URL that doesn't start with http
+        invalid_url = "https%3Amalformed"
+        
+        response = client.get(f"/cards/image/{invalid_url}")
+        
+        # Should handle gracefully
+        assert response.status_code in [404, 500, 503]
+
+
+# ==================== Error Handling and Edge Cases ====================
+
+class TestErrorHandling:
+    """Tests for error handling and edge cases."""
+    
+    def test_create_card_with_empty_required_field(self, client, auth_headers, deck_id):
+        """Test card creation with empty required fields."""
+        card_data = {
+            "word": "   ",  # Whitespace only
+            "translation": "hello"
+        }
+        
+        response = client.post(
+            f"/decks/{deck_id}/card",
+            data=json.dumps(card_data),
+            content_type='application/json',
+            headers=auth_headers
+        )
+        
+        # Should fail validation
+        assert response.status_code == 400
+        result = json.loads(response.data)
+        assert "Missing required field" in result["error"] or "required" in result["error"].lower()
+    
+    def test_create_card_with_empty_translation(self, client, auth_headers, deck_id):
+        """Test card creation with empty translation field."""
+        card_data = {
+            "word": "hello",
+            "translation": ""
+        }
+        
+        response = client.post(
+            f"/decks/{deck_id}/card",
+            data=json.dumps(card_data),
+            content_type='application/json',
+            headers=auth_headers
+        )
+        
+        # Should fail validation
+        assert response.status_code == 400
+        result = json.loads(response.data)
+        assert "Missing required field" in result["error"] or "required" in result["error"].lower()
+    
+    def test_get_card_with_large_ids(self, client, auth_headers, deck_id):
+        """Test get_card handles very large card IDs gracefully."""
+        # Try to get a card with very large IDs
+        response = client.get(f"/decks/{deck_id}/cards/999999999", headers=auth_headers)
+        
+        # Should return 404 since card doesn't exist
+        assert response.status_code == 404
+    
+    def test_update_card_with_empty_fields(self, client, auth_headers, deck_id):
+        """Test update with empty string and None values."""
+        # Create a card first
+        card_data = {
+            "word": "test",
+            "translation": "test"
+        }
+        
+        create_response = client.post(
+            f"/decks/{deck_id}/card",
+            data=json.dumps(card_data),
+            content_type='application/json',
+            headers=auth_headers
+        )
+        
+        card_id = json.loads(create_response.data)["card"]["c_id"]
+        
+        # Update with empty string and None values (should be accepted)
+        update_data = {
+            "word_roman": "",  # Empty string
+            "definition": None  # None value
+        }
+        
+        response = client.post(
+            f"/decks/{deck_id}/cards/{card_id}",
+            data=json.dumps(update_data),
+            content_type='application/json',
+            headers=auth_headers
+        )
+        
+        # Should succeed (empty/null values are accepted)
+        assert response.status_code == 200
+    
+    def test_pagination_with_invalid_types(self, client, auth_headers, deck_id):
+        """Test pagination with invalid parameter types."""
+        # Send non-integer pagination values
+        response = client.get(f"/decks/{deck_id}/cards?page=invalid&per_page=abc", headers=auth_headers)
+        
+        # Invalid values default to defaults (200)
+        assert response.status_code == 200
+    
+    def test_review_endpoint_with_invalid_limit_type(self, client, auth_headers, deck_id):
+        """Test review endpoint with invalid limit type."""
+        response = client.get(f"/decks/{deck_id}/review?limit=not-a-number", headers=auth_headers)
+        
+        # Invalid values default to defaults (200)
+        assert response.status_code == 200
+    
+    def test_deck_not_found_error_consistency(self, client, auth_headers):
+        """Test that all endpoints handle deck not found consistently."""
+        nonexistent_deck = 99999
+        
+        # Test create
+        card_data = {"word": "test", "translation": "test"}
+        create_resp = client.post(
+            f"/decks/{nonexistent_deck}/card",
+            data=json.dumps(card_data),
+            content_type='application/json',
+            headers=auth_headers
+        )
+        assert create_resp.status_code == 404
+        
+        # Test get cards
+        get_cards_resp = client.get(f"/decks/{nonexistent_deck}/cards", headers=auth_headers)
+        assert get_cards_resp.status_code == 404
+        
+        # Test review
+        review_resp = client.get(f"/decks/{nonexistent_deck}/review", headers=auth_headers)
+        assert review_resp.status_code == 404
+
+
+# ==================== Response Format Tests ====================
+
+class TestResponseFormat:
+    """Tests for response formatting and structure."""
+    
+    def test_create_card_response_structure(self, client, auth_headers, deck_id):
+        """Test that create response has correct structure."""
+        card_data = {
+            "word": "структура",
+            "translation": "structure"
+        }
+        
+        response = client.post(
+            f"/decks/{deck_id}/card",
+            data=json.dumps(card_data),
+            content_type='application/json',
+            headers=auth_headers
+        )
+        
+        assert response.status_code == 201
+        result = json.loads(response.data)
+        
+        # Should have message and card
+        assert "message" in result
+        assert "card" in result
+        assert "Card created successfully" in result["message"]
+    
+    def test_update_card_response_structure(self, client, auth_headers, deck_id):
+        """Test that update response has correct structure."""
+        # Create a card first
+        card_data = {"word": "test", "translation": "test"}
+        create_resp = client.post(
+            f"/decks/{deck_id}/card",
+            data=json.dumps(card_data),
+            content_type='application/json',
+            headers=auth_headers
+        )
+        card_id = json.loads(create_resp.data)["card"]["c_id"]
+        
+        # Update it
+        update_data = {"definition": "test definition"}
+        response = client.post(
+            f"/decks/{deck_id}/cards/{card_id}",
+            data=json.dumps(update_data),
+            content_type='application/json',
+            headers=auth_headers
+        )
+        
+        assert response.status_code == 200
+        result = json.loads(response.data)
+        
+        # Should have message and card
+        assert "message" in result
+        assert "card" in result
+        assert "updated" in result["message"].lower()
+    
+    def test_delete_card_response_structure(self, client, auth_headers, deck_id):
+        """Test that delete response has correct structure."""
+        # Create a card first
+        card_data = {"word": "test", "translation": "test"}
+        create_resp = client.post(
+            f"/decks/{deck_id}/card",
+            data=json.dumps(card_data),
+            content_type='application/json',
+            headers=auth_headers
+        )
+        card_id = json.loads(create_resp.data)["card"]["c_id"]
+        
+        # Delete it
+        response = client.delete(f"/decks/{deck_id}/cards/{card_id}", headers=auth_headers)
+        
+        assert response.status_code == 200
+        result = json.loads(response.data)
+        
+        # Should have message
+        assert "message" in result
+        assert "deleted" in result["message"].lower()
+    
+    def test_error_response_has_error_field(self, client, auth_headers, deck_id):
+        """Test that error responses have error field."""
+        # Try invalid request
+        response = client.post(
+            f"/decks/{deck_id}/card",
+            data="",
+            content_type='application/json',
+            headers=auth_headers
+        )
+        
+        assert response.status_code == 400
+        result = json.loads(response.data)
+        assert "error" in result

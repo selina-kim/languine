@@ -7,6 +7,7 @@ import json
 import io
 from scipy.io import wavfile
 from services.tts_service import TTSService
+import numpy as np
 
 tts_bp = Blueprint("tts", __name__)
 tts_service = TTSService()
@@ -65,8 +66,7 @@ def text_to_speech():
     {
         "text": "Text to convert to speech" (required),
         "language": "en" (required),
-        "speaker": "Craig Gutsy" (optional - if not provided, uses language-specific default),
-        "speaker_wav": "path/to/voice.wav" (optional, for voice cloning)
+        "speaker": "Craig Gutsy" (optional - if not provided, uses language-specific default)
     }
     
     Returns: WAV audio file
@@ -84,7 +84,10 @@ def text_to_speech():
         text = data.get("text")
         language = data.get("language")
         speaker = data.get("speaker")
-        speaker_wav = data.get("speaker_wav")
+        
+        # Normalize language to lowercase
+        if language:
+            language = language.lower()
         
         # Validate required fields
         if not text:
@@ -100,12 +103,12 @@ def text_to_speech():
                 status=400,
                 mimetype="application/json; charset=utf-8"
             )
-        
-        # Use default speaker for language if not provided
+
+        # Use language default speaker when caller doesn't provide one.
         if not speaker:
             speaker = DEFAULT_SPEAKERS.get(language)
-            if not speaker:
-                # Fallback to first available speaker if language not in defaults
+            # Fallback: if language is supported but has no default, use a global fallback
+            if language in SUPPORTED_LANGUAGES and not speaker:
                 speaker = "Claribel Dervla"
         
         # Validate language
@@ -117,27 +120,22 @@ def text_to_speech():
                 status=400,
                 mimetype="application/json; charset=utf-8"
             )
-        
-        # Generate speech using xtts_v2
-        audio_data = tts_service.generate_speech(
-            text=text,
-            language=language,
-            speaker=speaker,
-            speaker_wav=speaker_wav
-        )
-        
-        if len(audio_data) == 0:
+
+        # Generate speech
+        audio = tts_service.generate_speech(text=text, language=language, speaker=speaker)
+
+        if audio.size == 0:
             return Response(
                 json.dumps({"error": "Failed to generate audio"}, ensure_ascii=False),
                 status=500,
                 mimetype="application/json; charset=utf-8"
             )
         
+        # Default sample rate for xtts v2
+        sample_rate = 24000 
         # Convert to WAV format in memory
-        # Coqui TTS typically outputs at 24000 Hz
-        sample_rate = 24000
         wav_buffer = io.BytesIO()
-        wavfile.write(wav_buffer, sample_rate, audio_data)
+        wavfile.write(wav_buffer, sample_rate, audio)
         wav_buffer.seek(0)
         
         return send_file(
@@ -193,27 +191,4 @@ def get_languages():
         status=200,
         mimetype="application/json; charset=utf-8"
     )
-
-
-@tts_bp.route("/tts/models", methods=["GET"])
-def get_models():
-    """
-    Get list of available TTS models.
-    
-    Returns: JSON array of available models
-    """
-    try:
-        models = tts_service.list_available_models()
-        
-        return Response(
-            json.dumps({"models": models}, ensure_ascii=False),
-            status=200,
-            mimetype="application/json; charset=utf-8"
-        )
-    except Exception as e:
-        return Response(
-            json.dumps({"error": f"Error retrieving models: {str(e)}"}, ensure_ascii=False),
-            status=500,
-            mimetype="application/json; charset=utf-8"
-        )
 

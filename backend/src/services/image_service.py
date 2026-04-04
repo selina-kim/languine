@@ -7,11 +7,18 @@ class UnsplashService:
     """Service for interacting with Unsplash API"""
     
     BASE_URL = "https://api.unsplash.com"
+    DEFAULT_TIMEOUT_SECONDS = 10.0
     
     def __init__(self, access_key: Optional[str] = None):
         self.access_key = access_key or os.getenv("UNSPLASH_ACCESS_KEY")
         if not self.access_key:
             raise ValueError("UNSPLASH_ACCESS_KEY not set in environment")
+
+        timeout_value = os.getenv("UNSPLASH_TIMEOUT_SECONDS", str(self.DEFAULT_TIMEOUT_SECONDS))
+        try:
+            self.timeout_seconds = float(timeout_value)
+        except (TypeError, ValueError):
+            self.timeout_seconds = self.DEFAULT_TIMEOUT_SECONDS
         
         self.headers = {
             "Authorization": f"Client-ID {self.access_key}",
@@ -25,7 +32,7 @@ class UnsplashService:
         per_page: int = 5,
         order_by: str = "relevant",
         orientation: Optional[str] = None,
-        color: Optional[str] = None,
+        colour: Optional[str] = None,
         content_filter: str = "high"
     ) -> Dict[str, Any]:
         """
@@ -37,7 +44,7 @@ class UnsplashService:
             per_page: Number of items per page (default: 5, max: 30)
             order_by: How to sort photos (relevant or latest)
             orientation: Filter by orientation (landscape, portrait, squarish)
-            color: Filter by color (e.g., black_and_white, black, white, yellow, etc.)
+            colour: Filter by colour (e.g., black_and_white, black, white, yellow, etc.)
             content_filter: Content safety filter (low or high)
         
         Returns:
@@ -55,11 +62,16 @@ class UnsplashService:
         
         if orientation:
             params["orientation"] = orientation
-        if color:
-            params["color"] = color
+        if colour:
+            params["colour"] = colour
         
         try:
-            response = requests.get(endpoint, headers=self.headers, params=params)
+            response = requests.get(
+                endpoint,
+                headers=self.headers,
+                params=params,
+                timeout=self.timeout_seconds,
+            )
             response.raise_for_status()
             return response.json()
         except Exception as e:
@@ -78,7 +90,11 @@ class UnsplashService:
         endpoint = f"{self.BASE_URL}/photos/{photo_id}/download"
         
         try:
-            response = requests.get(endpoint, headers=self.headers)
+            response = requests.get(
+                endpoint,
+                headers=self.headers,
+                timeout=self.timeout_seconds,
+            )
             response.raise_for_status()
             return response.json()
         except Exception as e:
@@ -107,7 +123,7 @@ class UnsplashService:
             },
             "width": photo.get("width"),
             "height": photo.get("height"),
-            "color": photo.get("color"),
+            "colour": photo.get("colour"),
             "blur_hash": photo.get("blur_hash"),
             "user": {
                 "name": photo.get("user", {}).get("name"),

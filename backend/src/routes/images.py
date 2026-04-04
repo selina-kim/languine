@@ -15,7 +15,7 @@ def search_images():
         page = int(request.args.get("page", 1))
         per_page = int(request.args.get("per_page", 10))
         orientation = request.args.get("orientation")
-        color = request.args.get("color")
+        colour = request.args.get("colour")
         order_by = request.args.get("order_by", "relevant")
         
         # Validate required fields
@@ -58,7 +58,7 @@ def search_images():
             per_page=per_page,
             order_by=order_by,
             orientation=orientation,
-            color=color
+            colour=colour
         )
         
         # Format response
