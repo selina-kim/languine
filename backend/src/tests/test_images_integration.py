@@ -40,7 +40,7 @@ def test_search_images_success(client, mock_unsplash_service):
                 "urls": {"regular": "https://test.url"},
                 "width": 3000,
                 "height": 2000,
-                "color": "#123456",
+                "colour": "#123456",
                 "blur_hash": "ABC123",
                 "user": {"name": "Test User", "username": "testuser", "links": {"html": "https://test"}, "profile_image": {"small": "https://test"}},
                 "links": {"html": "https://test", "download_location": "https://test"}
@@ -102,7 +102,7 @@ def test_search_images_with_valid_filters(client, mock_unsplash_service):
     mock_unsplash_service.return_value = mock_instance
     
     response = client.get(
-        "/images/search?query=sunset&orientation=landscape&color=orange&order_by=latest&page=2&per_page=20"
+        "/images/search?query=sunset&orientation=landscape&colour=orange&order_by=latest&page=2&per_page=20"
     )
     
     assert response.status_code == 200
@@ -114,7 +114,7 @@ def test_search_images_with_valid_filters(client, mock_unsplash_service):
         per_page=20,
         order_by="latest",
         orientation="landscape",
-        color="orange"
+        colour="orange"
     )
 
 
@@ -255,7 +255,7 @@ def test_search_images_formats_results_correctly(client, mock_unsplash_service):
                 "urls": {"regular": "https://test.url"},
                 "width": 1000,
                 "height": 1000,
-                "color": "#FFFFFF",
+                "colour": "#FFFFFF",
                 "blur_hash": "TEST123",
                 "user": {
                     "name": "Test",

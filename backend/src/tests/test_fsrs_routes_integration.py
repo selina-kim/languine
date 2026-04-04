@@ -26,9 +26,14 @@ from services.fsrs.grade import Grade
 pytestmark = pytest.mark.integration
 
 def get_any_card_id():
-    """Helper to get a valid card ID from the test database."""
+    """Helper to get a valid card ID from the test user's deck."""
     with get_db_cursor() as cursor:
-        cursor.execute("SELECT c_id FROM Cards LIMIT 1")
+        cursor.execute("""
+            SELECT c.c_id FROM Cards c
+            JOIN Decks d ON c.d_id = d.d_id
+            WHERE d.u_id = 'test-user-id'
+            LIMIT 1
+        """)
         row = cursor.fetchone()
         return row['c_id'] if row else None
 

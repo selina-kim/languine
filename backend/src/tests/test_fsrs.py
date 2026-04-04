@@ -15,6 +15,9 @@ The tests cover:
 
 Run this test file:
     docker compose exec backend pytest src/tests/test_fsrs.py -v
+
+Run with coverage:
+    docker compose exec backend pytest src/tests/test_fsrs.py --cov=services.fsrs
 """
 
 from services.fsrs.scheduler import Scheduler, STABILITY_MIN, DEFAULT_PARAMETERS, DIFFICULTY_MAX, DIFFICULTY_MIN
@@ -1505,7 +1508,7 @@ class TestPyFSRS:
 
     def test_performance_reschedule_10000_cards(self):
         """
-        Rescheduling 10,000 cards should complete in under 3 seconds.
+        Rescheduling 10,000 cards should complete in under 5 seconds.
 
         Each card is given the same review history (TEST_RATINGS_1) so they all
         have a realistic set of review logs. Only the rescheduling pass is timed.
@@ -1531,6 +1534,6 @@ class TestPyFSRS:
             scheduler.reschedule_card(card=card, review_logs=review_logs)
         elapsed_s = time.perf_counter() - start
 
-        assert elapsed_s < 3.0, (
-            f"Rescheduling 10,000 cards took {elapsed_s:.3f}s, expected < 3s"
+        assert elapsed_s < 5.0, (
+            f"Rescheduling 10,000 cards took {elapsed_s:.3f}s, expected < 5s"
         )

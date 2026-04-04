@@ -77,6 +77,64 @@ def sample_card_response():
     }
 
 
+class TestDeckInitMinio:
+    def test_deck_service_init_minio_no_creds(self, monkeypatch):
+        """Test init without credentials."""
+        monkeypatch.setenv("MINIO_ENDPOINT", "localhost:9000")
+        monkeypatch.delenv("MINIO_ACCESS_KEY", raising=False)
+        monkeypatch.delenv("MINIO_SECRET_KEY", raising=False)
+        service = DeckService()
+        assert service.minio_client is None
+        
+    @patch('minio.Minio')
+    def test_deck_service_init_minio_exception(self, MockMinio, monkeypatch):
+        """Test init with minio exception."""
+        monkeypatch.setenv("MINIO_ENDPOINT", "localhost:9000")
+        monkeypatch.setenv("MINIO_ACCESS_KEY", "access")
+        monkeypatch.setenv("MINIO_SECRET_KEY", "secret")
+        MockMinio.side_effect = Exception("minio connect error")
+        service = DeckService()
+        assert service.minio_client is None
+
+class TestDeckServiceMinio:
+    """Tests for MinIO interactions in DeckService."""
+
+    def test_delete_from_minio_empty(self, deck_service):
+        """Test delete with empty object_id."""
+        result = deck_service._delete_from_minio("")
+        assert result is True
+
+    def test_delete_from_minio_none(self, deck_service):
+        """Test delete with None object_id."""
+        result = deck_service._delete_from_minio(None)
+        assert result is True
+
+    def test_delete_from_minio_no_client(self, deck_service):
+        """Test delete when MinIO client is unavailable."""
+        deck_service.minio_client = None
+        result = deck_service._delete_from_minio("some/object/path")
+        assert result is True
+
+    def test_delete_from_minio_success(self, deck_service):
+        """Test successful MinIO object deletion."""
+        mock_minio = MagicMock()
+        deck_service.minio_client = mock_minio
+        
+        result = deck_service._delete_from_minio("images/card_123.jpg")
+        
+        assert result is True
+        mock_minio.remove_object.assert_called_once_with("languine-media", "images/card_123.jpg")
+
+    def test_delete_from_minio_handles_errors(self, deck_service):
+        """Test delete handles MinIO errors gracefully."""
+        mock_minio = MagicMock()
+        mock_minio.remove_object.side_effect = Exception("MinIO error")
+        deck_service.minio_client = mock_minio
+        
+        result = deck_service._delete_from_minio("images/card_123.jpg")
+        
+        assert result is False
+
 class TestGetDeckWithCards:
     """Tests for get_deck_with_cards method."""
     
@@ -254,6 +312,23 @@ class TestCreateDeck:
             mock_db.return_value.__enter__.return_value = mock_cursor
             with pytest.raises(DatabaseError):
                 DeckService.create_deck("user-123", deck_data)
+    
+    def test_create_deck_integrity_error_other(self, deck_service):
+        """Test deck creation with other integrity error."""
+        mock_cursor = MagicMock()
+        integrity_error = _FakeIntegrityError("other integrity error", "11111")
+        mock_cursor.execute.side_effect = integrity_error
+        
+        deck_data = {
+            "deck_name": "Test",
+            "word_lang": "es",
+            "trans_lang": "en"
+        }
+        
+        with patch('services.deck_service.get_db_cursor') as mock_db:
+            mock_db.return_value.__enter__.return_value = mock_cursor
+            with pytest.raises(DatabaseError):
+                DeckService.create_deck("user-123", deck_data)
 
 
 class TestSaveImportedDeck:
@@ -292,6 +367,40 @@ class TestSaveImportedDeck:
         assert "deck_id" in result
         assert result["cards_count"] == 1
     
+    def test_save_imported_deck_missing_deck(self, deck_service):
+        """Test save imported deck with no cards."""
+        mock_cursor = MagicMock()
+        
+        imported_data = {
+            "cards": []
+        }
+        
+        with pytest.raises(KeyError):
+            with patch('services.deck_service.get_db_cursor') as mock_db:
+                mock_db.return_value.__enter__.return_value = mock_cursor
+                result = DeckService.save_imported_deck("user-123", imported_data)
+        
+    def test_save_imported_deck_null_description(self, deck_service, sample_deck_response):
+        """Test save imported deck with missing or none description."""
+        mock_cursor = MagicMock()
+        mock_cursor.fetchone.return_value = sample_deck_response
+        
+        imported_data = {
+            "deck": {
+                "deck_name": "Empty Deck",
+                "word_lang": "fr",
+                "trans_lang": "en",
+                "description": None
+            },
+            "cards": []
+        }
+        
+        with patch('services.deck_service.get_db_cursor') as mock_db:
+            mock_db.return_value.__enter__.return_value = mock_cursor
+            result = DeckService.save_imported_deck("user-123", imported_data)
+        
+        assert result["cards_count"] == 0
+
     def test_save_imported_deck_empty_cards(self, deck_service, sample_deck_response):
         """Test save imported deck with no cards."""
         mock_cursor = MagicMock()
@@ -453,7 +562,7 @@ class TestUpdateDeck:
     def test_update_deck_database_error(self, deck_service):
         """Test update fails with database error."""
         mock_cursor = MagicMock()
-        mock_cursor.execute.side_effect = psycopg2.Error("Database error")
+        mock_cursor.execute.side_effect = psycopg2.ProgrammingError("Database programming error")
         
         with patch('services.deck_service.get_db_cursor') as mock_db:
             mock_db.return_value.__enter__.return_value = mock_cursor
@@ -465,6 +574,32 @@ class TestUpdateDeck:
                     {"deck_name": "New Name"}
                 )
 
+    def test_update_deck_integrity_error_other(self, deck_service):
+        """Test deck update with other integrity error."""
+        mock_cursor = MagicMock()
+        
+        integrity_error = _FakeIntegrityError("other integrity error", "11111")
+        mock_cursor.execute.side_effect = integrity_error
+        
+        with patch('services.deck_service.get_db_cursor') as mock_db:
+            mock_db.return_value.__enter__.return_value = mock_cursor
+            with pytest.raises(DatabaseError):
+                DeckService.update_deck(
+                    "user-123",
+                    1,
+                    {"deck_name": "Test"}
+                )
+
+
+    def test_cleanup_deck_media_exception(self, deck_service):
+        """Test cleanup handles database errors."""
+        mock_cursor = MagicMock()
+        mock_cursor.execute.side_effect = psycopg2.DatabaseError("DB error in cleanup")
+        
+        with patch('services.deck_service.get_db_cursor') as mock_db:
+            mock_db.return_value.__enter__.return_value = mock_cursor
+            with pytest.raises(psycopg2.DatabaseError):
+                deck_service._cleanup_deck_media("user-123", 1)
 
 class TestDeleteDeck:
     """Tests for delete_deck method."""

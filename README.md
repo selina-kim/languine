@@ -13,6 +13,8 @@ capstone-project/
 
 # Development
 
+Check `README.md` files in `backend/` and `frontend/` for specific instructions and details of each codebase.
+
 ## Branch Conventions
 
 ##### Branch Name Format:
