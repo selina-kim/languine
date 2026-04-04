@@ -74,18 +74,25 @@ eas login
 eas build --profile development --platform android
 ```
 
-### Launch App in Android Emulator
-
-1. Open Android Emulator → More Actions → Virtual Device Manager → Start your device.
-
-2. Run the app on Expo (follow previous steps)
-
-- If app screen on emulator shows error on launch instead of bundling the app, might have to manually type in `<ip address>:8081` for the local server on the expo app
-
-## Run Tests
+### Run Tests
 
 Run the following command to run the entire frontend test suite. Make sure the backend docker instance is running (check backend README for instructions) before running this command.
 
 ```bash
 npm test
 ```
+
+## Launch & Use the App (for Android)
+
+### 1. Open Android device.
+
+- **Android Studio:** Open Android Emulator → More Actions → Virtual Device Manager → Start your device.
+- Alternatively, you can use an actual Android device.
+
+### 2. Install the App
+
+Install the `Languine.apk` file from this [Google Drive link](https://drive.google.com/file/d/1LMAjTk21CZfz56C1RUQMWOv1nC7phVvz/view?usp=sharing) on to your Android device.
+
+### 3. Run the app on Expo (follow [these steps](#run-the-application-expo))
+
+- If app screen on emulator shows error on launch instead of bundling the app, might have to manually type in `<ip address>:8081` for the local server on the expo app
