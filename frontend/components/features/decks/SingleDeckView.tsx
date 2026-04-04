@@ -1,5 +1,5 @@
 import { getCards } from "@/apis/endpoints/cards";
-import { getDecks } from "@/apis/endpoints/decks";
+import { exportDeck, getDecks } from "@/apis/endpoints/decks";
 import { PlusIcon } from "@/assets/icons/PlusIcon";
 import { CButton } from "@/components/common/CButton";
 import { Modal } from "@/components/common/Modal";
@@ -8,7 +8,15 @@ import { COLORS } from "@/constants/colors";
 import { SHADOWS } from "@/constants/shadows";
 import { Card, DeckDetails } from "@/types/decks";
 import { useEffect, useMemo, useState } from "react";
-import { ActivityIndicator, Pressable, ScrollView, View } from "react-native";
+import {
+  ActivityIndicator,
+  Alert,
+  Pressable,
+  ScrollView,
+  View,
+  Platform,
+} from "react-native";
+import * as FileSystem from "expo-file-system/legacy";
 import { CreateNewCardModal } from "./CreateNewCardModal";
 import { PlusFilledIcon } from "@/assets/icons/PlusFilledIcon";
 import { CardsList } from "./CardsList";
@@ -38,6 +46,7 @@ export const SingleDeckView = ({ deckId }: SingleDeckViewProps) => {
   const [isEditDeckModalOpen, setIsEditDeckModalOpen] = useState(false);
   const [isEditCardModalOpen, setIsEditCardModalOpen] = useState(false);
   const [cardBeingEdited, setCardBeingEdited] = useState<Card | null>(null);
+  const [isExportingDeck, setIsExportingDeck] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -124,6 +133,53 @@ export const SingleDeckView = ({ deckId }: SingleDeckViewProps) => {
     setIsLoadingMoreCards(false);
   };
 
+  const handleExportDeck = async () => {
+    if (isExportingDeck) {
+      return;
+    }
+
+    setIsExportingDeck(true);
+    try {
+      const response = await exportDeck(deckId, "json");
+
+      const disposition = response.headers.get("Content-Disposition") || "";
+      let filename = `${deckDetails?.deck_name ?? "deck"}.json`;
+      const match = disposition.match(/filename="?([^";]+)"?/i);
+      if (match && match[1]) {
+        filename = match[1];
+      }
+
+      if (Platform.OS === "web") {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        window.URL.revokeObjectURL(url);
+      } else {
+        const baseDir =
+          (FileSystem.cacheDirectory as string | undefined) ??
+          (FileSystem.documentDirectory as string | undefined) ??
+          "";
+        const fileUri = `${baseDir}${filename}`;
+        const content = await response.text();
+        await FileSystem.writeAsStringAsync(fileUri, content);
+      }
+
+      Alert.alert("Deck exported", "Your deck file has been saved.");
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Failed to export deck.";
+      console.log(message);
+      Alert.alert("Export failed", message);
+    } finally {
+      setIsExportingDeck(false);
+    }
+  };
+
   const renderNoCardsBanner = () => (
     <View
       style={{
@@ -205,9 +261,10 @@ export const SingleDeckView = ({ deckId }: SingleDeckViewProps) => {
         />
         <CButton
           variant="primary"
-          label="Export Deck"
+          label={isExportingDeck ? "Exporting..." : "Export Deck"}
           style={{ width: "100%", marginVertical: 10 }}
-          onPress={() => console.log("export deck clicked")}
+          disabled={isExportingDeck}
+          onPress={handleExportDeck}
         />
         <CText variant="containerLabel">Flashcards ({totalCards})</CText>
         {isLoadingCards ? (

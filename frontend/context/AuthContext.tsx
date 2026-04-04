@@ -50,7 +50,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const storedUser = await storage.getItem("user");
         if (storedUser) {
           const userData = JSON.parse(storedUser);
-          // TODO: Optionally validate token with backend here
           setUser(userData);
         }
       } catch (error) {

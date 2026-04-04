@@ -10,20 +10,23 @@ import { CreateNewDeckModal } from "@/components/features/decks/CreateNewDeckMod
 import { SHADOWS } from "@/constants/shadows";
 import { useLanguageOptions } from "@/context/LanguageOptionsContext";
 import { SingleDeckView } from "@/components/features/decks/SingleDeckView";
-import { usePathname } from "expo-router";
+import { useLocalSearchParams, usePathname } from "expo-router";
 import { Modal } from "@/components/common/Modal";
 import { CText } from "@/components/common/CText";
 import { CreateOrImportDeckModal } from "@/components/features/decks/CreateOrImportDeckModal";
+import { ImportDeckModal } from "@/components/features/decks/ImportDeckModal";
 export default function Decks() {
   const [decks, setDecks] = useState<Deck[]>([]);
   const [isCreateOrImportDeckModalOpen, setIsCreateOrImportDeckModalOpen] =
     useState(false);
   const [isCreateDeckModalOpen, setIsCreateDeckModalOpen] = useState(false);
+  const [isImportDeckModalOpen, setIsImportDeckModalOpen] = useState(false);
   const [focusedDeckId, setFocusedDeckId] = useState<string>();
   const [deckIdToDelete, setDeckIdToDelete] = useState<string>();
   const [isDeletingDeck, setIsDeletingDeck] = useState(false);
   const [deleteDeckError, setDeleteDeckError] = useState<string>();
   const pathname = usePathname();
+  const params = useLocalSearchParams<{ deckId?: string }>();
   const { getLanguageName } = useLanguageOptions();
 
   const getAllDecks = async () => {
@@ -36,9 +39,20 @@ export default function Decks() {
   };
 
   useEffect(() => {
-    setFocusedDeckId(undefined);
+    const deckIdParam = params.deckId;
+    const normalizedDeckId = Array.isArray(deckIdParam)
+      ? deckIdParam[0]
+      : deckIdParam;
+
+    setFocusedDeckId(normalizedDeckId);
     getAllDecks();
-  }, [isCreateOrImportDeckModalOpen, pathname]);
+  }, [
+    isCreateOrImportDeckModalOpen,
+    isCreateDeckModalOpen,
+    isImportDeckModalOpen,
+    pathname,
+    params.deckId,
+  ]);
 
   const handleDeleteDeck = async (deckId: string) => {
     if (isDeletingDeck) {
@@ -127,11 +141,18 @@ export default function Decks() {
         isOpen={isCreateOrImportDeckModalOpen}
         onClose={() => setIsCreateOrImportDeckModalOpen(false)}
         onCreateDeck={() => setIsCreateDeckModalOpen(true)}
-        onImportDeck={() => {}}
+        onImportDeck={() => setIsImportDeckModalOpen(true)}
       />
       <CreateNewDeckModal
         isOpen={isCreateDeckModalOpen}
         onClose={() => setIsCreateDeckModalOpen(false)}
+        onSuccess={() => {
+          getAllDecks();
+        }}
+      />
+      <ImportDeckModal
+        isOpen={isImportDeckModalOpen}
+        onClose={() => setIsImportDeckModalOpen(false)}
         onSuccess={() => {
           getAllDecks();
         }}

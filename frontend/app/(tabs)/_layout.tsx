@@ -214,7 +214,7 @@ function TabLayoutContent() {
             </View>
           ),
           headerRight: () => <HeaderRight />,
-          tabBarActiveTintColor: COLORS.accent.secondary, // TODO?
+          tabBarActiveTintColor: COLORS.accent.secondary,
           tabBarInactiveTintColor: COLORS.icon.outlinePrimary,
           tabBarShowLabel: false,
           tabBarInactiveBackgroundColor: COLORS.accent.primary,

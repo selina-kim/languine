@@ -264,3 +264,40 @@ def get_card_image_url(object_id: str):
                 image_obj.release_conn()
         except Exception:
             pass
+
+
+@cards_bp.route("/cards/audio/<path:object_id>", methods=["GET"])
+@jwt_required()
+def get_card_audio_url(object_id: str):
+    """
+    Stream a card audio file stored in MinIO through the backend.
+
+    GET /cards/audio/{object_id}
+    Returns: WAV audio bytes
+    """
+    try:
+        decoded_object_id = unquote(object_id)
+
+        if not card_service.minio_client:
+            return error_response("Audio storage unavailable", status=503)
+
+        audio_obj = card_service.minio_client.get_object(
+            card_service.bucket_name,
+            decoded_object_id,
+        )
+        audio_bytes = audio_obj.read()
+        content_type = audio_obj.headers.get("Content-Type", "audio/wav")
+
+        return Response(audio_bytes, status=200, mimetype=content_type)
+
+    except Exception as e:
+        if "NoSuchKey" in str(e):
+            return error_response("Audio not found", status=404)
+        return error_response(f"Failed to fetch audio: {str(e)}")
+    finally:
+        try:
+            if "audio_obj" in locals() and audio_obj:
+                audio_obj.close()
+                audio_obj.release_conn()
+        except Exception:
+            pass

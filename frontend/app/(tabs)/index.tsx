@@ -76,6 +76,7 @@ export default function Index() {
           decks.map((deck) => (
             <LastReviewedDeckItem
               key={`last_reviewed_deck_card_${deck.d_id}`}
+              deckId={deck.d_id}
               deckName={deck.deck_name}
               lastReviewed={new Date(deck.last_reviewed!).toLocaleDateString()}
             />

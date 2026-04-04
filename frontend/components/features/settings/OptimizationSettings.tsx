@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { updateCurrentUser } from "@/apis/endpoints/users";
+import { Alert } from "react-native";
 import { SettingGroup } from "./SettingGroup";
 import { ResetParametersButton } from "./ResetParametersButton";
 
@@ -7,15 +9,36 @@ export const OptimizationSettings = () => {
   const [reviews, setReviews] = useState("100");
 
   const onSaveReviews = (value: string) => {
-    // TODO
+    const parsed = Number(value);
+    if (!Number.isInteger(parsed) || parsed < 100) {
+      Alert.alert(
+        "Invalid value",
+        "Reviews before next optimization must be an integer of at least 100.",
+      );
+      return false;
+    }
+
     setReviews(value);
+    void updateCurrentUser({
+      num_reviews_per_optimize: parsed,
+    }).then(({ error }) => {
+      if (error) {
+        Alert.alert("Update failed", error);
+      }
+    });
+
     return true;
   };
 
   const onAutoOptimizeToggle = (value: boolean) => {
-    // TODO
-    console.log("autoOptimizeToggle:", value);
     setAutoOptimizeToggle(value);
+
+    void updateCurrentUser({ auto_optimize: value }).then(({ error }) => {
+      if (error) {
+        Alert.alert("Update failed", error);
+      }
+    });
+
     return true;
   };
 

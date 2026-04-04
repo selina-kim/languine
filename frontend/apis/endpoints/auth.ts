@@ -63,7 +63,6 @@ export const exchangeGoogleToken = async (
 
 /**
  * Validate/refresh the backend token
- * TODO: Implement if your backend supports token refresh
  */
 export const refreshToken = async (
   token: string,

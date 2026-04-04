@@ -132,7 +132,24 @@ def text_to_speech():
             )
         
         # Default sample rate for xtts v2
-        sample_rate = 24000 
+        sample_rate = 24000
+
+        # ExoPlayer on Android does not support IEEE float WAV (format type 3).
+        # Convert generated audio to 16-bit PCM before writing the WAV file.
+        if np.issubdtype(audio.dtype, np.floating):
+            audio = np.nan_to_num(audio)
+            audio = np.clip(audio, -1.0, 1.0)
+            audio = (audio * 32767.0).astype(np.int16)
+        elif audio.dtype != np.int16:
+            if np.issubdtype(audio.dtype, np.integer):
+                max_abs = max(abs(np.iinfo(audio.dtype).min), np.iinfo(audio.dtype).max)
+                if max_abs > 0:
+                    audio = (audio.astype(np.float32) / max_abs * 32767.0).astype(np.int16)
+                else:
+                    audio = np.zeros_like(audio, dtype=np.int16)
+            else:
+                audio = audio.astype(np.int16)
+
         # Convert to WAV format in memory
         wav_buffer = io.BytesIO()
         wavfile.write(wav_buffer, sample_rate, audio)

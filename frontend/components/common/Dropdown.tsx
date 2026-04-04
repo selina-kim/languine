@@ -1,6 +1,5 @@
 import { ChevronDownIcon } from "@/assets/icons/ChevronDownIcon";
 import { COLORS } from "@/constants/colors";
-import { SHADOWS } from "@/constants/shadows";
 import { useState } from "react";
 import { Pressable, ScrollView, View } from "react-native";
 import { CText } from "./CText";
@@ -65,7 +64,6 @@ export const Dropdown = ({
             backgroundColor: COLORS.background.secondary,
             borderRadius: 8,
             maxHeight: 140,
-            ...SHADOWS.default,
           }}
         >
           {options.map((option) => (

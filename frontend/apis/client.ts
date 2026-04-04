@@ -138,9 +138,16 @@ const request = async (
     }
 
     const headers: HeadersInit = {
-      "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
     };
+
+    // Only set JSON content type when we're not sending FormData
+    const isFormData =
+      typeof FormData !== "undefined" && body instanceof FormData;
+
+    if (!isFormData) {
+      headers["Content-Type"] = "application/json";
+    }
 
     const response = await fetch(url, {
       method,

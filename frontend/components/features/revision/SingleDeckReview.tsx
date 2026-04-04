@@ -9,7 +9,9 @@ import { COLORS } from "@/constants/colors";
 import { SHADOWS } from "@/constants/shadows";
 import { useReviewSession } from "@/context/ReviewSessionContext";
 import { Card } from "@/types/decks";
+import { storage } from "@/utils/storage";
 import { getImageUrl } from "@/utils/imageUtils";
+import { createAudioPlayer, setAudioModeAsync, AudioPlayer } from "expo-audio";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
@@ -18,6 +20,9 @@ import {
   ScrollView,
   View,
 } from "react-native";
+
+const buildAudioUrl = (objectId: string): string =>
+  `${process.env.EXPO_PUBLIC_API_URL}/cards/audio/${encodeURIComponent(objectId)}`;
 
 interface SingleDeckReviewProps {
   deckId: string;
@@ -40,8 +45,10 @@ export const SingleDeckReview = ({
   const [hasRevealedBackOnce, setHasRevealedBackOnce] = useState(false);
   const [isReviewComplete, setIsReviewComplete] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [isTtsPlaying, setIsTtsPlaying] = useState(false);
   const [error, setError] = useState<string>();
   const cardStartTimeRef = useRef<number | null>(null);
+  const audioPlayersRef = useRef<Map<string, AudioPlayer>>(new Map());
   const { exitReviewSessionSignal } = useReviewSession();
 
   const difficultyOptions = [
@@ -109,9 +116,147 @@ export const SingleDeckReview = ({
     }
   }, [exitReviewSessionSignal, currentCardIndex, isReviewComplete]);
 
+  const getAuthToken = useCallback(async (): Promise<string | null> => {
+    try {
+      const userData = await storage.getItem("user");
+      if (!userData) {
+        return null;
+      }
+
+      const user = JSON.parse(userData) as { token?: string };
+      return user.token ?? null;
+    } catch (storageError) {
+      console.log("Failed to read auth token:", storageError);
+      return null;
+    }
+  }, []);
+
+  useEffect(() => {
+    const players = audioPlayersRef.current;
+
+    return () => {
+      players.forEach((player) => {
+        player.remove();
+      });
+      players.clear();
+    };
+  }, []);
+
   const totalCards = cards.length;
   const currentCard = cards[currentCardIndex];
   const progress = totalCards === 0 ? 0 : (currentCardIndex + 1) / totalCards;
+  const hasTtsForCurrentSide = Boolean(
+    currentCard &&
+    (isFrontSide ? currentCard.word_audio : currentCard.trans_audio),
+  );
+
+  const getOrCreateAudioPlayer = useCallback(
+    async (objectId: string) => {
+      const existingPlayer = audioPlayersRef.current.get(objectId);
+      if (existingPlayer) {
+        return existingPlayer;
+      }
+
+      const token = await getAuthToken();
+      if (!token) {
+        return null;
+      }
+
+      const player = createAudioPlayer({
+        uri: buildAudioUrl(objectId),
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      player.addListener("playbackStatusUpdate", (status) => {
+        if (status.isLoaded && status.didJustFinish) {
+          setIsTtsPlaying(false);
+        }
+      });
+
+      audioPlayersRef.current.set(objectId, player);
+      return player;
+    },
+    [getAuthToken],
+  );
+
+  useEffect(() => {
+    let isCancelled = false;
+
+    const preloadAudio = async () => {
+      const token = await getAuthToken();
+      if (!token || cards.length === 0) {
+        return;
+      }
+
+      const audioIds = cards
+        .flatMap((card) => [card.word_audio, card.trans_audio])
+        .filter((objectId): objectId is string => Boolean(objectId));
+
+      for (const objectId of audioIds) {
+        if (isCancelled || audioPlayersRef.current.has(objectId)) {
+          continue;
+        }
+
+        const player = createAudioPlayer({
+          uri: buildAudioUrl(objectId),
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        player.addListener("playbackStatusUpdate", (status) => {
+          if (status.isLoaded && status.didJustFinish) {
+            setIsTtsPlaying(false);
+          }
+        });
+
+        audioPlayersRef.current.set(objectId, player);
+      }
+    };
+
+    void preloadAudio();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [cards, getAuthToken]);
+
+  const playAudioForCurrentSide = useCallback(async () => {
+    const objectId = currentCard
+      ? isFrontSide
+        ? (currentCard.word_audio ?? null)
+        : (currentCard.trans_audio ?? null)
+      : null;
+    if (!objectId || isTtsPlaying) {
+      return;
+    }
+
+    setIsTtsPlaying(true);
+
+    try {
+      await setAudioModeAsync({
+        playsInSilentMode: true,
+      });
+
+      const player = await getOrCreateAudioPlayer(objectId);
+
+      if (!player) {
+        throw new Error("Audio is unavailable");
+      }
+
+      await player.seekTo(0);
+      player.play();
+    } catch (playbackError) {
+      const message =
+        playbackError instanceof Error
+          ? playbackError.message
+          : "Failed to play speech";
+      console.log(message);
+      setIsTtsPlaying(false);
+    }
+  }, [currentCard, getOrCreateAudioPlayer, isFrontSide, isTtsPlaying]);
 
   const handleCardPress = () => {
     if (isFrontSide) {
@@ -302,20 +447,30 @@ export const SingleDeckReview = ({
                 ...SHADOWS.default,
               }}
             >
-              <Pressable
-                style={{
-                  position: "absolute",
-                  top: 10,
-                  left: 10,
-                  zIndex: 10,
-                  padding: 8,
-                }}
-                onPress={() =>
-                  console.log(`TTS clicked for card ${currentCard.word}`)
-                }
-              >
-                <SoundIcon />
-              </Pressable>
+              {hasTtsForCurrentSide && (
+                <Pressable
+                  style={{
+                    position: "absolute",
+                    top: 10,
+                    left: 10,
+                    zIndex: 10,
+                    padding: 8,
+                  }}
+                  onPress={(event) => {
+                    event.stopPropagation();
+                    void playAudioForCurrentSide();
+                  }}
+                >
+                  {isTtsPlaying ? (
+                    <ActivityIndicator
+                      size="small"
+                      color={COLORS.icon.outlinePrimary}
+                    />
+                  ) : (
+                    <SoundIcon />
+                  )}
+                </Pressable>
+              )}
               <CText
                 style={{
                   textAlign: "center",

@@ -103,6 +103,10 @@ export const LanguageOptionsProvider = ({
 
       const source = data?.source ?? [];
       const target = data?.target ?? [];
+
+      const sortLanguages = <T extends { name: string }>(languages: T[]): T[] =>
+        [...languages].sort((a, b) => a.name.localeCompare(b.name));
+
       const allLanguages = [...source, ...target];
 
       const languageMap = allLanguages.reduce(
@@ -113,8 +117,8 @@ export const LanguageOptionsProvider = ({
         {} as Record<string, string>,
       );
 
-      setSourceLanguages(source);
-      setTargetLanguages(target);
+      setSourceLanguages(sortLanguages(source));
+      setTargetLanguages(sortLanguages(target));
       setLanguageNameByCode(languageMap);
     } finally {
       setIsLoading(false);

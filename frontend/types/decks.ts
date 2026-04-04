@@ -29,6 +29,8 @@ export interface Card {
   word_roman: string | null;
   trans_roman: string | null;
   image: string | null;
+  word_audio?: string | null;
+  trans_audio?: string | null;
   learning_state: number;
   difficulty: number;
   stability: number;
