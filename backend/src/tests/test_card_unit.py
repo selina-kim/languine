@@ -922,7 +922,7 @@ class TestCardRoutes:
                 headers=auth_headers,
             )
             assert response.status_code == 500
-            assert "Generic error" in json.loads(response.data)["error"]
+            assert "Internal server error" in json.loads(response.data)["error"]
 
     def test_get_card_not_found_None(self, client, auth_headers):
         with patch("routes.cards.card_service.get_card") as mock_get:
@@ -1032,7 +1032,7 @@ class TestCardRoutes:
             response = client.get("/cards/image/some-image-id")
             assert response.status_code == 500
             assert (
-                "Failed to fetch image: Generic minio error"
+                "Failed to fetch image"
                 in json.loads(response.data)["error"]
             )
 

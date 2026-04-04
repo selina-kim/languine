@@ -75,8 +75,8 @@ def log_review():
         return error_response(str(e), status=400)
     except CardNotFoundError as e:
         return error_response(str(e), status=404)
-    except DatabaseError as e:
-        return error_response(f"Database error: {str(e)}", status=500)
+    except DatabaseError:
+        return error_response("Database error", status=500)
     
 
 @fsrs_bp.route("/end-review", methods=["POST"])
@@ -131,8 +131,8 @@ def end_review():
             {"message": "Review session ended.", "parameters_optimized": optimized},
             status=200,
         )
-    except DatabaseError as e:
-        return error_response(f"Database error: {str(e)}", status=500)
+    except DatabaseError:
+        return error_response("Database error", status=500)
 
 @fsrs_bp.route("/due-cards", methods=["GET"])
 @jwt_required()
@@ -151,8 +151,8 @@ def get_due_cards():
     try:
         num_due_cards, due_cards = fsrs_service.get_due_cards(user_id)
         return json_response({"num_due_cards": num_due_cards, "due_cards": due_cards}, status=200)
-    except DatabaseError as e:
-        return error_response(f"Database error: {str(e)}", status=500)
+    except DatabaseError:
+        return error_response("Database error", status=500)
 
 @fsrs_bp.route("/num-due-cards", methods=["GET"])
 @jwt_required()
@@ -166,5 +166,5 @@ def get_num_due_cards():
     try:
         num_due_cards = fsrs_service.get_num_due_cards(user_id)
         return json_response({"num_due_cards": num_due_cards}, status=200)
-    except DatabaseError as e:
-        return error_response(f"Database error: {str(e)}", status=500)
+    except DatabaseError:
+        return error_response("Database error", status=500)

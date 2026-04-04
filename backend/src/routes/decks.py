@@ -45,8 +45,8 @@ def export_deck(deck_id: int):
         if not deck_data:
             return error_response("Deck not found or access denied", status=404)
     
-    except Exception as e:
-        return error_response(f"Database error: {str(e)}")
+    except Exception:
+        return error_response("Database error")
     
     try:
         if export_format == "json":
@@ -78,8 +78,8 @@ def export_deck(deck_id: int):
             download_name=filename
         )
     
-    except Exception as e:
-        return error_response(f"Export failed: {str(e)}")
+    except Exception:
+        return error_response("Database error")
 
 
 @decks_bp.route("/decks/import", methods=["POST"])
@@ -161,8 +161,8 @@ def import_deck():
     
     except ValueError as e:
         return error_response(str(e), status=400)
-    except Exception as e:
-        return error_response(f"Import failed: {str(e)}")
+    except Exception:
+        return error_response("Import failed")
 
 
 @decks_bp.route("/decks/<int:deck_id>", methods=["GET"])
@@ -183,8 +183,8 @@ def get_deck(deck_id: int):
         
         return json_response(result)
     
-    except Exception as e:
-        return error_response(f"Database error: {str(e)}")
+    except Exception:
+        return error_response("Database error")
 
 
 @decks_bp.route("/decks", methods=["GET"])
@@ -204,8 +204,8 @@ def list_decks():
             "decks": decks
         })
     
-    except Exception as e:
-        return error_response(f"Database error: {str(e)}")
+    except Exception:
+        return error_response("Database error")
 
 
 @decks_bp.route("/decks/new", methods=["POST"])
@@ -267,9 +267,8 @@ def create_deck():
     except DatabaseError:
         return error_response("Database error", status=500)
 
-    except Exception as e:
-        # Fallback: don't leak full DB details in production, but keep some info for debugging
-        return error_response(f"Database error: {str(e)}", status=500)
+    except Exception:
+        return error_response("Database error", status=500)
 
 
 @decks_bp.route("/decks/due", methods=["GET"])
@@ -291,8 +290,8 @@ def get_decks_with_due_cards():
         decks = deck_service.get_decks_with_due_cards(user_id, limit)
         return json_response({"decks": decks})
     
-    except Exception as e:
-        return error_response(f"Database error: {str(e)}")
+    except Exception:
+        return error_response("Database error")
 
 
 @decks_bp.route("/decks/recent", methods=["GET"])
@@ -314,8 +313,8 @@ def get_recent_decks():
         decks = deck_service.get_recent_decks(user_id, limit)
         return json_response({"decks": decks})
     
-    except Exception as e:
-        return error_response(f"Database error: {str(e)}")
+    except Exception:
+        return error_response("Database error")
 
 
 @decks_bp.route("/decks/<int:deck_id>", methods=["PUT"])
@@ -370,8 +369,8 @@ def update_deck(deck_id: int):
     except DatabaseError:
         return error_response("Database error", status=500)
     
-    except Exception as e:
-        return error_response(f"Database error: {str(e)}", status=500)
+    except Exception:
+        return error_response("Database error", status=500)
 
 
 @decks_bp.route("/decks/<int:deck_id>", methods=["DELETE"])
@@ -397,5 +396,5 @@ def delete_deck(deck_id: int):
     except DatabaseError:
         return error_response("Database error", status=500)
     
-    except Exception as e:
-        return error_response(f"Database error: {str(e)}", status=500)
+    except Exception:
+        return error_response("Database error", status=500)

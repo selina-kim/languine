@@ -61,8 +61,9 @@ def _fetch_cards(deck_name, limit=None):
             WHERE d.u_id = 'system' AND d.deck_name = %s
         """
         if limit:
-            query += f" LIMIT {limit}"
-        cur.execute(query, (deck_name,))
+            cur.execute(query + " LIMIT %s", (deck_name, limit))
+        else:
+            cur.execute(query, (deck_name,))
         return cur.fetchall()
 
 

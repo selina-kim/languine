@@ -74,8 +74,8 @@ def create_card(deck_id: int):
     except DatabaseError as e:
         return error_response(str(e) or "Database error", status=500)
 
-    except Exception as e:
-        return error_response(f"Failed to create card: {str(e)}")
+    except Exception:
+        return error_response("Internal server error")
 
 
 @cards_bp.route("/decks/<int:deck_id>/cards/<int:card_id>", methods=["GET"])
@@ -96,8 +96,8 @@ def get_card(deck_id: int, card_id: int):
 
         return json_response(card)
 
-    except Exception as e:
-        return error_response(f"Database error: {str(e)}")
+    except Exception:
+        return error_response("Database error")
 
 
 @cards_bp.route("/decks/<int:deck_id>/cards/<int:card_id>", methods=["POST"])
@@ -131,8 +131,8 @@ def update_card(deck_id: int, card_id: int):
     except DatabaseError as e:
         return error_response(str(e) or "Database error", status=500)
 
-    except Exception as e:
-        return error_response(f"Failed to update card: {str(e)}")
+    except Exception:
+        return error_response("Internal server error")
 
 
 @cards_bp.route("/decks/<int:deck_id>/cards/<int:card_id>", methods=["DELETE"])
@@ -157,8 +157,8 @@ def delete_card(deck_id: int, card_id: int):
     except UnauthorizedError as e:
         return error_response(str(e) or "Unauthorized", status=403)
 
-    except Exception as e:
-        return error_response(f"Failed to delete card: {str(e)}")
+    except Exception:
+        return error_response("Internal server error")
 
 
 @cards_bp.route("/decks/<int:deck_id>/cards", methods=["GET"])
@@ -185,8 +185,8 @@ def get_deck_cards(deck_id: int):
 
         return json_response(result)
 
-    except Exception as e:
-        return error_response(f"Database error: {str(e)}")
+    except Exception:
+        return error_response("Database error")
 
 
 @cards_bp.route("/decks/<int:deck_id>/review", methods=["GET"])
@@ -211,8 +211,8 @@ def get_review_cards(deck_id: int):
 
         return json_response({"cards": cards})
 
-    except Exception as e:
-        return error_response(f"Database error: {str(e)}")
+    except Exception:
+        return error_response("Database error")
 
 
 @cards_bp.route("/cards/image/<path:object_id>", methods=["GET"])
@@ -256,7 +256,7 @@ def get_card_image_url(object_id: str):
         # MinIO SDK raises generic exceptions for missing objects.
         if "NoSuchKey" in str(e):
             return error_response("Image not found", status=404)
-        return error_response(f"Failed to fetch image: {str(e)}")
+        return error_response("Failed to fetch image")
     finally:
         try:
             if "image_obj" in locals() and image_obj:

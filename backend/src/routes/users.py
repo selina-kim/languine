@@ -53,11 +53,11 @@ def get_current_user():
         
         return json_response(user)
     
-    except DatabaseError as e:
-        return error_response(f"Database error: {str(e)}", status=500)
+    except DatabaseError:
+        return error_response("Database error", status=500)
     
-    except Exception as e:
-        return error_response(f"Failed to retrieve user: {str(e)}", status=500)
+    except Exception:
+        return error_response("Internal server error", status=500)
 
 
 @users_bp.route("/users/me", methods=["PUT", "PATCH"])
@@ -152,8 +152,8 @@ def update_current_user():
             
             if data['reset_fsrs_params'] == True:
                 fsrs_service.reset_optimization_params(user_id)
-        except DatabaseError as e:
-            return error_response(f"Database error: {str(e)}", status=500)
+        except DatabaseError:
+            return error_response("Database error", status=500)
         
         # make sure to remove reset_fsrs_params from data before trying to pass it to the update_user func
         data.pop('reset_fsrs_params', None)
@@ -186,11 +186,11 @@ def update_current_user():
     except ValueError as e:
         return error_response(str(e), status=400)
     
-    except DatabaseError as e:
-        return error_response(f"Database error: {str(e)}", status=500)
+    except DatabaseError:
+        return error_response("Database error", status=500)
     
-    except Exception as e:
-        return error_response(f"Failed to update user: {str(e)}", status=500)
+    except Exception:
+        return error_response("Internal server error", status=500)
 
 
 @users_bp.route("/users/me", methods=["DELETE"])
@@ -219,8 +219,8 @@ def delete_current_user():
     except UserNotFoundError as e:
         return error_response(str(e) or "User not found", status=404)
     
-    except DatabaseError as e:
-        return error_response(f"Database error: {str(e)}", status=500)
+    except DatabaseError:
+        return error_response("Database error", status=500)
     
-    except Exception as e:
-        return error_response(f"Failed to delete user: {str(e)}", status=500)
+    except Exception:
+        return error_response("Internal server error", status=500)

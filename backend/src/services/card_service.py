@@ -9,6 +9,7 @@ from typing import Dict, Any, List, Optional
 from datetime import datetime, timezone
 from db import get_db_cursor
 import psycopg2
+from psycopg2 import sql as pgsql
 
 
 class CardNotFoundError(Exception):
@@ -466,25 +467,27 @@ class CardService:
             "trans_roman": "trans_roman",
         }
 
-        # Add text field updates if provided in update_data
+        # Add text field updates if provided in update_data.
+        # db_col values are hardcoded literals from field_mapping; using
+        # pgsql.Identifier ensures they are always treated as DB identifiers.
         for data_key, db_col in field_mapping.items():
             if data_key in update_data:
-                updates.append(f"{db_col} = %s")
+                updates.append(pgsql.SQL("{} = %s").format(pgsql.Identifier(db_col)))
                 params.append(
                     update_data[data_key].strip() if update_data[data_key] else None
                 )
 
         # Add media field updates if new media was generated
         if image_changed:
-            updates.append("image = %s")
+            updates.append(pgsql.SQL("image = %s"))
             params.append(new_image_id)
 
         if new_word_audio:
-            updates.append("word_audio = %s")
+            updates.append(pgsql.SQL("word_audio = %s"))
             params.append(new_word_audio)
 
         if new_trans_audio:
-            updates.append("trans_audio = %s")
+            updates.append(pgsql.SQL("trans_audio = %s"))
             params.append(new_trans_audio)
 
         # If nothing to update, return current card as-is
@@ -497,18 +500,16 @@ class CardService:
         # --- Execute UPDATE query ---
         try:
             with get_db_cursor(commit=True) as cursor:
-                cursor.execute(
-                    f"""
+                query = pgsql.SQL("""
                     UPDATE Cards
-                    SET {", ".join(updates)}
+                    SET {set_clause}
                     WHERE c_id = %s
                     RETURNING c_id, d_id, word, translation, definition,
                               word_example, trans_example, word_roman, trans_roman,
                               image, word_audio, trans_audio, learning_state,
                               difficulty, stability, due_date
-                    """,
-                    tuple(params),
-                )
+                """).format(set_clause=pgsql.SQL(", ").join(updates))
+                cursor.execute(query, tuple(params))
                 card = cursor.fetchone()
                 return dict(card)
 

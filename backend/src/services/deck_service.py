@@ -12,6 +12,7 @@ from typing import Dict, Any, List, Optional
 from datetime import datetime, timezone
 from db import get_db_cursor
 import psycopg2
+from psycopg2 import sql as pgsql
 import os
 
 class DuplicateDeckNameError(Exception):
@@ -473,27 +474,27 @@ class DeckService:
                 params = []
                 
                 if "deck_name" in deck_data:
-                    update_fields.append("deck_name = %s")
+                    update_fields.append(pgsql.SQL("deck_name = %s"))
                     params.append(deck_data["deck_name"])
                 
                 if "word_lang" in deck_data:
-                    update_fields.append("word_lang = %s")
+                    update_fields.append(pgsql.SQL("word_lang = %s"))
                     params.append(deck_data["word_lang"])
                 
                 if "trans_lang" in deck_data:
-                    update_fields.append("trans_lang = %s")
+                    update_fields.append(pgsql.SQL("trans_lang = %s"))
                     params.append(deck_data["trans_lang"])
                 
                 if "description" in deck_data:
-                    update_fields.append("description = %s")
+                    update_fields.append(pgsql.SQL("description = %s"))
                     params.append(deck_data["description"])
                 
                 if "is_public" in deck_data:
-                    update_fields.append("is_public = %s")
+                    update_fields.append(pgsql.SQL("is_public = %s"))
                     params.append(bool(deck_data["is_public"]))
                 
                 if "link" in deck_data:
-                    update_fields.append("link = %s")
+                    update_fields.append(pgsql.SQL("link = %s"))
                     params.append(deck_data["link"])
                 
                 if not update_fields:
@@ -514,13 +515,13 @@ class DeckService:
                 params.extend([deck_id, user_id])
                 
                 # Execute update
-                query = f"""
+                query = pgsql.SQL("""
                     UPDATE Decks
-                    SET {', '.join(update_fields)}
+                    SET {set_clause}
                     WHERE d_id = %s AND u_id = %s
                     RETURNING d_id, deck_name, word_lang, trans_lang, description,
                               is_public, link, creation_date, last_reviewed
-                """
+                """).format(set_clause=pgsql.SQL(", ").join(update_fields))
                 
                 cursor.execute(query, params)
                 deck = cursor.fetchone()

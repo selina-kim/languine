@@ -5,6 +5,7 @@ User service - handles user profile and settings operations.
 from typing import Dict, Any, Optional
 from db import get_db_cursor
 import psycopg2
+from psycopg2 import sql as pgsql
 
 
 class UserNotFoundError(Exception):
@@ -76,12 +77,16 @@ class UserService:
                 if not update_fields:
                     raise ValueError("No valid fields to update")
                 
-                # Build SET clause dynamically
-                set_clause = ", ".join([f"{field} = %s" for field in update_fields.keys()])
+                # Build SET clause using sql.Identifier so column names are
+                # safely quoted regardless of their string contents.
+                set_parts = [
+                    pgsql.SQL("{} = %s").format(pgsql.Identifier(field))
+                    for field in update_fields.keys()
+                ]
                 values = list(update_fields.values())
                 values.append(user_id)  # For WHERE clause
                 
-                query = f"""
+                query = pgsql.SQL("""
                     UPDATE Users
                     SET {set_clause}
                     WHERE u_id = %s
@@ -89,7 +94,7 @@ class UserService:
                               new_cards_per_day, desired_retention,
                               auto_optimize, num_reviews_per_optimize, 
                               total_reviews, reviews_since_last_optimize
-                """
+                """).format(set_clause=pgsql.SQL(", ").join(set_parts))
                 
                 cursor.execute(query, values)
                 updated_user = cursor.fetchone()

@@ -456,7 +456,7 @@ class TestUpdateCurrentUserRoute:
 
         assert response.status_code == 500
         data = json.loads(response.data)
-        assert "Failed to update user" in data["error"]
+        assert "Internal server error" in data["error"]
 
 
 class TestDeleteCurrentUserRoute:
@@ -505,7 +505,7 @@ class TestDeleteCurrentUserRoute:
 
         assert response.status_code == 500
         data = json.loads(response.data)
-        assert "Failed to delete user" in data["error"]
+        assert "Internal server error" in data["error"]
 
 
 class TestGetCurrentUserRoute:
@@ -559,4 +559,4 @@ class TestGetCurrentUserRoute:
 
         assert response.status_code == 500
         data = json.loads(response.data)
-        assert "Failed to retrieve user" in data["error"]
+        assert "Internal server error" in data["error"]
