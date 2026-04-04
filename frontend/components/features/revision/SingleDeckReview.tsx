@@ -162,17 +162,12 @@ export const SingleDeckReview = ({
         return null;
       }
 
-      const player = createAudioPlayer(
-        {
-          uri: buildAudioUrl(objectId),
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+      const player = createAudioPlayer({
+        uri: buildAudioUrl(objectId),
+        headers: {
+          Authorization: `Bearer ${token}`,
         },
-        {
-          downloadFirst: true,
-        },
-      );
+      });
 
       player.addListener("playbackStatusUpdate", (status) => {
         if (status.isLoaded && status.didJustFinish) {
@@ -204,17 +199,12 @@ export const SingleDeckReview = ({
           continue;
         }
 
-        const player = createAudioPlayer(
-          {
-            uri: buildAudioUrl(objectId),
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
+        const player = createAudioPlayer({
+          uri: buildAudioUrl(objectId),
+          headers: {
+            Authorization: `Bearer ${token}`,
           },
-          {
-            downloadFirst: true,
-          },
-        );
+        });
 
         player.addListener("playbackStatusUpdate", (status) => {
           if (status.isLoaded && status.didJustFinish) {
@@ -256,6 +246,7 @@ export const SingleDeckReview = ({
         throw new Error("Audio is unavailable");
       }
 
+      await player.seekTo(0);
       player.play();
     } catch (playbackError) {
       const message =
