@@ -81,3 +81,11 @@ eas build --profile development --platform android
 2. Run the app on Expo (follow [these steps](#run-the-application-expo))
 
 - If app screen on emulator shows error on launch instead of bundling the app, might have to manually type in `<ip address>:8081` for the local server on the expo app
+
+### Run Tests
+
+Run the following command to run the entire frontend test suite.
+
+```bash
+npm test
+```
