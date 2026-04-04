@@ -91,6 +91,13 @@ function TabLayoutContent() {
     event: { preventDefault: () => void },
   ) => {
     if (!isReviewSessionActive || !isOnRevisionTab) {
+      if (targetPath === "/(tabs)/decks" && pathname === "/decks") {
+        event.preventDefault();
+        router.replace({
+          pathname: "/(tabs)/decks",
+          params: { resetList: String(Date.now()) },
+        });
+      }
       return;
     }
 

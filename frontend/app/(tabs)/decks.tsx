@@ -26,7 +26,10 @@ export default function Decks() {
   const [isDeletingDeck, setIsDeletingDeck] = useState(false);
   const [deleteDeckError, setDeleteDeckError] = useState<string>();
   const pathname = usePathname();
-  const params = useLocalSearchParams<{ deckId?: string }>();
+  const params = useLocalSearchParams<{
+    deckId?: string;
+    resetList?: string;
+  }>();
   const { getLanguageName } = useLanguageOptions();
 
   const getAllDecks = async () => {
@@ -39,6 +42,11 @@ export default function Decks() {
   };
 
   useEffect(() => {
+    if (params.resetList) {
+      setFocusedDeckId(undefined);
+      return;
+    }
+
     const deckIdParam = params.deckId;
     const normalizedDeckId = Array.isArray(deckIdParam)
       ? deckIdParam[0]
@@ -52,6 +60,7 @@ export default function Decks() {
     isImportDeckModalOpen,
     pathname,
     params.deckId,
+    params.resetList,
   ]);
 
   const handleDeleteDeck = async (deckId: string) => {
