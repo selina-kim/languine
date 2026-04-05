@@ -69,8 +69,10 @@ export const CreateNewCardModal = ({
   const [exampleError, setExampleError] = useState<string>();
   const [imageError, setImageError] = useState<string>();
 
-  const sourceLanguageName = getLanguageName(translationLanguageCode);
-  const targetLanguageName = getLanguageName(wordLanguageCode);
+  const sourceLanguageName = getLanguageName(
+    translationLanguageCode,
+  ).toUpperCase();
+  const targetLanguageName = getLanguageName(wordLanguageCode).toUpperCase();
 
   const {
     wordPlaceholder,
