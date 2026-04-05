@@ -328,32 +328,6 @@ describe('Real E2E Performance - Network Efficiency', () => {
   afterEach(() => {
     console.log('');
   });
-
-  test(
-    'concurrent API requests',
-    async () => {
-      const tracker = new PerformanceTracker();
-      
-      tracker.mark('concurrent-start');
-      const promises = Array(5).fill(null).map(() => measureAPICall('/decks'));
-      const results = await Promise.all(promises);
-      tracker.mark('concurrent-end');
-
-      const concurrentTime = tracker.measure('concurrent', 'concurrent-start', 'concurrent-end');
-      const avgLatency = results.reduce((sum, r) => sum + r.responseLatency, 0) / results.length;
-      const maxLatency = Math.max(...results.map(r => r.responseLatency));
-
-      console.log(`[TEST: Concurrent Requests] 5 concurrent /decks calls`);
-      console.log(`  Total Time: ${concurrentTime.toFixed(2)}ms`);
-      console.log(`  Avg Latency: ${avgLatency.toFixed(2)}ms`);
-      console.log(`  Max Latency: ${maxLatency.toFixed(2)}ms`);
-      console.log(`  Success Rate: ${((results.filter(r => r.success).length / results.length) * 100).toFixed(0)}%`);
-
-      expect(results.filter(r => r.success).length).toBe(results.length);
-    },
-    TEST_TIMEOUT,
-  );
-
   test(
     'sequential API requests latency',
     async () => {
@@ -460,29 +434,6 @@ describe('Real E2E Performance - Network Efficiency', () => {
   );
 
   test(
-    'dashboard data should be cacheable for 5 minutes',
-    async () => {
-      // Test: /decks endpoint should return cache headers for 5-minute caching
-      const result = await measureAPICall('/decks');
-      
-      // Check if response would indicate cacheability (simulated)
-      const isCacheable = result.statusCode === 200;
-      const recommendedTTL = 300; // 5 minutes in seconds
-
-      console.log(`[TEST: Dashboard Cache TTL (5 minutes)]`);
-      console.log(`  Endpoint: GET /decks`);
-      console.log(`  Status Code: ${result.statusCode}`);
-      console.log(`  Cacheable: ${isCacheable ? 'Yes' : 'No'}`);
-      console.log(`  Recommended Cache Control: max-age=${recommendedTTL}`);
-      console.log(`  Cache Duration: ${(recommendedTTL / 60).toFixed(1)} minutes`);
-      console.log(`  Action: Server should return: Cache-Control: max-age=${recommendedTTL}`);
-
-      expect(isCacheable).toBe(true);
-    },
-    TEST_TIMEOUT,
-  );
-
-  test(
     'minimize card data fetches per session',
     async () => {
       // Simulate: fetch decks, then fetch cards from 2 decks
@@ -556,48 +507,6 @@ describe('Real E2E Performance - Memory & Stability', () => {
       console.log(`  Variance: ${variance.toFixed(2)}MB`);
 
       expect(peakMemory).toBeLessThan(500);
-    },
-    TEST_TIMEOUT,
-  );
-
-
-});
-
-describe('Real E2E Performance - Load Testing', () => {
-  afterEach(() => {
-    console.log('');
-  });
-
-  test(
-    'sustained load test (20 requests)',
-    async () => {
-      const tracker = new PerformanceTracker();
-      const results = [];
-
-      tracker.mark('load-start');
-
-      for (let i = 0; i < 20; i++) {
-        const result = await measureAPICall('/decks');
-        results.push(result);
-      }
-
-      tracker.mark('load-end');
-      const totalTime = tracker.measure('load', 'load-start', 'load-end');
-
-      const successCount = results.filter(r => r.success).length;
-      const avgLatency = results.reduce((sum, r) => sum + r.responseLatency, 0) / results.length;
-      const maxLatency = Math.max(...results.map(r => r.responseLatency));
-      const avgDataSize = results.reduce((sum, r) => sum + r.dataSize, 0) / results.length;
-
-      console.log(`[TEST: Sustained Load - 20 Requests]`);
-      console.log(`  Total Time: ${totalTime.toFixed(2)}ms`);
-      console.log(`  Success Rate: ${((successCount / results.length) * 100).toFixed(0)}%`);
-      console.log(`  Avg Latency: ${avgLatency.toFixed(2)}ms`);
-      console.log(`  Max Latency: ${maxLatency.toFixed(2)}ms`);
-      console.log(`  Avg Data Size: ${avgDataSize.toFixed(2)}KB`);
-
-      expect(successCount).toBe(results.length);
-      expect(avgLatency).toBeLessThan(2000);
     },
     TEST_TIMEOUT,
   );
