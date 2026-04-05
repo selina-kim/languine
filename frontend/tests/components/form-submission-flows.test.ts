@@ -1,6 +1,6 @@
-import { describe, expect, test, jest, beforeEach } from '@jest/globals';
+import { describe, expect, test, jest, beforeEach } from "@jest/globals";
 
-jest.mock('expo-router', () => ({
+jest.mock("expo-router", () => ({
   useRouter: () => ({
     push: jest.fn(),
     replace: jest.fn(),
@@ -9,7 +9,7 @@ jest.mock('expo-router', () => ({
   useSegments: () => [],
 }));
 
-jest.mock('@/utils/storage', () => ({
+jest.mock("@/utils/storage", () => ({
   storage: {
     getItem: jest.fn(),
     setItem: jest.fn(),
@@ -17,7 +17,7 @@ jest.mock('@/utils/storage', () => ({
   },
 }));
 
-jest.mock('@/apis/endpoints/decks', () => ({
+jest.mock("@/apis/endpoints/decks", () => ({
   getDecks: jest.fn(),
   getSingleDeck: jest.fn(),
   createDeck: jest.fn(),
@@ -25,7 +25,7 @@ jest.mock('@/apis/endpoints/decks', () => ({
   deleteDeck: jest.fn(),
 }));
 
-jest.mock('@/apis/endpoints/cards', () => ({
+jest.mock("@/apis/endpoints/cards", () => ({
   getCards: jest.fn(),
   createCard: jest.fn(),
   updateCard: jest.fn(),
@@ -36,13 +36,13 @@ jest.mock('@/apis/endpoints/cards', () => ({
 // CREATE DECK FORM - Complete Submission Flow
 // ============================================================================
 
-describe('CreateDeckForm - Complete Submission Flow', () => {
+describe("CreateDeckForm - Complete Submission Flow", () => {
   let form: any;
 
   beforeEach(() => {
     jest.clearAllMocks();
     form = {
-      values: { deckName: '', wordLanguage: '', translationLanguage: '' },
+      values: { deckName: "", wordLanguage: "", translationLanguage: "" },
       touched: {},
       errors: {},
       isSubmitting: false,
@@ -55,19 +55,19 @@ describe('CreateDeckForm - Complete Submission Flow', () => {
     };
   });
 
-  test('form submission flow: initial → fill → validate → submit → success', async () => {
+  test("form submission flow: initial → fill → validate → submit → success", async () => {
     // Step 1: Form is initialized empty
-    expect(form.values.deckName).toBe('');
+    expect(form.values.deckName).toBe("");
     expect(form.isValid).toBe(false);
 
     // Step 2: User types in form fields
-    form.values.deckName = 'Japanese Beginner';
-    form.values.wordLanguage = 'ja';
-    form.values.translationLanguage = 'en';
+    form.values.deckName = "Japanese Beginner";
+    form.values.wordLanguage = "ja";
+    form.values.translationLanguage = "en";
     form.dirty = true;
     form.onChange({});
 
-    expect(form.values.deckName).toBe('Japanese Beginner');
+    expect(form.values.deckName).toBe("Japanese Beginner");
     expect(form.dirty).toBe(true);
 
     // Step 3: Form validates after user clears focus
@@ -90,21 +90,21 @@ describe('CreateDeckForm - Complete Submission Flow', () => {
     expect(form.isSubmitting).toBe(false);
   });
 
-  test('form submission with validation error: initial → fill → error → correct → submit', async () => {
+  test("form submission with validation error: initial → fill → error → correct → submit", async () => {
     // User enters same language for both fields
-    form.values.deckName = 'Test';
-    form.values.wordLanguage = 'ja';
-    form.values.translationLanguage = 'ja';
+    form.values.deckName = "Test";
+    form.values.wordLanguage = "ja";
+    form.values.translationLanguage = "ja";
 
     // Validation error detected
-    form.errors.translationLanguage = 'Languages must be different';
+    form.errors.translationLanguage = "Languages must be different";
     form.isValid = false;
 
     expect(form.errors.translationLanguage).toBeTruthy();
     expect(form.isValid).toBe(false);
 
     // User corrects the error
-    form.values.translationLanguage = 'en';
+    form.values.translationLanguage = "en";
     form.errors = {};
     form.isValid = true;
 
@@ -118,14 +118,18 @@ describe('CreateDeckForm - Complete Submission Flow', () => {
     expect(form.submitted).toBe(true);
   });
 
-  test('form submission with API error: shows error, allows retry', async () => {
-    form.values = { deckName: 'Test', wordLanguage: 'ja', translationLanguage: 'en' };
+  test("form submission with API error: shows error, allows retry", async () => {
+    form.values = {
+      deckName: "Test",
+      wordLanguage: "ja",
+      translationLanguage: "en",
+    };
     form.isValid = true;
 
     // Step 1: First submission attempt
     form.isSubmitting = true;
     form.isSubmitting = false;
-    form.errors = { submit: 'Network error occurred' };
+    form.errors = { submit: "Network error occurred" };
 
     expect(form.errors.submit).toBeTruthy();
 
@@ -140,27 +144,35 @@ describe('CreateDeckForm - Complete Submission Flow', () => {
     expect(form.submitted).toBe(true);
   });
 
-  test('form can be reset after successful submission', async () => {
-    form.values = { deckName: 'Test', wordLanguage: 'ja', translationLanguage: 'en' };
+  test("form can be reset after successful submission", async () => {
+    form.values = {
+      deckName: "Test",
+      wordLanguage: "ja",
+      translationLanguage: "en",
+    };
     form.submitted = true;
 
     // User wants to create another deck
-    form.resetForm();  // Mock implementation
-    form.values = { deckName: '', wordLanguage: '', translationLanguage: '' };
+    form.resetForm(); // Mock implementation
+    form.values = { deckName: "", wordLanguage: "", translationLanguage: "" };
     form.touched = {};
     form.errors = {};
 
     expect(form.values).toEqual({
-      deckName: '',
-      wordLanguage: '',
-      translationLanguage: '',
+      deckName: "",
+      wordLanguage: "",
+      translationLanguage: "",
     });
     expect(form.touched).toEqual({});
     expect(form.errors).toEqual({});
   });
 
-  test('form disables submit button while submitting', () => {
-    form.values = { deckName: 'Test', wordLanguage: 'ja', translationLanguage: 'en' };
+  test("form disables submit button while submitting", () => {
+    form.values = {
+      deckName: "Test",
+      wordLanguage: "ja",
+      translationLanguage: "en",
+    };
     form.isValid = true;
     form.isSubmitting = true;
 
@@ -169,10 +181,10 @@ describe('CreateDeckForm - Complete Submission Flow', () => {
     expect(isSubmitDisabled).toBe(true);
   });
 
-  test('form field errors do NOT show before touched', () => {
-    form.values = { deckName: '' };
+  test("form field errors do NOT show before touched", () => {
+    form.values = { deckName: "" };
     form.touched = {};
-    form.errors.deckName = 'Deck name is required';
+    form.errors.deckName = "Deck name is required";
 
     // Since field wasn't touched, error should not display
     const shouldShowError = form.touched.deckName && form.errors.deckName;
@@ -185,17 +197,17 @@ describe('CreateDeckForm - Complete Submission Flow', () => {
 // CREATE CARD FORM - Multi-field Submission
 // ============================================================================
 
-describe('CreateCardForm - Multi-field Form Flow', () => {
+describe("CreateCardForm - Multi-field Form Flow", () => {
   let form: any;
 
   beforeEach(() => {
     form = {
       values: {
-        word: '',
-        translation: '',
-        exampleSentence: '',
-        pronunciation: '',
-        imageUrl: '',
+        word: "",
+        translation: "",
+        exampleSentence: "",
+        pronunciation: "",
+        imageUrl: "",
       },
       errors: {},
       isSubmitting: false,
@@ -206,20 +218,20 @@ describe('CreateCardForm - Multi-field Form Flow', () => {
     };
   });
 
-  test('card form submission with all optional fields', () => {
+  test("card form submission with all optional fields", () => {
     // Fill required + optional fields
     form.values = {
-      word: 'こんにちは',
-      translation: 'Hello',
-      exampleSentence: 'こんにちは。元気ですか？',
-      pronunciation: 'kon-ni-chi-wa',
-      imageUrl: 'https://example.com/hello.jpg',
+      word: "こんにちは",
+      translation: "Hello",
+      exampleSentence: "こんにちは。元気ですか？",
+      pronunciation: "kon-ni-chi-wa",
+      imageUrl: "https://example.com/hello.jpg",
     };
 
     form.isValid = true;
 
-    expect(form.values.word).toBe('こんにちは');
-    expect(form.values.translation).toBe('Hello');
+    expect(form.values.word).toBe("こんにちは");
+    expect(form.values.translation).toBe("Hello");
     expect(form.isValid).toBe(true);
 
     form.isSubmitting = true;
@@ -229,13 +241,13 @@ describe('CreateCardForm - Multi-field Form Flow', () => {
     expect(form.submitted).toBe(true);
   });
 
-  test('card form with only required fields', () => {
+  test("card form with only required fields", () => {
     form.values = {
-      word: 'Word',
-      translation: 'Translation',
-      exampleSentence: '',
-      pronunciation: '',
-      imageUrl: '',
+      word: "Word",
+      translation: "Translation",
+      exampleSentence: "",
+      pronunciation: "",
+      imageUrl: "",
     };
 
     form.isValid = true;
@@ -247,17 +259,17 @@ describe('CreateCardForm - Multi-field Form Flow', () => {
     expect(form.isSubmitting).toBe(false);
   });
 
-  test('card form image upload validation', () => {
-    form.values.imageUrl = 'not-a-url';
-    form.errors.imageUrl = 'Invalid image URL format';
+  test("card form image upload validation", () => {
+    form.values.imageUrl = "not-a-url";
+    form.errors.imageUrl = "Invalid image URL format";
 
     expect(form.errors.imageUrl).toBeTruthy();
 
     // User corrects the URL
-    form.values.imageUrl = 'https://example.com/image.jpg';
-    form.errors.imageUrl = '';
+    form.values.imageUrl = "https://example.com/image.jpg";
+    form.errors.imageUrl = "";
 
-    expect(form.errors.imageUrl).toBe('');
+    expect(form.errors.imageUrl).toBe("");
   });
 });
 
@@ -265,15 +277,15 @@ describe('CreateCardForm - Multi-field Form Flow', () => {
 // REVIEW SESSION - Multi-step Interactive Flow
 // ============================================================================
 
-describe('ReviewSession - Complete Review Flow', () => {
+describe("ReviewSession - Complete Review Flow", () => {
   let session: any;
 
   beforeEach(() => {
     session = {
       dueCards: [
-        { c_id: '1', word: 'Word 1', translation: 'Translation 1' },
-        { c_id: '2', word: 'Word 2', translation: 'Translation 2' },
-        { c_id: '3', word: 'Word 3', translation: 'Translation 3' },
+        { c_id: "1", word: "Word 1", translation: "Translation 1" },
+        { c_id: "2", word: "Word 2", translation: "Translation 2" },
+        { c_id: "3", word: "Word 3", translation: "Translation 3" },
       ],
       currentCardIndex: 0,
       currentCard: null,
@@ -292,14 +304,14 @@ describe('ReviewSession - Complete Review Flow', () => {
     session.currentCard = session.dueCards[session.currentCardIndex];
   });
 
-  test('complete review session flow: load → review each → complete', () => {
+  test("complete review session flow: load → review each → complete", () => {
     // Step 1: Loading due cards
     session.isLoading = true;
     expect(session.isLoading).toBe(true);
 
     // Step 2: Cards loaded, first card displayed
     session.isLoading = false;
-    expect(session.currentCard.word).toBe('Word 1');
+    expect(session.currentCard.word).toBe("Word 1");
 
     // Step 3: User reveals answer
     session.onReveal();
@@ -327,7 +339,7 @@ describe('ReviewSession - Complete Review Flow', () => {
     session.canRate = false;
     session.rating = null;
 
-    expect(session.currentCard.word).toBe('Word 2');
+    expect(session.currentCard.word).toBe("Word 2");
 
     // Review card 2
     session.onReveal();
@@ -365,14 +377,14 @@ describe('ReviewSession - Complete Review Flow', () => {
     expect(session.reviewedCards.length).toBe(3);
   });
 
-  test('reveals answer before allowing rating', () => {
+  test("reveals answer before allowing rating", () => {
     expect(session.revealed).toBe(false);
     expect(session.canRate).toBe(false);
 
     // Cannot rate without revealing
     expect(() => {
       if (!session.revealed) {
-        throw new Error('Card must be revealed before rating');
+        throw new Error("Card must be revealed before rating");
       }
     }).toThrow();
 
@@ -389,7 +401,7 @@ describe('ReviewSession - Complete Review Flow', () => {
     expect(session.rating).toBe(3);
   });
 
-  test('tracks review statistics', () => {
+  test("tracks review statistics", () => {
     session.reviewedCards = [
       { rating: 4 }, // Again (difficult)
       { rating: 3 }, // Good
@@ -412,7 +424,7 @@ describe('ReviewSession - Complete Review Flow', () => {
     expect(stats.again).toBe(1);
   });
 
-  test('calculates review session time', () => {
+  test("calculates review session time", () => {
     const startTime = Date.now();
 
     // Simulate reviewing 3 cards
@@ -434,7 +446,7 @@ describe('ReviewSession - Complete Review Flow', () => {
     expect(duration).toBeGreaterThanOrEqual(0);
   });
 
-  test('shows progress indicator during review', () => {
+  test("shows progress indicator during review", () => {
     const totalCards = session.dueCards.length;
 
     // Progress at card 1
@@ -457,16 +469,16 @@ describe('ReviewSession - Complete Review Flow', () => {
 // DECK EDITING - Multi-step Edit and Delete Flow
 // ============================================================================
 
-describe('DeckEditingFlow', () => {
+describe("DeckEditingFlow", () => {
   let deck: any;
 
   beforeEach(() => {
     deck = {
-      d_id: '123',
-      deck_name: 'Japanese Vocabulary',
+      d_id: "123",
+      deck_name: "Japanese Vocabulary",
       card_count: 100,
       isEditing: false,
-      editForm: { deck_name: '', description: '' },
+      editForm: { deck_name: "", description: "" },
       onEditStart: jest.fn(),
       onEditSave: jest.fn(),
       onEditCancel: jest.fn(),
@@ -474,7 +486,7 @@ describe('DeckEditingFlow', () => {
     };
   });
 
-  test('edit deck flow: view → edit → save', () => {
+  test("edit deck flow: view → edit → save", () => {
     // Step 1: View deck
     expect(deck.isEditing).toBe(false);
 
@@ -484,30 +496,30 @@ describe('DeckEditingFlow', () => {
     deck.editForm.deck_name = deck.deck_name;
 
     expect(deck.isEditing).toBe(true);
-    expect(deck.editForm.deck_name).toBe('Japanese Vocabulary');
+    expect(deck.editForm.deck_name).toBe("Japanese Vocabulary");
 
     // Step 3: User modifies name
-    deck.editForm.deck_name = 'Advanced Japanese';
+    deck.editForm.deck_name = "Advanced Japanese";
 
-    expect(deck.editForm.deck_name).toBe('Advanced Japanese');
+    expect(deck.editForm.deck_name).toBe("Advanced Japanese");
 
     // Step 4: User saves
     deck.onEditSave();
     deck.deck_name = deck.editForm.deck_name;
     deck.isEditing = false;
 
-    expect(deck.deck_name).toBe('Advanced Japanese');
+    expect(deck.deck_name).toBe("Advanced Japanese");
     expect(deck.isEditing).toBe(false);
   });
 
-  test('edit can be cancelled without saving changes', () => {
+  test("edit can be cancelled without saving changes", () => {
     const originalName = deck.deck_name;
 
     // Enter edit mode and make changes
     deck.isEditing = true;
-    deck.editForm.deck_name = 'New Name';
+    deck.editForm.deck_name = "New Name";
 
-    expect(deck.editForm.deck_name).toBe('New Name');
+    expect(deck.editForm.deck_name).toBe("New Name");
 
     // Cancel edit
     deck.onEditCancel();
@@ -517,10 +529,10 @@ describe('DeckEditingFlow', () => {
     expect(deck.deck_name).toBe(originalName);
   });
 
-  test('delete deck with confirmation dialog flow', () => {
+  test("delete deck with confirmation dialog flow", () => {
     let confirmDialog = {
       visible: false,
-      title: 'Delete Deck?',
+      title: "Delete Deck?",
       message: `Are you sure you want to delete "${deck.deck_name}"?`,
       onConfirm: jest.fn(),
       onCancel: jest.fn(),
@@ -539,7 +551,7 @@ describe('DeckEditingFlow', () => {
     expect(deck.onDelete).toHaveBeenCalled();
   });
 
-  test('delete can be cancelled', () => {
+  test("delete can be cancelled", () => {
     let confirmDialog = {
       visible: false,
       onCancel: jest.fn(),
@@ -560,19 +572,19 @@ describe('DeckEditingFlow', () => {
 // CARD MANAGEMENT - Add, Edit, Delete Cards
 // ============================================================================
 
-describe('CardManagementFlow', () => {
+describe("CardManagementFlow", () => {
   let cardList: any = [];
   let createCardForm: any;
 
   beforeEach(() => {
     jest.clearAllMocks();
     cardList = [
-      { c_id: '1', word: 'Hello', translation: 'Hola' },
-      { c_id: '2', word: 'Goodbye', translation: 'Adiós' },
+      { c_id: "1", word: "Hello", translation: "Hola" },
+      { c_id: "2", word: "Goodbye", translation: "Adiós" },
     ];
 
     createCardForm = {
-      values: { word: '', translation: '' },
+      values: { word: "", translation: "" },
       errors: {},
       isSubmitting: false,
       onSubmit: jest.fn(),
@@ -580,13 +592,13 @@ describe('CardManagementFlow', () => {
     };
   });
 
-  test('add card to deck flow', () => {
+  test("add card to deck flow", () => {
     // Step 1: Form is empty
-    expect(createCardForm.values.word).toBe('');
+    expect(createCardForm.values.word).toBe("");
 
     // Step 2: User fills form
-    createCardForm.values.word = 'Good Morning';
-    createCardForm.values.translation = 'Buenos días';
+    createCardForm.values.word = "Good Morning";
+    createCardForm.values.translation = "Buenos días";
 
     // Step 3: Form validates
     createCardForm.errors = {};
@@ -597,17 +609,17 @@ describe('CardManagementFlow', () => {
     // Step 5: Card added to list
     createCardForm.isSubmitting = false;
     const newCard = {
-      c_id: '3',
+      c_id: "3",
       word: createCardForm.values.word,
       translation: createCardForm.values.translation,
     };
     cardList.push(newCard);
 
     expect(cardList.length).toBe(3);
-    expect(cardList[2].word).toBe('Good Morning');
+    expect(cardList[2].word).toBe("Good Morning");
   });
 
-  test('edit card flow', () => {
+  test("edit card flow", () => {
     const cardToEdit = cardList[0];
 
     // Step 1: User clicks edit
@@ -617,16 +629,16 @@ describe('CardManagementFlow', () => {
     };
 
     // Step 2: User modifies card
-    editForm.values.word = 'Hi';
+    editForm.values.word = "Hi";
 
     // Step 3: User saves
     editForm.onSubmit();
     cardToEdit.word = editForm.values.word;
 
-    expect(cardList[0].word).toBe('Hi');
+    expect(cardList[0].word).toBe("Hi");
   });
 
-  test('delete card flow with confirmation', () => {
+  test("delete card flow with confirmation", () => {
     const cardToDelete = cardList[1];
 
     let confirmDialog = {
@@ -644,10 +656,10 @@ describe('CardManagementFlow', () => {
     confirmDialog.visible = false;
 
     expect(cardList.length).toBe(1);
-    expect(cardList[0].word).toBe('Hello');
+    expect(cardList[0].word).toBe("Hello");
   });
 
-  test('bulk delete cards', () => {
+  test("bulk delete cards", () => {
     const cardsToDelete = [cardList[0], cardList[1]];
     const selectedIds = cardsToDelete.map((c: any) => c.c_id);
 
@@ -661,12 +673,15 @@ describe('CardManagementFlow', () => {
 // PAGINATION & LAZY LOADING - Handling Large Lists
 // ============================================================================
 
-describe('PaginationAndLazyLoading', () => {
+describe("PaginationAndLazyLoading", () => {
   let paginatedList: any;
 
   beforeEach(() => {
     paginatedList = {
-      items: Array.from({ length: 50 }, (_, i) => ({ id: i + 1, name: `Item ${i + 1}` })),
+      items: Array.from({ length: 50 }, (_, i) => ({
+        id: i + 1,
+        name: `Item ${i + 1}`,
+      })),
       currentPage: 1,
       pageSize: 10,
       isLoading: false,
@@ -687,7 +702,7 @@ describe('PaginationAndLazyLoading', () => {
     };
   });
 
-  test('displays first page of items', () => {
+  test("displays first page of items", () => {
     const visible = paginatedList.getVisibleItems();
 
     expect(visible.length).toBe(10);
@@ -695,7 +710,7 @@ describe('PaginationAndLazyLoading', () => {
     expect(visible[9].id).toBe(10);
   });
 
-  test('loads next page when user scrolls', () => {
+  test("loads next page when user scrolls", () => {
     paginatedList.goToPage(2);
 
     const visible = paginatedList.getVisibleItems();
@@ -705,7 +720,7 @@ describe('PaginationAndLazyLoading', () => {
     expect(visible[9].id).toBe(20);
   });
 
-  test('shows loading indicator while loading next page', () => {
+  test("shows loading indicator while loading next page", () => {
     paginatedList.isLoading = true;
     paginatedList.loadNextPage();
 
@@ -716,13 +731,13 @@ describe('PaginationAndLazyLoading', () => {
     expect(paginatedList.isLoading).toBe(false);
   });
 
-  test('calculates total pages correctly', () => {
+  test("calculates total pages correctly", () => {
     const totalPages = paginatedList.getTotalPages();
 
     expect(totalPages).toBe(5);
   });
 
-  test('pagination navigation works', () => {
+  test("pagination navigation works", () => {
     // Go to page 3
     paginatedList.goToPage(3);
     expect(paginatedList.currentPage).toBe(3);
@@ -736,7 +751,7 @@ describe('PaginationAndLazyLoading', () => {
     expect(paginatedList.currentPage).toBe(5);
   });
 
-  test('shows remaining items on last page', () => {
+  test("shows remaining items on last page", () => {
     paginatedList.goToPage(5);
     const visible = paginatedList.getVisibleItems();
 
@@ -750,7 +765,7 @@ describe('PaginationAndLazyLoading', () => {
 // AUTHENTICATION FLOW - Sign In/Up/Out Multi-step
 // ============================================================================
 
-describe('AuthenticationFlow', () => {
+describe("AuthenticationFlow", () => {
   let auth: any;
 
   beforeEach(() => {
@@ -758,7 +773,7 @@ describe('AuthenticationFlow', () => {
       user: null,
       isLoading: false,
       error: null,
-      formValues: { email: '', password: '' },
+      formValues: { email: "", password: "" },
       onEmailChange: jest.fn(),
       onPasswordChange: jest.fn(),
       onSignIn: jest.fn(),
@@ -767,13 +782,13 @@ describe('AuthenticationFlow', () => {
     };
   });
 
-  test('sign in flow: form → submit → authenticated', async () => {
+  test("sign in flow: form → submit → authenticated", async () => {
     // Step 1: Form empty
     expect(auth.user).toBeNull();
 
     // Step 2: User enters credentials
-    auth.formValues.email = 'user@example.com';
-    auth.formValues.password = 'password123';
+    auth.formValues.email = "user@example.com";
+    auth.formValues.password = "password123";
 
     // Step 3: User submits
     auth.isLoading = true;
@@ -781,43 +796,43 @@ describe('AuthenticationFlow', () => {
     // Step 4: Server authenticates
     auth.isLoading = false;
     auth.user = {
-      id: '123',
-      email: 'user@example.com',
-      name: 'John Doe',
+      id: "123",
+      email: "user@example.com",
+      name: "John Doe",
     };
 
     expect(auth.user).toBeTruthy();
-    expect(auth.user.email).toBe('user@example.com');
+    expect(auth.user.email).toBe("user@example.com");
   });
 
-  test('sign in with validation error', () => {
-    auth.formValues.email = 'invalid-email';
-    auth.error = 'Invalid email format';
+  test("sign in with validation error", () => {
+    auth.formValues.email = "invalid-email";
+    auth.error = "Invalid email format";
 
     expect(auth.error).toBeTruthy();
 
     // User fixes error
-    auth.formValues.email = 'user@example.com';
+    auth.formValues.email = "user@example.com";
     auth.error = null;
 
     expect(auth.error).toBeNull();
   });
 
-  test('sign in with server error', async () => {
-    auth.formValues.email = 'user@example.com';
-    auth.formValues.password = 'wrongpassword';
+  test("sign in with server error", async () => {
+    auth.formValues.email = "user@example.com";
+    auth.formValues.password = "wrongpassword";
 
     auth.isLoading = true;
     auth.isLoading = false;
-    auth.error = 'Invalid email or password';
+    auth.error = "Invalid email or password";
 
     expect(auth.error).toBeTruthy();
     expect(auth.user).toBeNull();
   });
 
-  test('sign out flow', () => {
+  test("sign out flow", () => {
     // User signed in
-    auth.user = { id: '123', email: 'user@example.com' };
+    auth.user = { id: "123", email: "user@example.com" };
 
     // User clicks sign out
     auth.onSignOut();
@@ -827,12 +842,12 @@ describe('AuthenticationFlow', () => {
     expect(auth.user).toBeNull();
   });
 
-  test('automatically signs out on token expiry', () => {
-    auth.user = { id: '123', email: 'user@example.com' };
+  test("automatically signs out on token expiry", () => {
+    auth.user = { id: "123", email: "user@example.com" };
 
     // Token expires
     auth.user = null;
-    auth.error = 'Session expired. Please sign in again.';
+    auth.error = "Session expired. Please sign in again.";
 
     expect(auth.user).toBeNull();
     expect(auth.error).toBeTruthy();

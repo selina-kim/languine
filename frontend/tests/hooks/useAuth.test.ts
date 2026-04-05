@@ -1,5 +1,5 @@
-import { describe, expect, test, beforeEach, jest } from '@jest/globals';
-import type { User } from '../../types/auth';
+import { describe, expect, test, beforeEach, jest } from "@jest/globals";
+import type { User } from "../../types/auth";
 
 /**
  * useAuth Hook Tests
@@ -11,7 +11,7 @@ import type { User } from '../../types/auth';
  */
 
 // Mock storage utilities
-jest.mock('../../utils/storage', () => ({
+jest.mock("../../utils/storage", () => ({
   storage: {
     getItem: jest.fn(),
     setItem: jest.fn(),
@@ -19,19 +19,19 @@ jest.mock('../../utils/storage', () => ({
   },
 }));
 
-const { storage } = require('../../utils/storage');
+const { storage } = require("../../utils/storage");
 
-describe('useAuth Hook - Token Management', () => {
+describe("useAuth Hook - Token Management", () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  test('should retrieve token from authenticated user', () => {
+  test("should retrieve token from authenticated user", () => {
     const user: User = {
-      id: 'google_user_123',
-      email: 'user@gmail.com',
-      name: 'John Doe',
-      token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+      id: "google_user_123",
+      email: "user@gmail.com",
+      name: "John Doe",
+      token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
     };
 
     // Simulate getToken() functionality
@@ -41,7 +41,7 @@ describe('useAuth Hook - Token Management', () => {
     expect(getToken()).toBeTruthy();
   });
 
-  test('should return null when no user is logged in', () => {
+  test("should return null when no user is logged in", () => {
     // When no user is logged in, getToken() should return null
     const getToken = (user: User | null): string | null => {
       return user ? user.token : null;
@@ -50,12 +50,12 @@ describe('useAuth Hook - Token Management', () => {
     expect(getToken(null)).toBeNull();
   });
 
-  test('should handle Google OAuth access token with expiration', () => {
+  test("should handle Google OAuth access token with expiration", () => {
     const googleAuthUser: User & { tokenExpiry?: number } = {
-      id: 'google_123456',
-      email: 'user@gmail.com',
-      name: 'John Doe',
-      token: 'access_token_from_google_oauth',
+      id: "google_123456",
+      email: "user@gmail.com",
+      name: "John Doe",
+      token: "access_token_from_google_oauth",
       tokenExpiry: Date.now() + 3600000, // 1 hour from now
     };
 
@@ -63,56 +63,58 @@ describe('useAuth Hook - Token Management', () => {
     expect(googleAuthUser.tokenExpiry).toBeGreaterThan(Date.now());
   });
 
-  test('should detect expired OAuth token', () => {
+  test("should detect expired OAuth token", () => {
     const expiredUser: User & { tokenExpiry?: number } = {
-      id: 'google_123456',
-      email: 'user@gmail.com',
-      name: 'John Doe',
-      token: 'expired_oauth_token',
+      id: "google_123456",
+      email: "user@gmail.com",
+      name: "John Doe",
+      token: "expired_oauth_token",
       tokenExpiry: Date.now() - 1000, // Expired 1 second ago
     };
 
-    const isTokenExpired = expiredUser.tokenExpiry ? expiredUser.tokenExpiry < Date.now() : false;
+    const isTokenExpired = expiredUser.tokenExpiry
+      ? expiredUser.tokenExpiry < Date.now()
+      : false;
     expect(isTokenExpired).toBe(true);
   });
 });
 
-describe('useAuth Hook - Session Persistence', () => {
+describe("useAuth Hook - Session Persistence", () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  test('should restore user session from storage on app startup', async () => {
+  test("should restore user session from storage on app startup", async () => {
     const savedUser: User = {
-      id: 'google_user_123',
-      email: 'user@gmail.com',
-      name: 'John Doe',
-      token: 'saved_jwt_token',
+      id: "google_user_123",
+      email: "user@gmail.com",
+      name: "John Doe",
+      token: "saved_jwt_token",
     };
 
     storage.getItem.mockResolvedValue(JSON.stringify(savedUser));
 
     // Simulate session restoration
-    const storedUserJson = await storage.getItem('user');
+    const storedUserJson = await storage.getItem("user");
     const restoredUser = JSON.parse(storedUserJson);
 
-    expect(storage.getItem).toHaveBeenCalledWith('user');
+    expect(storage.getItem).toHaveBeenCalledWith("user");
     expect(restoredUser).toEqual(savedUser);
-    expect(restoredUser.id).toBe('google_user_123');
+    expect(restoredUser.id).toBe("google_user_123");
   });
 
-  test('should handle missing stored session gracefully', async () => {
+  test("should handle missing stored session gracefully", async () => {
     storage.getItem.mockResolvedValue(null);
 
-    const storedUserJson = await storage.getItem('user');
+    const storedUserJson = await storage.getItem("user");
     expect(storedUserJson).toBeNull();
     expect(storage.getItem).toHaveBeenCalled();
   });
 
-  test('should clear session on app startup if user data is corrupted', async () => {
-    storage.getItem.mockResolvedValue('invalid json {');
+  test("should clear session on app startup if user data is corrupted", async () => {
+    storage.getItem.mockResolvedValue("invalid json {");
 
-    const storedUserJson = await storage.getItem('user');
+    const storedUserJson = await storage.getItem("user");
 
     expect(() => {
       if (storedUserJson) JSON.parse(storedUserJson);
@@ -121,35 +123,38 @@ describe('useAuth Hook - Session Persistence', () => {
     expect(storage.getItem).toHaveBeenCalled();
   });
 
-  test('should persist user session after Google OAuth sign in', async () => {
+  test("should persist user session after Google OAuth sign in", async () => {
     const googleUser: User = {
-      id: 'google_oauth_456',
-      email: 'newuser@gmail.com',
-      name: 'Jane Doe',
-      token: 'google_oauth_access_token',
+      id: "google_oauth_456",
+      email: "newuser@gmail.com",
+      name: "Jane Doe",
+      token: "google_oauth_access_token",
     };
 
     // Simulate storing user after OAuth sign in
-    await storage.setItem('user', JSON.stringify(googleUser));
+    await storage.setItem("user", JSON.stringify(googleUser));
 
-    expect(storage.setItem).toHaveBeenCalledWith('user', JSON.stringify(googleUser));
+    expect(storage.setItem).toHaveBeenCalledWith(
+      "user",
+      JSON.stringify(googleUser),
+    );
   });
 });
 
-describe('useAuth Hook - Google OAuth Integration', () => {
+describe("useAuth Hook - Google OAuth Integration", () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  test('should store Google OAuth user data after successful sign in', async () => {
+  test("should store Google OAuth user data after successful sign in", async () => {
     const googleOAuthResponse = {
       user: {
-        id: 'google_120984756',
-        email: 'developer@gmail.com',
-        name: 'Developer Name',
+        id: "google_120984756",
+        email: "developer@gmail.com",
+        name: "Developer Name",
       },
-      accessToken: 'ya29.a0AfH6SMB...',
-      refreshToken: 'refresh_token_xyz',
+      accessToken: "ya29.a0AfH6SMB...",
+      refreshToken: "refresh_token_xyz",
     };
 
     const userData: User = {
@@ -161,25 +166,31 @@ describe('useAuth Hook - Google OAuth Integration', () => {
     };
 
     // Simulate sign in process
-    await storage.setItem('user', JSON.stringify(userData));
+    await storage.setItem("user", JSON.stringify(userData));
 
-    expect(storage.setItem).toHaveBeenCalledWith('user', expect.stringContaining('google_120984756'));
-    expect(storage.setItem).toHaveBeenCalledWith('user', expect.stringContaining(googleOAuthResponse.accessToken));
+    expect(storage.setItem).toHaveBeenCalledWith(
+      "user",
+      expect.stringContaining("google_120984756"),
+    );
+    expect(storage.setItem).toHaveBeenCalledWith(
+      "user",
+      expect.stringContaining(googleOAuthResponse.accessToken),
+    );
   });
 
-  test('should handle Google OAuth sign out by clearing all tokens', async () => {
+  test("should handle Google OAuth sign out by clearing all tokens", async () => {
     // Simulate sign out process
-    await storage.deleteItem('user');
+    await storage.deleteItem("user");
 
-    expect(storage.deleteItem).toHaveBeenCalledWith('user');
+    expect(storage.deleteItem).toHaveBeenCalledWith("user");
   });
 
-  test('should maintain user during session but clear on explicit sign out', async () => {
+  test("should maintain user during session but clear on explicit sign out", async () => {
     const user: User = {
-      id: 'google_user',
-      email: 'user@gmail.com',
-      name: 'User Name',
-      token: 'valid_token',
+      id: "google_user",
+      email: "user@gmail.com",
+      name: "User Name",
+      token: "valid_token",
     };
 
     // User is logged in
@@ -190,19 +201,18 @@ describe('useAuth Hook - Google OAuth Integration', () => {
     expect(clearedUser).toBeNull();
   });
 
-  test('should validate user has required OAuth fields', () => {
+  test("should validate user has required OAuth fields", () => {
     const validGoogleUser: User = {
-      id: 'google_123',
-      email: 'user@gmail.com',
-      name: 'John Doe',
-      token: 'oauth_token',
+      id: "google_123",
+      email: "user@gmail.com",
+      name: "John Doe",
+      token: "oauth_token",
     };
 
     // Verify required fields for OAuth user
-    expect(validGoogleUser).toHaveProperty('id');
-    expect(validGoogleUser).toHaveProperty('email');
-    expect(validGoogleUser).toHaveProperty('token');
+    expect(validGoogleUser).toHaveProperty("id");
+    expect(validGoogleUser).toHaveProperty("email");
+    expect(validGoogleUser).toHaveProperty("token");
     expect(validGoogleUser.token).toBeTruthy();
   });
 });
-

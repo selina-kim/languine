@@ -1,25 +1,30 @@
-import { describe, expect, test, jest, beforeEach } from '@jest/globals';
+import { describe, expect, test, jest, beforeEach } from "@jest/globals";
 
 // Mock router
-jest.mock('expo-router', () => ({
+jest.mock("expo-router", () => ({
   useRouter: () => ({
     push: jest.fn(),
     replace: jest.fn(),
     back: jest.fn(),
   }),
-  usePathname: jest.fn(() => '/revision'),
+  usePathname: jest.fn(() => "/revision"),
 }));
 
 // Mock auth context
-jest.mock('@/context/AuthContext', () => ({
+jest.mock("@/context/AuthContext", () => ({
   useAuth: () => ({
-    user: { id: 'user123', email: 'test@example.com', name: 'Test User', token: 'abc123' },
+    user: {
+      id: "user123",
+      email: "test@example.com",
+      name: "Test User",
+      token: "abc123",
+    },
     signOut: jest.fn(),
   }),
 }));
 
 // Mock review session context
-jest.mock('@/context/ReviewSessionContext', () => ({
+jest.mock("@/context/ReviewSessionContext", () => ({
   useReviewSession: () => ({
     isReviewSessionActive: true,
     requestExitReviewSession: jest.fn(),
@@ -27,7 +32,7 @@ jest.mock('@/context/ReviewSessionContext', () => ({
   }),
 }));
 
-describe('Tab Layout - handleSettings & handleLogout Actions', () => {
+describe("Tab Layout - handleSettings & handleLogout Actions", () => {
   let router: any;
   let authContext: any;
   let reviewContext: any;
@@ -43,7 +48,7 @@ describe('Tab Layout - handleSettings & handleLogout Actions', () => {
     };
 
     authContext = {
-      user: { id: 'user123', email: 'test@example.com', name: 'Test User' },
+      user: { id: "user123", email: "test@example.com", name: "Test User" },
       signOut: jest.fn(),
     };
 
@@ -61,23 +66,23 @@ describe('Tab Layout - handleSettings & handleLogout Actions', () => {
     };
   });
 
-  describe('handleSettings', () => {
-    test('should navigate to settings when no review session active', () => {
+  describe("handleSettings", () => {
+    test("should navigate to settings when no review session active", () => {
       const isReviewActive = false;
       const isOnRevisionTab = true;
 
       const doNavigateToSettings = () => {
         if (!isReviewActive || !isOnRevisionTab) {
-          router.push('/(tabs)/settings');
+          router.push("/(tabs)/settings");
         }
       };
 
       doNavigateToSettings();
 
-      expect(router.push).toHaveBeenCalledWith('/(tabs)/settings');
+      expect(router.push).toHaveBeenCalledWith("/(tabs)/settings");
     });
 
-    test('should open exit review modal when review session active on revision tab', () => {
+    test("should open exit review modal when review session active on revision tab", () => {
       const isReviewActive = true;
       const isOnRevisionTab = true;
 
@@ -87,13 +92,13 @@ describe('Tab Layout - handleSettings & handleLogout Actions', () => {
         uiState.isExitReviewModalVisible = true;
       };
 
-      promptExitReviewAndQueueAction({ type: 'settings' });
+      promptExitReviewAndQueueAction({ type: "settings" });
 
       expect(uiState.isExitReviewModalVisible).toBe(true);
-      expect(uiState.pendingExitAction.type).toBe('settings');
+      expect(uiState.pendingExitAction.type).toBe("settings");
     });
 
-    test('should close menu after settings action', () => {
+    test("should close menu after settings action", () => {
       uiState.menuVisible = true;
 
       const handleSettings = () => {
@@ -105,7 +110,7 @@ describe('Tab Layout - handleSettings & handleLogout Actions', () => {
       expect(uiState.menuVisible).toBe(false);
     });
 
-    test('should not show exit review modal if not on revision tab', () => {
+    test("should not show exit review modal if not on revision tab", () => {
       const isReviewActive = true;
       const isOnRevisionTab = false;
 
@@ -114,24 +119,24 @@ describe('Tab Layout - handleSettings & handleLogout Actions', () => {
       expect(shouldShowModal).toBe(false);
     });
 
-    test('should navigate directly when on different tab during review', () => {
+    test("should navigate directly when on different tab during review", () => {
       const isReviewActive = true;
       const isOnRevisionTab = false; // On a different tab
 
       const doNavigateToSettings = () => {
         if (!isReviewActive || !isOnRevisionTab) {
-          router.push('/(tabs)/settings');
+          router.push("/(tabs)/settings");
         }
       };
 
       doNavigateToSettings();
 
-      expect(router.push).toHaveBeenCalledWith('/(tabs)/settings');
+      expect(router.push).toHaveBeenCalledWith("/(tabs)/settings");
     });
   });
 
-  describe('handleLogout', () => {
-    test('should open exit review modal when review session active on revision tab', () => {
+  describe("handleLogout", () => {
+    test("should open exit review modal when review session active on revision tab", () => {
       const isReviewActive = true;
       const isOnRevisionTab = true;
 
@@ -141,28 +146,28 @@ describe('Tab Layout - handleSettings & handleLogout Actions', () => {
         uiState.isExitReviewModalVisible = true;
       };
 
-      promptExitReviewAndQueueAction({ type: 'logout' });
+      promptExitReviewAndQueueAction({ type: "logout" });
 
       expect(uiState.isExitReviewModalVisible).toBe(true);
-      expect(uiState.pendingExitAction.type).toBe('logout');
+      expect(uiState.pendingExitAction.type).toBe("logout");
     });
 
-    test('should call signOut and navigate to auth when confirmed', async () => {
+    test("should call signOut and navigate to auth when confirmed", async () => {
       const handleConfirmExitReview = async () => {
-        if (uiState.pendingExitAction?.type === 'logout') {
+        if (uiState.pendingExitAction?.type === "logout") {
           await authContext.signOut();
-          router.push('/(auth)');
+          router.push("/(auth)");
         }
       };
 
-      uiState.pendingExitAction = { type: 'logout' };
+      uiState.pendingExitAction = { type: "logout" };
       await handleConfirmExitReview();
 
       expect(authContext.signOut).toHaveBeenCalled();
-      expect(router.push).toHaveBeenCalledWith('/(auth)');
+      expect(router.push).toHaveBeenCalledWith("/(auth)");
     });
 
-    test('should close menu when logout is triggered', () => {
+    test("should close menu when logout is triggered", () => {
       uiState.menuVisible = true;
 
       const handleLogout = () => {
@@ -174,24 +179,24 @@ describe('Tab Layout - handleSettings & handleLogout Actions', () => {
       expect(uiState.menuVisible).toBe(false);
     });
 
-    test('should directly logout when not in review session', async () => {
+    test("should directly logout when not in review session", async () => {
       const isReviewActive = false;
       const isOnRevisionTab = true;
 
       const doLogout = async () => {
         if (!isReviewActive) {
           await authContext.signOut();
-          router.push('/(auth)');
+          router.push("/(auth)");
         }
       };
 
       await doLogout();
 
       expect(authContext.signOut).toHaveBeenCalled();
-      expect(router.push).toHaveBeenCalledWith('/(auth)');
+      expect(router.push).toHaveBeenCalledWith("/(auth)");
     });
 
-    test('should request exit review session signal', () => {
+    test("should request exit review session signal", () => {
       const handleLogout = () => {
         reviewContext.requestExitReviewSession();
         reviewContext.setIsReviewSessionActive(false);
@@ -200,14 +205,16 @@ describe('Tab Layout - handleSettings & handleLogout Actions', () => {
       handleLogout();
 
       expect(reviewContext.requestExitReviewSession).toHaveBeenCalled();
-      expect(reviewContext.setIsReviewSessionActive).toHaveBeenCalledWith(false);
+      expect(reviewContext.setIsReviewSessionActive).toHaveBeenCalledWith(
+        false,
+      );
     });
   });
 
-  describe('Exit Review Modal Workflow', () => {
-    test('should cancel exit review and return to current screen', () => {
+  describe("Exit Review Modal Workflow", () => {
+    test("should cancel exit review and return to current screen", () => {
       uiState.isExitReviewModalVisible = true;
-      uiState.pendingExitAction = { type: 'settings' };
+      uiState.pendingExitAction = { type: "settings" };
 
       const handleCancelExitReview = () => {
         uiState.isExitReviewModalVisible = false;
@@ -220,15 +227,15 @@ describe('Tab Layout - handleSettings & handleLogout Actions', () => {
       expect(uiState.pendingExitAction).toBeUndefined();
     });
 
-    test('should confirm exit and execute pending action', () => {
+    test("should confirm exit and execute pending action", () => {
       uiState.isExitReviewModalVisible = true;
-      uiState.pendingExitAction = { type: 'settings' };
+      uiState.pendingExitAction = { type: "settings" };
 
       const handleConfirmExitReview = () => {
         uiState.isExitReviewModalVisible = false;
 
-        if (uiState.pendingExitAction?.type === 'settings') {
-          router.push('/(tabs)/settings');
+        if (uiState.pendingExitAction?.type === "settings") {
+          router.push("/(tabs)/settings");
         }
 
         uiState.pendingExitAction = undefined;
@@ -237,30 +244,32 @@ describe('Tab Layout - handleSettings & handleLogout Actions', () => {
       handleConfirmExitReview();
 
       expect(uiState.isExitReviewModalVisible).toBe(false);
-      expect(router.push).toHaveBeenCalledWith('/(tabs)/settings');
+      expect(router.push).toHaveBeenCalledWith("/(tabs)/settings");
       expect(uiState.pendingExitAction).toBeUndefined();
     });
 
-    test('should request exit review session before action', () => {
+    test("should request exit review session before action", () => {
       const handleConfirmExitReview = () => {
         reviewContext.requestExitReviewSession();
         reviewContext.setIsReviewSessionActive(false);
 
-        if (uiState.pendingExitAction?.type === 'logout') {
+        if (uiState.pendingExitAction?.type === "logout") {
           authContext.signOut();
         }
       };
 
-      uiState.pendingExitAction = { type: 'logout' };
+      uiState.pendingExitAction = { type: "logout" };
       handleConfirmExitReview();
 
       expect(reviewContext.requestExitReviewSession).toHaveBeenCalled();
-      expect(reviewContext.setIsReviewSessionActive).toHaveBeenCalledWith(false);
+      expect(reviewContext.setIsReviewSessionActive).toHaveBeenCalledWith(
+        false,
+      );
       expect(authContext.signOut).toHaveBeenCalled();
     });
 
-    test('should queue multiple action types correctly', () => {
-      const actionTypes = ['settings', 'logout', 'tab'];
+    test("should queue multiple action types correctly", () => {
+      const actionTypes = ["settings", "logout", "tab"];
 
       actionTypes.forEach((type) => {
         uiState.pendingExitAction = { type };
@@ -269,8 +278,8 @@ describe('Tab Layout - handleSettings & handleLogout Actions', () => {
     });
   });
 
-  describe('User Dropdown Menu', () => {
-    test('should toggle menu visibility', () => {
+  describe("User Dropdown Menu", () => {
+    test("should toggle menu visibility", () => {
       uiState.menuVisible = false;
 
       const handleProfilePress = () => {
@@ -284,7 +293,7 @@ describe('Tab Layout - handleSettings & handleLogout Actions', () => {
       expect(uiState.menuVisible).toBe(false);
     });
 
-    test('should hide menu when settings selected', () => {
+    test("should hide menu when settings selected", () => {
       uiState.menuVisible = true;
 
       const handleSettings = () => {
@@ -296,7 +305,7 @@ describe('Tab Layout - handleSettings & handleLogout Actions', () => {
       expect(uiState.menuVisible).toBe(false);
     });
 
-    test('should hide menu when logout selected', () => {
+    test("should hide menu when logout selected", () => {
       uiState.menuVisible = true;
 
       const handleLogout = () => {
@@ -308,7 +317,7 @@ describe('Tab Layout - handleSettings & handleLogout Actions', () => {
       expect(uiState.menuVisible).toBe(false);
     });
 
-    test('should hide menu when pressed outside', () => {
+    test("should hide menu when pressed outside", () => {
       uiState.menuVisible = true;
 
       const handlePressOutside = () => {

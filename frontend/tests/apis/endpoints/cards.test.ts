@@ -1,8 +1,10 @@
-import { describe, expect, test, beforeEach, jest } from '@jest/globals';
-import * as cardEndpoints from '@/apis/endpoints/cards';
+import { describe, expect, test, beforeEach, jest } from "@jest/globals";
+import * as cardEndpoints from "@/apis/endpoints/cards";
+
+import { storage } from "@/utils/storage";
 
 // Mock storage
-jest.mock('@/utils/storage', () => ({
+jest.mock("@/utils/storage", () => ({
   storage: {
     getItem: jest.fn(),
     setItem: jest.fn(),
@@ -15,31 +17,29 @@ jest.mock('@/utils/storage', () => ({
 
 const mockFetch = global.fetch as jest.MockedFunction<typeof fetch>;
 
-import { storage } from '@/utils/storage';
-
 const mockStorage = storage as jest.Mocked<typeof storage>;
 
-describe('Card Endpoints', () => {
+describe("Card Endpoints", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockFetch.mockReset();
     mockStorage.getItem.mockResolvedValue(
       JSON.stringify({
-        token: 'test_access_token',
-        refreshToken: 'test_refresh_token',
-      })
+        token: "test_access_token",
+        refreshToken: "test_refresh_token",
+      }),
     );
-    process.env.EXPO_PUBLIC_API_URL = 'https://api.example.com';
+    process.env.EXPO_PUBLIC_API_URL = "https://api.example.com";
   });
 
-  describe('getCards', () => {
-    test('should fetch cards with default pagination', async () => {
+  describe("getCards", () => {
+    test("should fetch cards with default pagination", async () => {
       const mockResponse = {
         cards: [
           {
             c_id: 1,
-            word: 'Test',
-            translation: 'Answer',
+            word: "Test",
+            translation: "Answer",
             difficulty: 1,
             stability: 0.5,
             learning_state: 0,
@@ -65,17 +65,17 @@ describe('Card Endpoints', () => {
         text: async () => JSON.stringify(mockResponse),
       } as Response);
 
-      const result = await cardEndpoints.getCards('deck123');
+      const result = await cardEndpoints.getCards("deck123");
 
       expect(mockFetch).toHaveBeenCalledWith(
-        expect.stringContaining('/decks/deck123/cards?page=1&per_page=50'),
-        expect.any(Object)
+        expect.stringContaining("/decks/deck123/cards?page=1&per_page=50"),
+        expect.any(Object),
       );
       expect(result.data).toEqual(mockResponse);
       expect(result.error).toBeNull();
     });
 
-    test('should fetch cards with custom pagination', async () => {
+    test("should fetch cards with custom pagination", async () => {
       const mockResponse = {
         cards: [],
         pagination: {
@@ -92,34 +92,34 @@ describe('Card Endpoints', () => {
         text: async () => JSON.stringify(mockResponse),
       } as Response);
 
-      const result = await cardEndpoints.getCards('deck123', 2, 25);
+      const result = await cardEndpoints.getCards("deck123", 2, 25);
 
       expect(mockFetch).toHaveBeenCalledWith(
-        expect.stringContaining('/decks/deck123/cards?page=2&per_page=25'),
-        expect.any(Object)
+        expect.stringContaining("/decks/deck123/cards?page=2&per_page=25"),
+        expect.any(Object),
       );
       expect(result.data.pagination.page).toBe(2);
     });
 
-    test('should handle getCards error', async () => {
+    test("should handle getCards error", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: false,
         status: 404,
-        text: async () => JSON.stringify({ error: 'Deck not found' }),
+        text: async () => JSON.stringify({ error: "Deck not found" }),
       } as Response);
 
-      const result = await cardEndpoints.getCards('invalid');
+      const result = await cardEndpoints.getCards("invalid");
 
       expect(result.error).toBeTruthy();
     });
   });
 
-  describe('getCard', () => {
-    test('should fetch single card successfully', async () => {
+  describe("getCard", () => {
+    test("should fetch single card successfully", async () => {
       const mockCard = {
         c_id: 1,
-        word: 'Front text',
-        translation: 'Back text',
+        word: "Front text",
+        translation: "Back text",
         difficulty: 3,
         stability: 0.8,
         learning_state: 2,
@@ -137,44 +137,44 @@ describe('Card Endpoints', () => {
         text: async () => JSON.stringify(mockCard),
       } as Response);
 
-      const result = await cardEndpoints.getCard('deck123', 'card456');
+      const result = await cardEndpoints.getCard("deck123", "card456");
 
       expect(mockFetch).toHaveBeenCalledWith(
-        expect.stringContaining('/decks/deck123/cards/card456'),
-        expect.any(Object)
+        expect.stringContaining("/decks/deck123/cards/card456"),
+        expect.any(Object),
       );
       expect(result.data).toEqual(mockCard);
       expect(result.error).toBeNull();
     });
 
-    test('should handle getCard not found', async () => {
+    test("should handle getCard not found", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: false,
         status: 404,
-        text: async () => JSON.stringify({ error: 'Card not found' }),
+        text: async () => JSON.stringify({ error: "Card not found" }),
       } as Response);
 
-      const result = await cardEndpoints.getCard('deck123', 'invalid');
+      const result = await cardEndpoints.getCard("deck123", "invalid");
 
       expect(result.error).toBeTruthy();
     });
   });
 
-  describe('createCard', () => {
-    test('should create card successfully', async () => {
+  describe("createCard", () => {
+    test("should create card successfully", async () => {
       const createPayload = {
-        word: '新しい',
-        translation: 'New',
-        image: 'img123',
+        word: "新しい",
+        translation: "New",
+        image: "img123",
       };
 
       const mockResponse = {
-        message: 'Card created successfully',
+        message: "Card created successfully",
         card: {
           c_id: 1,
-          word: '新しい',
-          translation: 'New',
-          image: 'img123',
+          word: "新しい",
+          translation: "New",
+          image: "img123",
           difficulty: 0,
           stability: 0,
           learning_state: 0,
@@ -192,23 +192,23 @@ describe('Card Endpoints', () => {
         text: async () => JSON.stringify(mockResponse),
       } as Response);
 
-      const result = await cardEndpoints.createCard('deck123', createPayload);
+      const result = await cardEndpoints.createCard("deck123", createPayload);
 
       expect(mockFetch).toHaveBeenCalledWith(
-        expect.stringContaining('/decks/deck123/card'),
+        expect.stringContaining("/decks/deck123/card"),
         expect.objectContaining({
-          method: 'POST',
+          method: "POST",
           body: JSON.stringify(createPayload),
-        })
+        }),
       );
       expect(result.data.card.c_id).toBe(1);
       expect(result.error).toBeNull();
     });
 
-    test('should handle createCard validation error', async () => {
+    test("should handle createCard validation error", async () => {
       const invalidPayload = {
-        word: '',
-        translation: 'Missing word',
+        word: "",
+        translation: "Missing word",
       };
 
       mockFetch.mockResolvedValueOnce({
@@ -216,43 +216,43 @@ describe('Card Endpoints', () => {
         status: 400,
         text: async () =>
           JSON.stringify({
-            error: 'Validation failed: word is required',
+            error: "Validation failed: word is required",
           }),
       } as Response);
 
       const result = await cardEndpoints.createCard(
-        'deck123',
-        invalidPayload as any
+        "deck123",
+        invalidPayload as any,
       );
 
       expect(result.error).toBeTruthy();
     });
 
-    test('should handle createCard network error', async () => {
-      mockFetch.mockRejectedValueOnce(new Error('Network timeout'));
+    test("should handle createCard network error", async () => {
+      mockFetch.mockRejectedValueOnce(new Error("Network timeout"));
 
-      const result = await cardEndpoints.createCard('deck123', {
-        word: 'test',
-        translation: 'test',
+      const result = await cardEndpoints.createCard("deck123", {
+        word: "test",
+        translation: "test",
       });
 
       expect(result.error).toBeTruthy();
     });
   });
 
-  describe('updateCard', () => {
-    test('should update card successfully', async () => {
+  describe("updateCard", () => {
+    test("should update card successfully", async () => {
       const updatePayload = {
-        word: '更新',
-        translation: 'Updated',
+        word: "更新",
+        translation: "Updated",
       };
 
       const mockResponse = {
-        message: 'Card updated successfully',
+        message: "Card updated successfully",
         card: {
           c_id: 1,
-          word: '更新',
-          translation: 'Updated',
+          word: "更新",
+          translation: "Updated",
           difficulty: 3,
           stability: 0.8,
           learning_state: 2,
@@ -272,91 +272,92 @@ describe('Card Endpoints', () => {
       } as Response);
 
       const result = await cardEndpoints.updateCard(
-        'deck123',
-        'card456',
-        updatePayload
+        "deck123",
+        "card456",
+        updatePayload,
       );
 
       expect(mockFetch).toHaveBeenCalledWith(
-        expect.stringContaining('/decks/deck123/cards/card456'),
+        expect.stringContaining("/decks/deck123/cards/card456"),
         expect.objectContaining({
-          method: 'POST',
+          method: "POST",
           body: JSON.stringify(updatePayload),
-        })
+        }),
       );
-      expect(result.data.card.word).toBe('更新');
+      expect(result.data.card.word).toBe("更新");
       expect(result.error).toBeNull();
     });
 
-    test('should handle updateCard card not found', async () => {
+    test("should handle updateCard card not found", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: false,
         status: 404,
-        text: async () => JSON.stringify({ error: 'Card not found' }),
+        text: async () => JSON.stringify({ error: "Card not found" }),
       } as Response);
 
-      const result = await cardEndpoints.updateCard('deck123', 'invalid', {
-        word: 'test',
-        translation: 'test',
+      const result = await cardEndpoints.updateCard("deck123", "invalid", {
+        word: "test",
+        translation: "test",
       });
 
       expect(result.error).toBeTruthy();
     });
   });
 
-  describe('deleteCard', () => {
-    test('should delete card successfully', async () => {
+  describe("deleteCard", () => {
+    test("should delete card successfully", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
-        text: async () => JSON.stringify({ message: 'Card deleted successfully' }),
+        text: async () =>
+          JSON.stringify({ message: "Card deleted successfully" }),
       } as Response);
 
-      const result = await cardEndpoints.deleteCard('deck123', 'card456');
+      const result = await cardEndpoints.deleteCard("deck123", "card456");
 
       expect(mockFetch).toHaveBeenCalledWith(
-        expect.stringContaining('/decks/deck123/cards/card456'),
+        expect.stringContaining("/decks/deck123/cards/card456"),
         expect.objectContaining({
-          method: 'DELETE',
-        })
+          method: "DELETE",
+        }),
       );
-      expect(result.data.message).toContain('deleted');
+      expect(result.data.message).toContain("deleted");
       expect(result.error).toBeNull();
     });
 
-    test('should handle deleteCard not found', async () => {
+    test("should handle deleteCard not found", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: false,
         status: 404,
-        text: async () => JSON.stringify({ error: 'Card not found' }),
+        text: async () => JSON.stringify({ error: "Card not found" }),
       } as Response);
 
-      const result = await cardEndpoints.deleteCard('deck123', 'invalid');
+      const result = await cardEndpoints.deleteCard("deck123", "invalid");
 
       expect(result.error).toBeTruthy();
     });
 
-    test('should handle deleteCard error', async () => {
+    test("should handle deleteCard error", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: false,
         status: 500,
-        text: async () => JSON.stringify({ error: 'Failed to delete card' }),
+        text: async () => JSON.stringify({ error: "Failed to delete card" }),
       } as Response);
 
-      const result = await cardEndpoints.deleteCard('deck123', 'card456');
+      const result = await cardEndpoints.deleteCard("deck123", "card456");
 
       expect(result.error).toBeTruthy();
     });
   });
 
-  describe('getReviewCards', () => {
-    test('should fetch review cards with default limit', async () => {
+  describe("getReviewCards", () => {
+    test("should fetch review cards with default limit", async () => {
       const mockResponse = {
         cards: [
           {
             c_id: 1,
-            word: 'Test 1',
-            translation: 'Answer 1',
+            word: "Test 1",
+            translation: "Answer 1",
             difficulty: 2,
             stability: 0.6,
             learning_state: 1,
@@ -376,17 +377,17 @@ describe('Card Endpoints', () => {
         text: async () => JSON.stringify(mockResponse),
       } as Response);
 
-      const result = await cardEndpoints.getReviewCards('deck123');
+      const result = await cardEndpoints.getReviewCards("deck123");
 
       expect(mockFetch).toHaveBeenCalledWith(
-        expect.stringContaining('/decks/deck123/review?limit=20'),
-        expect.any(Object)
+        expect.stringContaining("/decks/deck123/review?limit=20"),
+        expect.any(Object),
       );
       expect(result.data.cards).toHaveLength(1);
       expect(result.error).toBeNull();
     });
 
-    test('should fetch review cards with custom limit', async () => {
+    test("should fetch review cards with custom limit", async () => {
       const mockResponse = { cards: [] };
 
       mockFetch.mockResolvedValueOnce({
@@ -395,58 +396,58 @@ describe('Card Endpoints', () => {
         text: async () => JSON.stringify(mockResponse),
       } as Response);
 
-      const result = await cardEndpoints.getReviewCards('deck123', 50);
+      const result = await cardEndpoints.getReviewCards("deck123", 50);
 
       expect(mockFetch).toHaveBeenCalledWith(
-        expect.stringContaining('/decks/deck123/review?limit=50'),
-        expect.any(Object)
+        expect.stringContaining("/decks/deck123/review?limit=50"),
+        expect.any(Object),
       );
     });
 
-    test('should handle getReviewCards error', async () => {
+    test("should handle getReviewCards error", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: false,
         status: 404,
-        text: async () => JSON.stringify({ error: 'Deck not found' }),
+        text: async () => JSON.stringify({ error: "Deck not found" }),
       } as Response);
 
-      const result = await cardEndpoints.getReviewCards('invalid');
+      const result = await cardEndpoints.getReviewCards("invalid");
 
       expect(result.error).toBeTruthy();
     });
   });
 
-  describe('Card endpoint URL construction', () => {
-    test('should construct get cards endpoint with pagination params', () => {
-      const deckId = '123';
+  describe("Card endpoint URL construction", () => {
+    test("should construct get cards endpoint with pagination params", () => {
+      const deckId = "123";
       const page = 2;
       const perPage = 25;
       const endpoint = `/decks/${deckId}/cards?page=${page}&per_page=${perPage}`;
 
-      expect(endpoint).toBe('/decks/123/cards?page=2&per_page=25');
+      expect(endpoint).toBe("/decks/123/cards?page=2&per_page=25");
     });
 
-    test('should construct create card endpoint correctly', () => {
-      const deckId = '123';
+    test("should construct create card endpoint correctly", () => {
+      const deckId = "123";
       const endpoint = `/decks/${deckId}/card`;
 
-      expect(endpoint).toBe('/decks/123/card');
+      expect(endpoint).toBe("/decks/123/card");
     });
 
-    test('should construct update card endpoint correctly', () => {
-      const deckId = '123';
-      const cardId = '456';
+    test("should construct update card endpoint correctly", () => {
+      const deckId = "123";
+      const cardId = "456";
       const endpoint = `/decks/${deckId}/cards/${cardId}`;
 
-      expect(endpoint).toBe('/decks/123/cards/456');
+      expect(endpoint).toBe("/decks/123/cards/456");
     });
 
-    test('should construct delete card endpoint correctly', () => {
-      const deckId = '123';
-      const cardId = '456';
+    test("should construct delete card endpoint correctly", () => {
+      const deckId = "123";
+      const cardId = "456";
       const endpoint = `/decks/${deckId}/cards/${cardId}`;
 
-      expect(endpoint).toBe('/decks/123/cards/456');
+      expect(endpoint).toBe("/decks/123/cards/456");
     });
   });
 });

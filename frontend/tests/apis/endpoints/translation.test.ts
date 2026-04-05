@@ -1,8 +1,10 @@
-import { describe, expect, test, beforeEach, jest } from '@jest/globals';
-import * as translationEndpoints from '@/apis/endpoints/translation';
+import { describe, expect, test, beforeEach, jest } from "@jest/globals";
+import * as translationEndpoints from "@/apis/endpoints/translation";
+
+import { storage } from "@/utils/storage";
 
 // Mock storage
-jest.mock('@/utils/storage', () => ({
+jest.mock("@/utils/storage", () => ({
   storage: {
     getItem: jest.fn(),
     setItem: jest.fn(),
@@ -15,28 +17,26 @@ jest.mock('@/utils/storage', () => ({
 
 const mockFetch = global.fetch as jest.MockedFunction<typeof fetch>;
 
-import { storage } from '@/utils/storage';
-
 const mockStorage = storage as jest.Mocked<typeof storage>;
 
-describe('Translation Endpoints', () => {
+describe("Translation Endpoints", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockFetch.mockReset();
     mockStorage.getItem.mockResolvedValue(
       JSON.stringify({
-        token: 'test_access_token',
-        refreshToken: 'test_refresh_token',
-      })
+        token: "test_access_token",
+        refreshToken: "test_refresh_token",
+      }),
     );
-    process.env.EXPO_PUBLIC_API_URL = 'https://api.example.com';
+    process.env.EXPO_PUBLIC_API_URL = "https://api.example.com";
   });
 
-  describe('getTranslation', () => {
-    test('should translate text with target language only', async () => {
+  describe("getTranslation", () => {
+    test("should translate text with target language only", async () => {
       const mockResponse = {
-        detectedSourceLang: 'en',
-        translatedText: 'hola',
+        detectedSourceLang: "en",
+        translatedText: "hola",
       };
 
       mockFetch.mockResolvedValueOnce({
@@ -45,21 +45,21 @@ describe('Translation Endpoints', () => {
         text: async () => JSON.stringify(mockResponse),
       } as Response);
 
-      const result = await translationEndpoints.getTranslation('hello', 'es');
+      const result = await translationEndpoints.getTranslation("hello", "es");
 
       expect(mockFetch).toHaveBeenCalledWith(
-        expect.stringContaining('/translate?text=hello&target=es'),
-        expect.any(Object)
+        expect.stringContaining("/translate?text=hello&target=es"),
+        expect.any(Object),
       );
-      expect(result.data?.translatedText).toBe('hola');
-      expect(result.data?.detectedSourceLang).toBe('en');
+      expect(result.data?.translatedText).toBe("hola");
+      expect(result.data?.detectedSourceLang).toBe("en");
       expect(result.error).toBeNull();
     });
 
-    test('should translate text with source and target language', async () => {
+    test("should translate text with source and target language", async () => {
       const mockResponse = {
-        detectedSourceLang: 'en',
-        translatedText: 'こんにちは',
+        detectedSourceLang: "en",
+        translatedText: "こんにちは",
       };
 
       mockFetch.mockResolvedValueOnce({
@@ -69,23 +69,23 @@ describe('Translation Endpoints', () => {
       } as Response);
 
       const result = await translationEndpoints.getTranslation(
-        'hello',
-        'ja',
-        'en'
+        "hello",
+        "ja",
+        "en",
       );
 
       expect(mockFetch).toHaveBeenCalledWith(
-        expect.stringContaining('/translate?text=hello&target=ja&source=en'),
-        expect.any(Object)
+        expect.stringContaining("/translate?text=hello&target=ja&source=en"),
+        expect.any(Object),
       );
-      expect(result.data?.translatedText).toBe('こんにちは');
+      expect(result.data?.translatedText).toBe("こんにちは");
       expect(result.error).toBeNull();
     });
 
-    test('should handle getTranslation with special characters', async () => {
+    test("should handle getTranslation with special characters", async () => {
       const mockResponse = {
-        detectedSourceLang: 'en',
-        translatedText: 'café',
+        detectedSourceLang: "en",
+        translatedText: "café",
       };
 
       mockFetch.mockResolvedValueOnce({
@@ -95,65 +95,65 @@ describe('Translation Endpoints', () => {
       } as Response);
 
       const result = await translationEndpoints.getTranslation(
-        'coffee shop',
-        'fr'
+        "coffee shop",
+        "fr",
       );
 
-      expect(result.data?.translatedText).toBe('café');
+      expect(result.data?.translatedText).toBe("café");
     });
 
-    test('should handle getTranslation validation error', async () => {
+    test("should handle getTranslation validation error", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: false,
         status: 400,
         text: async () =>
           JSON.stringify({
-            error: 'Validation failed: text is required',
+            error: "Validation failed: text is required",
           }),
       } as Response);
 
-      const result = await translationEndpoints.getTranslation('', 'es');
+      const result = await translationEndpoints.getTranslation("", "es");
 
       expect(result.error).toBeTruthy();
     });
 
-    test('should handle getTranslation server error', async () => {
+    test("should handle getTranslation server error", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: false,
         status: 500,
-        text: async () => JSON.stringify({ error: 'Server error' }),
+        text: async () => JSON.stringify({ error: "Server error" }),
       } as Response);
 
-      const result = await translationEndpoints.getTranslation('hello', 'es');
+      const result = await translationEndpoints.getTranslation("hello", "es");
 
       expect(result.error).toBeTruthy();
     });
 
-    test('should handle getTranslation network error', async () => {
-      mockFetch.mockRejectedValueOnce(new Error('Network timeout'));
+    test("should handle getTranslation network error", async () => {
+      mockFetch.mockRejectedValueOnce(new Error("Network timeout"));
 
-      const result = await translationEndpoints.getTranslation('hello', 'es');
+      const result = await translationEndpoints.getTranslation("hello", "es");
 
       expect(result.error).toBeTruthy();
     });
   });
 
-  describe('getSupportedLanguages', () => {
-    test('should fetch supported languages successfully', async () => {
+  describe("getSupportedLanguages", () => {
+    test("should fetch supported languages successfully", async () => {
       const mockResponse = {
         source: [
-          { code: 'EN', name: 'English' },
-          { code: 'KO', name: 'Korean' },
-          { code: 'JA', name: 'Japanese' },
-          { code: 'ZH', name: 'Mandarin' },
-          { code: 'FR', name: 'French' },
+          { code: "EN", name: "English" },
+          { code: "KO", name: "Korean" },
+          { code: "JA", name: "Japanese" },
+          { code: "ZH", name: "Mandarin" },
+          { code: "FR", name: "French" },
         ],
         target: [
-          { code: 'EN', name: 'English' },
-          { code: 'KO', name: 'Korean' },
-          { code: 'JA', name: 'Japanese' },
-          { code: 'ZH', name: 'Mandarin' },
-          { code: 'FR', name: 'French' },
+          { code: "EN", name: "English" },
+          { code: "KO", name: "Korean" },
+          { code: "JA", name: "Japanese" },
+          { code: "ZH", name: "Mandarin" },
+          { code: "FR", name: "French" },
         ],
       };
 
@@ -166,21 +166,21 @@ describe('Translation Endpoints', () => {
       const result = await translationEndpoints.getSupportedLanguages();
 
       expect(mockFetch).toHaveBeenCalledWith(
-        expect.stringContaining('/translate/languages'),
-        expect.any(Object)
+        expect.stringContaining("/translate/languages"),
+        expect.any(Object),
       );
       expect(result.data?.source).toHaveLength(5);
       expect(result.data?.target).toHaveLength(5);
-      expect(result.data?.source[0].code).toBe('EN');
-      expect(result.data?.target[0].code).toBe('EN');
+      expect(result.data?.source[0].code).toBe("EN");
+      expect(result.data?.target[0].code).toBe("EN");
       expect(result.error).toBeNull();
     });
 
-    test('should handle getSupportedLanguages server error', async () => {
+    test("should handle getSupportedLanguages server error", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: false,
         status: 500,
-        text: async () => JSON.stringify({ error: 'Server error' }),
+        text: async () => JSON.stringify({ error: "Server error" }),
       } as Response);
 
       const result = await translationEndpoints.getSupportedLanguages();
@@ -188,8 +188,8 @@ describe('Translation Endpoints', () => {
       expect(result.error).toBeTruthy();
     });
 
-    test('should handle getSupportedLanguages network error', async () => {
-      mockFetch.mockRejectedValueOnce(new Error('Network connection failed'));
+    test("should handle getSupportedLanguages network error", async () => {
+      mockFetch.mockRejectedValueOnce(new Error("Network connection failed"));
 
       const result = await translationEndpoints.getSupportedLanguages();
 
@@ -197,43 +197,43 @@ describe('Translation Endpoints', () => {
     });
   });
 
-  describe('Translation endpoint URL construction', () => {
-    test('should construct translation endpoint with target language', () => {
-      const text = 'hello';
-      const target = 'ko';
+  describe("Translation endpoint URL construction", () => {
+    test("should construct translation endpoint with target language", () => {
+      const text = "hello";
+      const target = "ko";
       const params = new URLSearchParams({ text, target });
       const endpoint = `/translate?${params.toString()}`;
 
-      expect(endpoint).toContain('/translate?');
-      expect(endpoint).toContain('text=hello');
-      expect(endpoint).toContain('target=ko');
+      expect(endpoint).toContain("/translate?");
+      expect(endpoint).toContain("text=hello");
+      expect(endpoint).toContain("target=ko");
     });
 
-    test('should construct translation endpoint with source and target language', () => {
-      const text = 'hello';
-      const target = 'ja';
-      const source = 'en';
+    test("should construct translation endpoint with source and target language", () => {
+      const text = "hello";
+      const target = "ja";
+      const source = "en";
       const params = new URLSearchParams({ text, target, source });
       const endpoint = `/translate?${params.toString()}`;
 
-      expect(endpoint).toContain('/translate?');
-      expect(endpoint).toContain('text=hello');
-      expect(endpoint).toContain('target=ja');
-      expect(endpoint).toContain('source=en');
+      expect(endpoint).toContain("/translate?");
+      expect(endpoint).toContain("text=hello");
+      expect(endpoint).toContain("target=ja");
+      expect(endpoint).toContain("source=en");
     });
 
-    test('should construct supported languages endpoint', () => {
-      const endpoint = '/translate/languages';
-      expect(endpoint).toBe('/translate/languages');
+    test("should construct supported languages endpoint", () => {
+      const endpoint = "/translate/languages";
+      expect(endpoint).toBe("/translate/languages");
     });
 
-    test('should handle URL encoding for special characters', () => {
-      const text = 'hello world!';
-      const target = 'ko';
+    test("should handle URL encoding for special characters", () => {
+      const text = "hello world!";
+      const target = "ko";
       const params = new URLSearchParams({ text, target });
       const endpoint = `/translate?${params.toString()}`;
 
-      expect(endpoint).toContain('hello+world%21');
+      expect(endpoint).toContain("hello+world%21");
     });
   });
 });

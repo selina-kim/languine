@@ -1,13 +1,20 @@
-import { describe, expect, test, beforeEach, jest, afterEach } from '@jest/globals';
+import {
+  describe,
+  expect,
+  test,
+  beforeEach,
+  jest,
+  afterEach,
+} from "@jest/globals";
 
 // Mock all API endpoints
-jest.mock('@/apis/endpoints/auth', () => ({
+jest.mock("@/apis/endpoints/auth", () => ({
   loginUser: jest.fn(),
   registerUser: jest.fn(),
   refreshToken: jest.fn(),
 }));
 
-jest.mock('@/apis/endpoints/decks', () => ({
+jest.mock("@/apis/endpoints/decks", () => ({
   getDecks: jest.fn(),
   createDeck: jest.fn(),
   updateDeck: jest.fn(),
@@ -16,28 +23,28 @@ jest.mock('@/apis/endpoints/decks', () => ({
   exportDeck: jest.fn(),
 }));
 
-jest.mock('@/apis/endpoints/cards', () => ({
+jest.mock("@/apis/endpoints/cards", () => ({
   getCards: jest.fn(),
   createCard: jest.fn(),
   updateCard: jest.fn(),
   deleteCard: jest.fn(),
 }));
 
-jest.mock('@/apis/endpoints/fsrs', () => ({
+jest.mock("@/apis/endpoints/fsrs", () => ({
   submitReview: jest.fn(),
 }));
 
-jest.mock('@/apis/endpoints/translation', () => ({
+jest.mock("@/apis/endpoints/translation", () => ({
   getSupportedLanguages: jest.fn(),
   translateText: jest.fn(),
 }));
 
-jest.mock('@/apis/endpoints/image', () => ({
+jest.mock("@/apis/endpoints/image", () => ({
   uploadImage: jest.fn(),
   deleteImage: jest.fn(),
 }));
 
-jest.mock('@/utils/storage', () => ({
+jest.mock("@/utils/storage", () => ({
   storage: {
     getItem: jest.fn(),
     setItem: jest.fn(),
@@ -45,7 +52,7 @@ jest.mock('@/utils/storage', () => ({
   },
 }));
 
-jest.mock('expo-router', () => ({
+jest.mock("expo-router", () => ({
   useRouter: () => ({
     push: jest.fn(),
     replace: jest.fn(),
@@ -55,11 +62,11 @@ jest.mock('expo-router', () => ({
 }));
 
 // Mock API client for authorization
-jest.mock('@/apis/client', () => ({
+jest.mock("@/apis/client", () => ({
   setUnauthorizedHandler: jest.fn(),
 }));
 
-describe('User Authentication Flow (E2E)', () => {
+describe("User Authentication Flow (E2E)", () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
@@ -68,16 +75,18 @@ describe('User Authentication Flow (E2E)', () => {
     jest.clearAllMocks();
   });
 
-  test('should complete full registration flow with validation', async () => {
+  test("should complete full registration flow with validation", async () => {
     // Step 1: User enters valid registration data
     const registerPayload = {
-      email: 'newuser@example.com',
-      password: 'SecurePass123!',
-      name: 'New User',
+      email: "newuser@example.com",
+      password: "SecurePass123!",
+      name: "New User",
     };
 
     // Validate input
-    const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(registerPayload.email);
+    const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
+      registerPayload.email,
+    );
     const isValidPassword = registerPayload.password.length >= 8;
     expect(isValidEmail).toBe(true);
     expect(isValidPassword).toBe(true);
@@ -85,11 +94,11 @@ describe('User Authentication Flow (E2E)', () => {
     // Step 2: Registration succeeds
     const registerResponse = {
       user: {
-        id: 'user123',
+        id: "user123",
         email: registerPayload.email,
         name: registerPayload.name,
-        token: 'access_token_123',
-        refreshToken: 'refresh_token_123',
+        token: "access_token_123",
+        refreshToken: "refresh_token_123",
       },
       status: 201,
     };
@@ -106,23 +115,28 @@ describe('User Authentication Flow (E2E)', () => {
       refreshToken: registerResponse.user.refreshToken,
     });
 
-    expect(userData).toContain('user123');
+    expect(userData).toContain("user123");
     expect(userData).toContain(registerPayload.email);
   });
 
-  test('should reject invalid email format during registration', async () => {
-    const invalidEmails = ['notanemail', 'user@', '@domain.com', 'user @domain.com'];
+  test("should reject invalid email format during registration", async () => {
+    const invalidEmails = [
+      "notanemail",
+      "user@",
+      "@domain.com",
+      "user @domain.com",
+    ];
 
-    invalidEmails.forEach(email => {
+    invalidEmails.forEach((email) => {
       const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
       expect(isValidEmail).toBe(false);
     });
   });
 
-  test('should complete login flow with credential validation', async () => {
+  test("should complete login flow with credential validation", async () => {
     const loginPayload = {
-      email: 'user@example.com',
-      password: 'password123',
+      email: "user@example.com",
+      password: "password123",
     };
 
     // Validate inputs exist
@@ -131,10 +145,10 @@ describe('User Authentication Flow (E2E)', () => {
 
     const loginResponse = {
       user: {
-        id: 'user123',
+        id: "user123",
         email: loginPayload.email,
-        token: 'new_access_token_abc',
-        refreshToken: 'new_refresh_token_xyz',
+        token: "new_access_token_abc",
+        refreshToken: "new_refresh_token_xyz",
       },
       status: 200,
     };
@@ -145,13 +159,13 @@ describe('User Authentication Flow (E2E)', () => {
     expect(loginResponse.user.refreshToken).toBeTruthy();
   });
 
-  test('should persist authentication across app restarts', async () => {
+  test("should persist authentication across app restarts", async () => {
     const loginResponse = {
       user: {
-        id: 'user123',
-        email: 'user@example.com',
-        token: 'access_token',
-        refreshToken: 'refresh_token',
+        id: "user123",
+        email: "user@example.com",
+        token: "access_token",
+        refreshToken: "refresh_token",
       },
     };
 
@@ -159,13 +173,13 @@ describe('User Authentication Flow (E2E)', () => {
     const storedUserJson = JSON.stringify(loginResponse.user);
     const loadedUser = JSON.parse(storedUserJson);
 
-    expect(loadedUser.id).toBe('user123');
-    expect(loadedUser.token).toBe('access_token');
+    expect(loadedUser.id).toBe("user123");
+    expect(loadedUser.token).toBe("access_token");
   });
 
-  test('should handle corrupted stored auth data gracefully', async () => {
+  test("should handle corrupted stored auth data gracefully", async () => {
     // Simulate corrupted JSON in storage
-    const corruptedData = 'invalid{json}data';
+    const corruptedData = "invalid{json}data";
 
     let loadedUser = null;
     try {
@@ -178,10 +192,10 @@ describe('User Authentication Flow (E2E)', () => {
     expect(loadedUser).toBeNull();
   });
 
-  test('should refresh token before expiration', async () => {
+  test("should refresh token before expiration", async () => {
     const currentToken = {
-      token: 'access_token_abc',
-      refreshToken: 'refresh_token_xyz',
+      token: "access_token_abc",
+      refreshToken: "refresh_token_xyz",
       expiresAt: Date.now() + 5 * 60 * 1000, // 5 minutes
     };
 
@@ -190,8 +204,8 @@ describe('User Authentication Flow (E2E)', () => {
 
     if (shouldRefresh) {
       const refreshResponse = {
-        token: 'new_access_token',
-        refreshToken: 'new_refresh_token',
+        token: "new_access_token",
+        refreshToken: "new_refresh_token",
         expiresAt: Date.now() + 60 * 60 * 1000,
       };
 
@@ -200,7 +214,7 @@ describe('User Authentication Flow (E2E)', () => {
     }
   });
 
-  test('should handle session timeout and require re-authentication', async () => {
+  test("should handle session timeout and require re-authentication", async () => {
     let isAuthenticated = true;
     const tokenExpiration = Date.now() - 1000; // Expired 1 second ago
 
@@ -212,12 +226,12 @@ describe('User Authentication Flow (E2E)', () => {
     expect(isAuthenticated).toBe(false);
   });
 
-  test('should handle logout and clear all authentication data', async () => {
+  test("should handle logout and clear all authentication data", async () => {
     // User is authenticated
     const authenticatedState = {
-      user: { id: 'user123', email: 'user@example.com', token: 'token123' },
+      user: { id: "user123", email: "user@example.com", token: "token123" },
       isAuthenticated: true,
-      storedData: { token: 'token123', refreshToken: 'refresh123' },
+      storedData: { token: "token123", refreshToken: "refresh123" },
     };
 
     expect(authenticatedState.isAuthenticated).toBe(true);
@@ -233,41 +247,39 @@ describe('User Authentication Flow (E2E)', () => {
     expect(logoutState.user).toBeNull();
   });
 
-  test('should handle 401 unauthorized and redirect to login', async () => {
+  test("should handle 401 unauthorized and redirect to login", async () => {
     const apiError = {
       status: 401,
-      message: 'Token expired',
+      message: "Token expired",
     };
 
     const shouldRedirectToLogin = apiError.status === 401;
     expect(shouldRedirectToLogin).toBe(true);
   });
 
-  test('should handle 403 forbidden for permission denied', async () => {
+  test("should handle 403 forbidden for permission denied", async () => {
     const apiError = {
       status: 403,
-      message: 'Insufficient permissions',
+      message: "Insufficient permissions",
     };
 
     expect(apiError.status).toBe(403);
   });
 });
 
-describe('Language Selection and Translation Flow (E2E)', () => {
+describe("Language Selection and Translation Flow (E2E)", () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  test('should load supported languages on app initialization', async () => {
+  test("should load supported languages on app initialization", async () => {
     const languagesResponse = {
-      source: [
-        { code: 'EN', name: 'English' },
-      ],
+      source: [{ code: "EN", name: "English" }],
       target: [
-        { code: 'FR', name: 'French' },
-        { code: 'KO', name: 'Korean' },
-        { code: 'JA', name: 'Japanese' },
-        { code: 'ZH', name: 'Mandarin' },
+        { code: "FR", name: "French" },
+        { code: "KO", name: "Korean" },
+        { code: "JA", name: "Japanese" },
+        { code: "ZH", name: "Mandarin" },
       ],
       status: 200,
     };
@@ -277,25 +289,25 @@ describe('Language Selection and Translation Flow (E2E)', () => {
 
     const sourceCodeByName = languagesResponse.source.reduce(
       (acc, lang) => ({ ...acc, [lang.name]: lang.code }),
-      {} as Record<string, string>
+      {} as Record<string, string>,
     );
 
-    expect(sourceCodeByName['English']).toBe('EN');
+    expect(sourceCodeByName["English"]).toBe("EN");
 
     const targetCodeByName = languagesResponse.target.reduce(
       (acc, lang) => ({ ...acc, [lang.name]: lang.code }),
-      {} as Record<string, string>
+      {} as Record<string, string>,
     );
 
-    expect(targetCodeByName['French']).toBe('FR');
-    expect(targetCodeByName['Korean']).toBe('KO');
-    expect(targetCodeByName['Japanese']).toBe('JA');
-    expect(targetCodeByName['Mandarin']).toBe('ZH');
+    expect(targetCodeByName["French"]).toBe("FR");
+    expect(targetCodeByName["Korean"]).toBe("KO");
+    expect(targetCodeByName["Japanese"]).toBe("JA");
+    expect(targetCodeByName["Mandarin"]).toBe("ZH");
   });
 
-  test('should handle language loading failure gracefully', async () => {
+  test("should handle language loading failure gracefully", async () => {
     const errorResponse = {
-      error: 'Failed to fetch supported languages',
+      error: "Failed to fetch supported languages",
       status: 500,
     };
 
@@ -303,16 +315,14 @@ describe('Language Selection and Translation Flow (E2E)', () => {
     // App should fall back to default languages or cached data
   });
 
-  test('should allow user to select source and target languages', async () => {
+  test("should allow user to select source and target languages", async () => {
     const languages = {
-      source: [
-        { code: 'EN', name: 'English' },
-      ],
+      source: [{ code: "EN", name: "English" }],
       target: [
-        { code: 'FR', name: 'French' },
-        { code: 'KO', name: 'Korean' },
-        { code: 'JA', name: 'Japanese' },
-        { code: 'ZH', name: 'Mandarin' },
+        { code: "FR", name: "French" },
+        { code: "KO", name: "Korean" },
+        { code: "JA", name: "Japanese" },
+        { code: "ZH", name: "Mandarin" },
       ],
     };
 
@@ -321,31 +331,31 @@ describe('Language Selection and Translation Flow (E2E)', () => {
       targetLang: languages.target[0].code, // FR - user starts with French
     };
 
-    expect(userSelection.sourceLang).toBe('EN');
-    expect(['FR', 'KO', 'JA', 'ZH']).toContain(userSelection.targetLang);
+    expect(userSelection.sourceLang).toBe("EN");
+    expect(["FR", "KO", "JA", "ZH"]).toContain(userSelection.targetLang);
   });
 
-  test('should translate text in real-time as user types', async () => {
-    const userInput = 'Hello'; // English input
+  test("should translate text in real-time as user types", async () => {
+    const userInput = "Hello"; // English input
 
     const translateResponse = {
       original: userInput,
-      translation: 'Bonjour', // French translation
-      sourceLang: 'EN',
-      targetLang: 'FR',
+      translation: "Bonjour", // French translation
+      sourceLang: "EN",
+      targetLang: "FR",
       status: 200,
     };
 
-    expect(translateResponse.translation).toBe('Bonjour');
-    expect(translateResponse.sourceLang).toBe('EN');
-    expect(['FR', 'KO', 'JA', 'ZH']).toContain(translateResponse.targetLang);
+    expect(translateResponse.translation).toBe("Bonjour");
+    expect(translateResponse.sourceLang).toBe("EN");
+    expect(["FR", "KO", "JA", "ZH"]).toContain(translateResponse.targetLang);
   });
 
-  test('should handle translation timeout gracefully', async () => {
-    const userInput = 'こんにちは';
+  test("should handle translation timeout gracefully", async () => {
+    const userInput = "こんにちは";
 
     const timeoutError = {
-      error: 'Translation request timeout',
+      error: "Translation request timeout",
       originalInput: userInput,
       fallback: userInput, // Show original if translation fails
     };
@@ -354,56 +364,80 @@ describe('Language Selection and Translation Flow (E2E)', () => {
   });
 });
 
-describe('Deck Management Flow (E2E)', () => {
+describe("Deck Management Flow (E2E)", () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  test('should display list of user decks on load', async () => {
+  test("should display list of user decks on load", async () => {
     const decksListResponse = {
       decks: [
-        { d_id: '1', deck_name: 'French Basics', card_count: 50, word_lang: 'FR', trans_lang: 'EN' },
-        { d_id: '2', deck_name: 'Japanese Basics', card_count: 30, word_lang: 'JA', trans_lang: 'EN' },
-        { d_id: '3', deck_name: 'Korean 101', card_count: 75, word_lang: 'KO', trans_lang: 'EN' },
-        { d_id: '4', deck_name: 'Mandarin Chinese', card_count: 100, word_lang: 'ZH', trans_lang: 'EN' },
+        {
+          d_id: "1",
+          deck_name: "French Basics",
+          card_count: 50,
+          word_lang: "FR",
+          trans_lang: "EN",
+        },
+        {
+          d_id: "2",
+          deck_name: "Japanese Basics",
+          card_count: 30,
+          word_lang: "JA",
+          trans_lang: "EN",
+        },
+        {
+          d_id: "3",
+          deck_name: "Korean 101",
+          card_count: 75,
+          word_lang: "KO",
+          trans_lang: "EN",
+        },
+        {
+          d_id: "4",
+          deck_name: "Mandarin Chinese",
+          card_count: 100,
+          word_lang: "ZH",
+          trans_lang: "EN",
+        },
       ],
       status: 200,
     };
 
     expect(decksListResponse.decks).toHaveLength(4);
-    expect(decksListResponse.decks[0].d_id).toBe('1');
+    expect(decksListResponse.decks[0].d_id).toBe("1");
     expect(decksListResponse.decks[0].card_count).toBeGreaterThan(0);
-    expect(decksListResponse.decks[0].trans_lang).toBe('EN');
+    expect(decksListResponse.decks[0].trans_lang).toBe("EN");
   });
 
-  test('should handle empty decks list', async () => {
+  test("should handle empty decks list", async () => {
     const emptyResponse = {
       decks: [],
       status: 200,
-      message: 'No decks yet. Create your first deck!',
+      message: "No decks yet. Create your first deck!",
     };
 
     expect(emptyResponse.decks).toHaveLength(0);
   });
 
-  test('should create new deck with validation', async () => {
+  test("should create new deck with validation", async () => {
     const createDeckPayload = {
-      deck_name: 'Spanish Advanced',
-      word_lang: 'FR', // French - one of the supported target languages
-      trans_lang: 'EN', // Always English translation
-      description: 'Learn intermediate French vocabulary',
+      deck_name: "Spanish Advanced",
+      word_lang: "FR", // French - one of the supported target languages
+      trans_lang: "EN", // Always English translation
+      description: "Learn intermediate French vocabulary",
     };
 
     // Validate required fields
     expect(createDeckPayload.deck_name).toBeTruthy();
     expect(createDeckPayload.word_lang).toBeTruthy();
     expect(createDeckPayload.trans_lang).toBeTruthy();
-expect(['FR', 'KO', 'JA', 'ZH']).toContain(createDeckPayload.word_lang);
-      expect(createDeckPayload.trans_lang).toBe('EN');
+    expect(["FR", "KO", "JA", "ZH"]).toContain(createDeckPayload.word_lang);
+    expect(createDeckPayload.trans_lang).toBe("EN");
 
     const createDeckResponse = {
       deck: {
-        d_id: '5',
+        d_id: "5",
         ...createDeckPayload,
         card_count: 0,
         created_at: new Date().toISOString(),
@@ -415,24 +449,24 @@ expect(['FR', 'KO', 'JA', 'ZH']).toContain(createDeckPayload.word_lang);
     expect(createDeckResponse.deck.card_count).toBe(0);
   });
 
-  test('should reject deck creation without required fields', async () => {
+  test("should reject deck creation without required fields", async () => {
     const invalidPayload = {
-      deck_name: '', // Empty name
-      word_lang: 'ja',
-      trans_lang: 'en',
+      deck_name: "", // Empty name
+      word_lang: "ja",
+      trans_lang: "en",
     };
 
     const isValid = invalidPayload.deck_name.trim().length > 0;
     expect(isValid).toBe(false);
   });
 
-  test('should add card to deck', async () => {
-    const deckId = '1';
+  test("should add card to deck", async () => {
+    const deckId = "1";
     const addCardPayload = {
-      word: 'Bonjour',
-      translation: 'Hello',
-      word_example: 'Bonjour, comment allez-vous?',
-      trans_example: 'Hello, how are you?',
+      word: "Bonjour",
+      translation: "Hello",
+      word_example: "Bonjour, comment allez-vous?",
+      trans_example: "Hello, how are you?",
       image: null,
     };
 
@@ -451,14 +485,14 @@ expect(['FR', 'KO', 'JA', 'ZH']).toContain(createDeckPayload.word_lang);
 
     expect(addCardResponse.card.c_id).toBe(1);
     expect(addCardResponse.card.d_id).toBe(deckId);
-    expect(addCardResponse.card.word).toBe('Bonjour');
+    expect(addCardResponse.card.word).toBe("Bonjour");
   });
 
-  test('should update deck metadata', async () => {
-    const deckId = '1';
+  test("should update deck metadata", async () => {
+    const deckId = "1";
     const updatePayload = {
-      deck_name: 'French Intermediate',
-      description: 'Essential French vocabulary for intermediate learners',
+      deck_name: "French Intermediate",
+      description: "Essential French vocabulary for intermediate learners",
     };
 
     const updateResponse = {
@@ -470,12 +504,12 @@ expect(['FR', 'KO', 'JA', 'ZH']).toContain(createDeckPayload.word_lang);
       status: 200,
     };
 
-    expect(updateResponse.deck.deck_name).toBe('French Intermediate');
+    expect(updateResponse.deck.deck_name).toBe("French Intermediate");
   });
 
-  test('should show confirmation before deck deletion', async () => {
-    const deckId = '1';
-    const deck = { d_id: deckId, deck_name: 'French Basics', card_count: 50 };
+  test("should show confirmation before deck deletion", async () => {
+    const deckId = "1";
+    const deck = { d_id: deckId, deck_name: "French Basics", card_count: 50 };
 
     // Simulate user confirmation
     const userConfirmed = true;
@@ -492,27 +526,30 @@ expect(['FR', 'KO', 'JA', 'ZH']).toContain(createDeckPayload.word_lang);
     }
   });
 
-  test('should cancel deck deletion if user declines', async () => {
-    const deckId = '1';
-    const deck = { d_id: deckId, deck_name: 'Spanish Basics' };
+  test("should cancel deck deletion if user declines", async () => {
+    const deckId = "1";
+    const deck = { d_id: deckId, deck_name: "Spanish Basics" };
 
     const userConfirmed = false;
 
     if (!userConfirmed) {
-      expect(deck.d_id).toBe('1'); // Deck still exists
+      expect(deck.d_id).toBe("1"); // Deck still exists
     }
   });
 
-  test('should import deck from CSV file', async () => {
+  test("should import deck from CSV file", async () => {
     const csvData = `word,translation,example
 Bonjour,Hello,Bonjour, comment allez-vous?
 Au revoir,Goodbye,Au revoir, à bientôt
 Merci,Thank you,Merci beaucoup`;
 
-    const importedCards = csvData.split('\n').slice(1).map((line) => {
-      const [word, translation, example] = line.split(',');
-      return { word, translation, word_example: example };
-    });
+    const importedCards = csvData
+      .split("\n")
+      .slice(1)
+      .map((line) => {
+        const [word, translation, example] = line.split(",");
+        return { word, translation, word_example: example };
+      });
 
     const importResponse = {
       imported: importedCards.length,
@@ -525,18 +562,18 @@ Merci,Thank you,Merci beaucoup`;
     expect(importResponse.failed).toBe(0);
   });
 
-  test('should handle partial import failure gracefully', async () => {
+  test("should handle partial import failure gracefully", async () => {
     const importedCards = [
-      { word: 'Valid', translation: 'Translation' },
+      { word: "Valid", translation: "Translation" },
       // Invalid card missing translation
-      { word: 'Another', translation: 'Another translation' },
+      { word: "Another", translation: "Another translation" },
     ];
 
     const importResponse = {
       imported: 2,
       failed: 1,
       status: 200,
-      errors: [{ rowNumber: 2, reason: 'Missing translation field' }],
+      errors: [{ rowNumber: 2, reason: "Missing translation field" }],
     };
 
     expect(importResponse.imported).toBe(2);
@@ -544,70 +581,70 @@ Merci,Thank you,Merci beaucoup`;
     expect(importResponse.errors).toHaveLength(1);
   });
 
-  test('should export deck to CSV format', async () => {
-    const deckId = '1';
+  test("should export deck to CSV format", async () => {
+    const deckId = "1";
     const cards = [
-      { word: 'Bonjour', translation: 'Hello' },
-      { word: 'Au revoir', translation: 'Goodbye' },
+      { word: "Bonjour", translation: "Hello" },
+      { word: "Au revoir", translation: "Goodbye" },
     ];
 
     const csvExport = [
-      'word,translation',
+      "word,translation",
       ...cards.map((c) => `${c.word},${c.translation}`),
-    ].join('\n');
+    ].join("\n");
 
-    expect(csvExport).toContain('Bonjour,Hello');
-    expect(csvExport).toContain('Au revoir,Goodbye');
+    expect(csvExport).toContain("Bonjour,Hello");
+    expect(csvExport).toContain("Au revoir,Goodbye");
   });
 
-  test('should handle concurrent deck operations without corruption', async () => {
-    const deckId = '1';
+  test("should handle concurrent deck operations without corruption", async () => {
+    const deckId = "1";
     const operations = [
-      { action: 'addCard', word: 'Hola' },
-      { action: 'updateDeck', name: 'Spanish Basics' },
-      { action: 'addCard', word: 'Adiós' },
+      { action: "addCard", word: "Hola" },
+      { action: "updateDeck", name: "Spanish Basics" },
+      { action: "addCard", word: "Adiós" },
     ];
 
     let cardCount = 0;
     operations.forEach((op) => {
-      if (op.action === 'addCard') cardCount++;
+      if (op.action === "addCard") cardCount++;
     });
 
     expect(cardCount).toBe(2);
   });
 });
 
-describe('Study Session Flow (E2E)', () => {
+describe("Study Session Flow (E2E)", () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  test('should complete full study session with card reviews', async () => {
-    const deckId = '1';
+  test("should complete full study session with card reviews", async () => {
+    const deckId = "1";
     const cardsToReview = [
       {
         c_id: 1,
-        word: 'Bonjour',
-        translation: 'Hello',
+        word: "Bonjour",
+        translation: "Hello",
         difficulty: 3,
         stability: 2,
-        due_date: '2026-04-01',
+        due_date: "2026-04-01",
       },
       {
         c_id: 2,
-        word: 'Au revoir',
-        translation: 'Goodbye',
+        word: "Au revoir",
+        translation: "Goodbye",
         difficulty: 4,
         stability: 1,
-        due_date: '2026-04-01',
+        due_date: "2026-04-01",
       },
       {
         c_id: 3,
-        word: 'Merci',
-        translation: 'Thank you',
+        word: "Merci",
+        translation: "Thank you",
         difficulty: 2,
         stability: 3,
-        due_date: '2026-04-01',
+        due_date: "2026-04-01",
       },
     ];
 
@@ -661,7 +698,7 @@ describe('Study Session Flow (E2E)', () => {
     expect(submitResponse.cardsUpdated).toBe(3);
   });
 
-  test('should handle session navigation (next/previous/skip)', async () => {
+  test("should handle session navigation (next/previous/skip)", async () => {
     const currentCardIndex = 1;
     const totalCards = 5;
 
@@ -670,13 +707,13 @@ describe('Study Session Flow (E2E)', () => {
     expect(currentCardIndex < totalCards - 1).toBe(true); // Can go next
   });
 
-  test('should save session progress when interrupted', async () => {
+  test("should save session progress when interrupted", async () => {
     let sessionActive = true;
     let reviewsCompleted = 2;
     const totalCards = 10;
 
     const sessionState = {
-      deckId: '1',
+      deckId: "1",
       currentCardIndex: reviewsCompleted,
       reviewsCompleted,
       totalCards,
@@ -690,7 +727,7 @@ describe('Study Session Flow (E2E)', () => {
     expect(sessionState.currentCardIndex).toBe(2);
   });
 
-  test('should validate review ratings 1-4 for FSRS', async () => {
+  test("should validate review ratings 1-4 for FSRS", async () => {
     const validRatings = [1, 2, 3, 4];
     const invalidRatings = [0, 5, -1, 10];
 
@@ -705,10 +742,10 @@ describe('Study Session Flow (E2E)', () => {
     });
   });
 
-  test('should calculate FSRS metrics with updated difficulty/stability', async () => {
+  test("should calculate FSRS metrics with updated difficulty/stability", async () => {
     const card = {
       c_id: 1,
-      word: 'Bonjour',
+      word: "Bonjour",
       difficulty: 5,
       stability: 2,
       learning_state: 0,
@@ -720,7 +757,10 @@ describe('Study Session Flow (E2E)', () => {
     // FSRS updates difficulty and stability
     const updatedCard = {
       ...card,
-      difficulty: Math.max(0, Math.min(10, card.difficulty + (userRating === 4 ? 1 : -1))),
+      difficulty: Math.max(
+        0,
+        Math.min(10, card.difficulty + (userRating === 4 ? 1 : -1)),
+      ),
       stability: card.stability + (userRating >= 3 ? 1 : 0),
       lastReviewed: Date.now(),
     };
@@ -730,10 +770,10 @@ describe('Study Session Flow (E2E)', () => {
     }
   });
 
-  test('should prevent review of cards not due yet', async () => {
+  test("should prevent review of cards not due yet", async () => {
     const futureCard = {
       c_id: 1,
-      word: 'Hola',
+      word: "Hola",
       due_date: new Date(Date.now() + 86400000).toISOString(), // Tomorrow
     };
 
@@ -741,7 +781,7 @@ describe('Study Session Flow (E2E)', () => {
     expect(isDue).toBe(false);
   });
 
-  test('should show progress indicators and statistics', async () => {
+  test("should show progress indicators and statistics", async () => {
     const totalCards = 10;
 
     for (let cardNum = 1; cardNum <= totalCards; cardNum++) {
@@ -755,19 +795,19 @@ describe('Study Session Flow (E2E)', () => {
     }
   });
 
-  test('should handle empty review session gracefully', async () => {
+  test("should handle empty review session gracefully", async () => {
     const emptyDeckResponse = {
       cardsToReview: [],
-      message: 'No cards are due for review',
+      message: "No cards are due for review",
       status: 200,
     };
 
     expect(emptyDeckResponse.cardsToReview).toHaveLength(0);
   });
 
-  test('should sync review results with server after session', async () => {
+  test("should sync review results with server after session", async () => {
     const sessionResults = {
-      deckId: '1',
+      deckId: "1",
       cardsReviewed: 10,
       correctAnswers: 8,
       totalTime: 45000,
@@ -777,7 +817,7 @@ describe('Study Session Flow (E2E)', () => {
     const syncResponse = {
       status: 200,
       success: true,
-      message: 'Reviews synced successfully',
+      message: "Reviews synced successfully",
       serverResults: sessionResults,
     };
 
@@ -786,22 +826,22 @@ describe('Study Session Flow (E2E)', () => {
   });
 });
 
-describe('Image Upload and Management (E2E)', () => {
+describe("Image Upload and Management (E2E)", () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  test('should upload image for card', async () => {
+  test("should upload image for card", async () => {
     const imageFile = {
-      name: 'card-image.jpg',
+      name: "card-image.jpg",
       size: 2048000, // 2 MB
-      type: 'image/jpeg',
+      type: "image/jpeg",
     };
 
     const uploadResponse = {
       status: 200,
-      imageId: 'img_12345',
-      url: 'https://api.example.com/images/img_12345.jpg',
+      imageId: "img_12345",
+      url: "https://api.example.com/images/img_12345.jpg",
       size: imageFile.size,
     };
 
@@ -809,26 +849,26 @@ describe('Image Upload and Management (E2E)', () => {
     expect(uploadResponse.url).toBeTruthy();
   });
 
-  test('should validate image file type', async () => {
-    const validTypes = ['image/jpeg', 'image/png', 'image/webp'];
-    const invalidTypes = ['video/mp4', 'text/plain', 'application/pdf'];
+  test("should validate image file type", async () => {
+    const validTypes = ["image/jpeg", "image/png", "image/webp"];
+    const invalidTypes = ["video/mp4", "text/plain", "application/pdf"];
 
     validTypes.forEach((type) => {
-      const isValid = ['image/jpeg', 'image/png', 'image/webp'].includes(type);
+      const isValid = ["image/jpeg", "image/png", "image/webp"].includes(type);
       expect(isValid).toBe(true);
     });
 
     invalidTypes.forEach((type) => {
-      const isValid = ['image/jpeg', 'image/png', 'image/webp'].includes(type);
+      const isValid = ["image/jpeg", "image/png", "image/webp"].includes(type);
       expect(isValid).toBe(false);
     });
   });
 
-  test('should delete image from card', async () => {
-    const imageId = 'img_12345';
+  test("should delete image from card", async () => {
+    const imageId = "img_12345";
     const deleteResponse = {
       status: 200,
-      message: 'Image deleted successfully',
+      message: "Image deleted successfully",
       deletedImageId: imageId,
     };
 
@@ -837,12 +877,12 @@ describe('Image Upload and Management (E2E)', () => {
   });
 });
 
-describe('Error Recovery and Edge Cases (E2E)', () => {
+describe("Error Recovery and Edge Cases (E2E)", () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  test('should handle network timeout gracefully with retry mechanism', async () => {
+  test("should handle network timeout gracefully with retry mechanism", async () => {
     const maxRetries = 3;
     let attempts = 0;
     let success = false;
@@ -850,7 +890,7 @@ describe('Error Recovery and Edge Cases (E2E)', () => {
     const apiCall = async () => {
       attempts++;
       if (attempts < 3) {
-        throw new Error('Network timeout');
+        throw new Error("Network timeout");
       }
       return { success: true, data: [] };
     };
@@ -871,11 +911,11 @@ describe('Error Recovery and Edge Cases (E2E)', () => {
     expect(attempts).toBe(3);
   });
 
-  test('should recover from failed API calls with exponential backoff', async () => {
+  test("should recover from failed API calls with exponential backoff", async () => {
     const callWithBackoff = async (attempt: number) => {
       const backoffMs = Math.pow(2, attempt) * 100;
       if (attempt < 2) {
-        throw new Error('Temporary API error');
+        throw new Error("Temporary API error");
       }
       return { success: true };
     };
@@ -893,11 +933,21 @@ describe('Error Recovery and Edge Cases (E2E)', () => {
     expect(result?.success).toBe(true);
   });
 
-  test('should queue offline changes and sync when online', async () => {
+  test("should queue offline changes and sync when online", async () => {
     const offlineChanges = [
-      { action: 'cardAdded', c_id: 1, word: 'Hola', timestamp: Date.now() - 5000 },
-      { action: 'cardUpdated', c_id: 2, word: 'Adiós', timestamp: Date.now() - 3000 },
-      { action: 'cardDeleted', c_id: 3, timestamp: Date.now() - 1000 },
+      {
+        action: "cardAdded",
+        c_id: 1,
+        word: "Hola",
+        timestamp: Date.now() - 5000,
+      },
+      {
+        action: "cardUpdated",
+        c_id: 2,
+        word: "Adiós",
+        timestamp: Date.now() - 3000,
+      },
+      { action: "cardDeleted", c_id: 3, timestamp: Date.now() - 1000 },
     ];
 
     expect(offlineChanges).toHaveLength(3);
@@ -910,23 +960,23 @@ describe('Error Recovery and Edge Cases (E2E)', () => {
       // Sync in order
       expect(queuedForSync).toHaveLength(3);
       // Verify queue contains all changes
-      expect(queuedForSync[0].action).toBe('cardAdded');
-      expect(queuedForSync[1].action).toBe('cardUpdated');
-      expect(queuedForSync[2].action).toBe('cardDeleted');
+      expect(queuedForSync[0].action).toBe("cardAdded");
+      expect(queuedForSync[1].action).toBe("cardUpdated");
+      expect(queuedForSync[2].action).toBe("cardDeleted");
     }
   });
 
-  test('should handle partial sync failures gracefully', async () => {
+  test("should handle partial sync failures gracefully", async () => {
     const syncItems = [
-      { c_id: 1, action: 'add', status: 'pending' },
-      { c_id: 2, action: 'update', status: 'pending' },
-      { c_id: 3, action: 'delete', status: 'pending' },
+      { c_id: 1, action: "add", status: "pending" },
+      { c_id: 2, action: "update", status: "pending" },
+      { c_id: 3, action: "delete", status: "pending" },
     ];
 
     const syncResults = {
       successful: 2,
       failed: 1,
-      failedItems: [{ c_id: 3, error: 'Server error' }],
+      failedItems: [{ c_id: 3, error: "Server error" }],
     };
 
     expect(syncResults.successful).toBe(2);
@@ -937,7 +987,7 @@ describe('Error Recovery and Edge Cases (E2E)', () => {
     expect(itemsToRetry).toHaveLength(1);
   });
 
-  test('should handle stale data after long offline period', async () => {
+  test("should handle stale data after long offline period", async () => {
     const offlineStart = Date.now() - 7 * 24 * 60 * 60 * 1000; // 7 days ago
     const lastSyncTime = offlineStart;
     const currentTime = Date.now();
@@ -958,10 +1008,10 @@ describe('Error Recovery and Edge Cases (E2E)', () => {
     }
   });
 
-  test('should warn user before losing unsaved data on navigation', async () => {
+  test("should warn user before losing unsaved data on navigation", async () => {
     const userChanges = {
-      deckName: 'Updated Name',
-      description: 'Updated Description',
+      deckName: "Updated Name",
+      description: "Updated Description",
       hasChanges: true,
     };
 
@@ -973,9 +1023,9 @@ describe('Error Recovery and Edge Cases (E2E)', () => {
     }
   });
 
-  test('should prevent data loss on app crash recovery', async () => {
+  test("should prevent data loss on app crash recovery", async () => {
     const sessionData = {
-      deckId: 'deck1',
+      deckId: "deck1",
       cardIndex: 5,
       reviews: [
         { c_id: 1, rating: 4 },
@@ -992,50 +1042,51 @@ describe('Error Recovery and Edge Cases (E2E)', () => {
     expect(recoveredData.cardIndex).toBe(5);
   });
 
-  test('should handle race conditions with concurrent operations', async () => {
+  test("should handle race conditions with concurrent operations", async () => {
     let deckState = { cardCount: 10 };
 
     const operations = [
-      { type: 'addCard', expected: 11 },
-      { type: 'deleteCard', expected: 10 },
-      { type: 'addCard', expected: 11 },
+      { type: "addCard", expected: 11 },
+      { type: "deleteCard", expected: 10 },
+      { type: "addCard", expected: 11 },
     ];
 
     let finalCount = deckState.cardCount;
     operations.forEach((op) => {
-      if (op.type === 'addCard') finalCount++;
-      if (op.type === 'deleteCard') finalCount--;
+      if (op.type === "addCard") finalCount++;
+      if (op.type === "deleteCard") finalCount--;
     });
 
     expect(finalCount).toBe(11);
   });
 
-  test('should detect and resolve state inconsistencies', async () => {
+  test("should detect and resolve state inconsistencies", async () => {
     const localState = {
-      decks: [{ d_id: '1', name: 'Spanish' }],
+      decks: [{ d_id: "1", name: "Spanish" }],
       lastSync: Date.now() - 10000,
     };
 
     const serverState = {
-      decks: [{ d_id: '1', name: 'Spanish (Updated)' }],
+      decks: [{ d_id: "1", name: "Spanish (Updated)" }],
       timestamp: Date.now(),
     };
 
     // Detect inconsistency
-    const isInconsistent = localState.decks[0].name !== serverState.decks[0].name;
+    const isInconsistent =
+      localState.decks[0].name !== serverState.decks[0].name;
 
     if (isInconsistent) {
       // Sync from server (server wins)
       const resolved = serverState.decks;
-      expect(resolved[0].name).toBe('Spanish (Updated)');
+      expect(resolved[0].name).toBe("Spanish (Updated)");
     }
   });
 
-  test('should handle API rate limiting gracefully', async () => {
+  test("should handle API rate limiting gracefully", async () => {
     const rateLimitError = {
       status: 429,
       retryAfter: 60, // seconds
-      message: 'Too many requests',
+      message: "Too many requests",
     };
 
     expect(rateLimitError.status).toBe(429);
@@ -1045,12 +1096,12 @@ describe('Error Recovery and Edge Cases (E2E)', () => {
     expect(waitTime).toBe(60000);
   });
 
-  test('should clean up resources and state on logout', async () => {
+  test("should clean up resources and state on logout", async () => {
     const appState = {
-      user: { id: 'user123', token: 'token123' },
-      decks: [{ d_id: '1', name: 'Spanish' }],
+      user: { id: "user123", token: "token123" },
+      decks: [{ d_id: "1", name: "Spanish" }],
       cache: { images: {}, audio: {} },
-      listeners: [{ type: 'unauthorized' }, { type: 'sync' }],
+      listeners: [{ type: "unauthorized" }, { type: "sync" }],
     };
 
     // User logs out
@@ -1066,16 +1117,16 @@ describe('Error Recovery and Edge Cases (E2E)', () => {
     expect(cleanedState.cache).toEqual({});
   });
 
-  test('should preserve state across navigation transitions', async () => {
+  test("should preserve state across navigation transitions", async () => {
     const initialState = {
-      selectedDeckId: 'deck1',
+      selectedDeckId: "deck1",
       reviewProgress: { current: 5, total: 10 },
       filters: { showDue: true },
     };
 
     // Navigate to deck detail
     const deckDetailState = initialState;
-    expect(deckDetailState.selectedDeckId).toBe('deck1');
+    expect(deckDetailState.selectedDeckId).toBe("deck1");
 
     // Navigate back
     const returnedState = deckDetailState;
@@ -1083,7 +1134,7 @@ describe('Error Recovery and Edge Cases (E2E)', () => {
     expect(returnedState.filters.showDue).toBe(true);
   });
 
-  test('should handle invalid API responses with fallback', async () => {
+  test("should handle invalid API responses with fallback", async () => {
     const invalidResponse = {
       status: 200,
       data: undefined, // Missing required data field
@@ -1093,9 +1144,10 @@ describe('Error Recovery and Edge Cases (E2E)', () => {
     expect(fallbackData).toEqual([]);
   });
 
-  test('should verify JWT token validity before API calls', async () => {
+  test("should verify JWT token validity before API calls", async () => {
     const token = {
-      value: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.dozjgNryP4J3jVmNHl0w5N_XgL0n3I9PlFUP0THsR8U',
+      value:
+        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.dozjgNryP4J3jVmNHl0w5N_XgL0n3I9PlFUP0THsR8U",
       expiresAt: Date.now() + 60 * 60 * 1000, // 1 hour
     };
 
@@ -1103,9 +1155,9 @@ describe('Error Recovery and Edge Cases (E2E)', () => {
     expect(isValid).toBe(true);
   });
 
-  test('should refresh page state if backend version mismatch detected', async () => {
-    const clientVersion: string = '1.0.0';
-    const serverVersion: string = '1.1.0';
+  test("should refresh page state if backend version mismatch detected", async () => {
+    const clientVersion: string = "1.0.0";
+    const serverVersion: string = "1.1.0";
 
     const hasVersionMismatch = clientVersion !== serverVersion;
 
@@ -1116,7 +1168,7 @@ describe('Error Recovery and Edge Cases (E2E)', () => {
     }
   });
 
-  test('should prevent duplicate submissions on slow connections', async () => {
+  test("should prevent duplicate submissions on slow connections", async () => {
     let submitButton = { disabled: false, lastClick: 0 };
 
     const handleSubmit = () => {

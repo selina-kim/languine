@@ -1,10 +1,10 @@
 // Simple mock setup for React Native testing
-jest.mock('react-native', () => ({
-  View: 'View',
-  Text: 'Text',
-  Pressable: 'Pressable',
-  ScrollView: 'ScrollView',
-  TextInput: 'TextInput',
+jest.mock("react-native", () => ({
+  View: "View",
+  Text: "Text",
+  Pressable: "Pressable",
+  ScrollView: "ScrollView",
+  TextInput: "TextInput",
   StyleSheet: {
     create: (styles) => styles,
   },
@@ -16,69 +16,69 @@ jest.mock('react-native', () => ({
   },
   Platform: {
     select: (obj) => obj.default,
-    OS: 'ios',
+    OS: "ios",
   },
 }));
 
 // Mock common icons and components
-jest.mock('@/assets/icons/DecksIcon', () => ({
+jest.mock("@/assets/icons/DecksIcon", () => ({
   DecksIcon: () => null,
 }));
 
-jest.mock('@/assets/icons/PlusIcon', () => ({
+jest.mock("@/assets/icons/PlusIcon", () => ({
   PlusIcon: () => null,
 }));
 
-jest.mock('@/assets/icons/TrashIcon', () => ({
+jest.mock("@/assets/icons/TrashIcon", () => ({
   TrashIcon: () => null,
 }));
 
-jest.mock('@/assets/icons/EditIcon', () => ({
+jest.mock("@/assets/icons/EditIcon", () => ({
   EditIcon: () => null,
 }));
 
-jest.mock('@/assets/icons/PlayIcon', () => ({
+jest.mock("@/assets/icons/PlayIcon", () => ({
   PlayIcon: () => null,
 }));
 
-jest.mock('@/assets/icons/HomeIcon', () => ({
+jest.mock("@/assets/icons/HomeIcon", () => ({
   HomeIcon: () => null,
 }));
 
-jest.mock('@/assets/icons/HelpIcon', () => ({
+jest.mock("@/assets/icons/HelpIcon", () => ({
   HelpIcon: () => null,
 }));
 
-jest.mock('@/assets/icons/ProfileIcon', () => ({
+jest.mock("@/assets/icons/ProfileIcon", () => ({
   ProfileIcon: () => null,
 }));
 
-jest.mock('@/assets/icons/PlusFilledIcon', () => ({
+jest.mock("@/assets/icons/PlusFilledIcon", () => ({
   PlusFilledIcon: () => null,
 }));
 
-jest.mock('@/assets/icons/ChevronDownIcon', () => ({
+jest.mock("@/assets/icons/ChevronDownIcon", () => ({
   ChevronDownIcon: () => null,
 }));
 
-jest.mock('@/assets/icons/OpenBookIcon', () => ({
+jest.mock("@/assets/icons/OpenBookIcon", () => ({
   OpenBookIcon: () => null,
 }));
 
-jest.mock('@/assets/icons/RepeatIcon', () => ({
+jest.mock("@/assets/icons/RepeatIcon", () => ({
   RepeatIcon: () => null,
 }));
 
-jest.mock('@/assets/icons/SoundIcon', () => ({
+jest.mock("@/assets/icons/SoundIcon", () => ({
   SoundIcon: () => null,
 }));
 
-jest.mock('@/assets/icons/MagicWandIcon', () => ({
+jest.mock("@/assets/icons/MagicWandIcon", () => ({
   MagicWandIcon: () => null,
 }));
 
 // Mock Expo modules
-jest.mock('expo-router', () => ({
+jest.mock("expo-router", () => ({
   useRouter: () => ({
     push: jest.fn(),
     back: jest.fn(),
@@ -87,13 +87,13 @@ jest.mock('expo-router', () => ({
   useLocalSearchParams: () => ({}),
 }));
 
-jest.mock('expo-secure-store', () => ({
+jest.mock("expo-secure-store", () => ({
   getItemAsync: jest.fn(),
   setItemAsync: jest.fn(),
   deleteItemAsync: jest.fn(),
 }));
 
-jest.mock('@react-navigation/native', () => ({
+jest.mock("@react-navigation/native", () => ({
   useNavigation: () => ({
     navigate: jest.fn(),
     goBack: jest.fn(),
@@ -111,8 +111,8 @@ const originalLog = console.log;
 beforeAll(() => {
   console.warn = jest.fn((...args) => {
     if (
-      typeof args[0] === 'string' &&
-      args[0].includes('Non-serializable values')
+      typeof args[0] === "string" &&
+      args[0].includes("Non-serializable values")
     ) {
       return;
     }
@@ -121,10 +121,10 @@ beforeAll(() => {
 
   // Redirect console.log to process.stdout to avoid Jest's source annotations
   console.log = (...args) => {
-    const message = args.map(arg => 
-      typeof arg === 'string' ? arg : JSON.stringify(arg)
-    ).join(' ');
-    process.stdout.write(message + '\n');
+    const message = args
+      .map((arg) => (typeof arg === "string" ? arg : JSON.stringify(arg)))
+      .join(" ");
+    process.stdout.write(message + "\n");
   };
 });
 
