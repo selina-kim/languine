@@ -67,6 +67,12 @@ jest.mock('@/context/LanguageOptionsContext', () => ({
   }),
 }));
 
+jest.mock('expo-audio', () => ({
+  createAudioPlayer: jest.fn(),
+  setAudioModeAsync: jest.fn(),
+  AudioPlayer: {},
+}));
+
 // ============================================================================
 // COMPONENT IMPORTS - Verify all exports exist
 // ============================================================================
