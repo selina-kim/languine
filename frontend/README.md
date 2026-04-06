@@ -95,4 +95,5 @@ Install the `Languine.apk` file from this [Google Drive link](https://drive.goog
 
 ### 3. Run the app on Expo (follow [these steps](#run-the-application-expo))
 
-- If app screen on emulator shows error on launch instead of bundling the app, might have to manually type in `<ip address>:8081` for the local server on the expo app
+- Make sure the backend docker instance is running (check backend README for instructions) too.
+- If app screen on emulator shows error on launch instead of bundling the app, might have to manually type in `<ip address>:8081` for the local server on the expo app.
