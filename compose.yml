@@ -19,8 +19,6 @@ services:
       - /app/.venv # preserve the container's .venv
       - ./database:/database:ro # mount database folder for tests (read-only)
     environment:
-      FLASK_APP: main:app
-      FLASK_ENV: development
       MW_DICT_API_KEY: ${MW_DICT_API_KEY}
       DEEPL_API_KEY: ${DEEPL_API_KEY}
       PYTHONPATH: /app/src
@@ -40,7 +38,6 @@ services:
       MINIO_BUCKET_NAME: "languine-media"
 
     working_dir: /app
-    command: flask run --host=0.0.0.0 --reload
 
     depends_on:
       - db

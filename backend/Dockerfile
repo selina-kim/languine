@@ -31,6 +31,8 @@ COPY pyproject.toml poetry.lock* ./
 # Configure poetry and install dependencies (including dev for testing)
 RUN poetry config virtualenvs.in-project true && \
     poetry install --no-root --no-interaction --no-ansi && \
+    # Install production WSGI server
+    /app/.venv/bin/pip install --no-cache-dir gunicorn && \
     # Install PyTorch (CPU) explicitly as TTS requires it
     /app/.venv/bin/pip install --no-cache-dir torch torchaudio --index-url https://download.pytorch.org/whl/cpu && \
     # Install Japanese dictionary for MeCab
@@ -58,5 +60,5 @@ ENV PATH="/app/.venv/bin:$PATH" \
     PYTHONUNBUFFERED=1 \
     FLASK_APP=src.main:app
 
-# Run Flask development server on all network interfaces
-CMD ["python", "-m", "flask", "run", "--host=0.0.0.0"]
+# Run application with Gunicorn on all network interfaces
+CMD ["gunicorn", "--bind", "0.0.0.0:5000", "--timeout", "300", "--access-logfile", "-", "--error-logfile", "-", "src.main:app"]
