@@ -101,7 +101,7 @@ Ask team member for steps.
 ### 2. View Backend Docker Container Logs
 
 ```bash
-cd ~/projects/capstone-project
+cd ~/projects/languine
 docker compose logs -f
 ```
 

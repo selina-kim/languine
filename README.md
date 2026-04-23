@@ -1,7 +1,7 @@
 # Project Structure
 
 ```
-capstone-project/
+languine/
 ├── backend/           # backend python + docker app
 ├── database/          # postgreSQL database
 ├── frontend/          # frontend expo + react native app
